@@ -272,7 +272,7 @@ function getP1Windows(f2w) {
 
 // === SVG GENERATION ===
 
-function generateSVG(pillars, windows, label, id) {
+function generateSVG(pillars, windows, label, id, roomNames) {
   const uid = id; // unique prefix for patterns
   let svg = `<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg" width="980">`;
 
@@ -344,6 +344,9 @@ function generateSVG(pillars, windows, label, id) {
     // Label
     const center = wx + ww/2;
     svg += `<text x="${center}" y="${wy - 22}" font-family="DM Sans, sans-serif" font-size="9" fill="#5a8199" text-anchor="middle" font-weight="500">F${i+1} — ${win.w}×${win.h}</text>`;
+    if (roomNames && roomNames[i]) {
+      svg += `<text x="${center}" y="${wy - 12}" font-family="DM Sans, sans-serif" font-size="7" fill="#8a7e72" text-anchor="middle">${roomNames[i]}</text>`;
+    }
   });
 
   // Column (drawn after windows so it's visible on top)
@@ -368,14 +371,16 @@ function render() {
     P1_PILLARS,
     getP1Windows(p1Var.f2w),
     `Primo Piano — ${p1Var.label} (F2/F3 = ${p1Var.f2w} cm)`,
-    'p1'
+    'p1',
+    ['Bagno Nord', 'Camera Nord', 'Camera Sud', 'Bagno Sud']
   );
 
   document.getElementById('svg-pt').innerHTML = generateSVG(
     PT_PILLARS,
     ptVar.windows,
     `Piano Terra — ${ptVar.label}`,
-    'pt'
+    'pt',
+    ['Cucina', 'Cucina', 'Soggiorno', 'Soggiorno']
   );
 }
 

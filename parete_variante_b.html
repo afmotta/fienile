@@ -98,6 +98,7 @@
     text-anchor: middle;
     dominant-baseline: middle;
   }
+  .label-room { font-family: 'DM Sans', sans-serif; font-size: 8px; fill: #8a7e72; text-anchor: middle; font-weight: 400; }
   .margin-zone { fill: #f0ccc8; opacity: 0.3; }
   .align-line { stroke: #b0453a; stroke-width: 0.5; stroke-dasharray: 6,3; opacity: 0.5; }
 
@@ -221,6 +222,7 @@
   <!-- sill line -->
   <line x1="133" y1="176" x2="261" y2="176" stroke="#6b5e52" stroke-width="1.2"/>
   <text x="197.39" y="32" class="label-text">F1 — 190 × 150</text>
+  <text x="197.39" y="42" class="label-room">Cucina</text>
 
   <!-- ============ F2: 290×250, y=56..256 (porta finestra, invariata) ============ -->
   <rect x="295.97" y="40" width="185.17" height="16" class="architrave-zone"/>
@@ -232,6 +234,7 @@
   <line x1="295.97" y1="188" x2="481.14" y2="188" class="window-frame"/>
   <line x1="295.97" y1="56" x2="481.14" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
   <text x="388.55" y="32" class="label-text">F2 — 290 × 250</text>
+  <text x="388.55" y="42" class="label-room">Cucina</text>
 
   <!-- ============ F3: 290×250, y=56..256 (porta finestra, invariata) ============ -->
   <rect x="518.93" y="40" width="185.17" height="16" class="architrave-zone"/>
@@ -243,6 +246,7 @@
   <line x1="518.93" y1="188" x2="704.1" y2="188" class="window-frame"/>
   <line x1="518.93" y1="56" x2="704.1" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
   <text x="611.51" y="32" class="label-text">F3 — 290 × 250</text>
+  <text x="611.51" y="42" class="label-room">Soggiorno</text>
 
   <!-- ============ F4: 190×150, y=56..176 (symmetric to F1) ============ -->
   <rect x="741.93" y="40" width="121.32" height="16" class="architrave-zone"/>
@@ -253,6 +257,7 @@
   <line x1="741.93" y1="56" x2="863.25" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
   <line x1="738" y1="176" x2="867" y2="176" stroke="#6b5e52" stroke-width="1.2"/>
   <text x="802.59" y="32" class="label-text">F4 — 190 × 150</text>
+  <text x="802.59" y="42" class="label-room">Soggiorno</text>
 
   <!-- ============ COLONNA FRONTALE (76 cm, centrata) ============ -->
   <!-- Da 635.5 a 711.5 cm → x=475.77, w=48.52 -->
@@ -430,6 +435,7 @@
     <thead>
       <tr>
         <th>Finestra</th>
+        <th>Stanza</th>
         <th>Tipo</th>
         <th>Largh.</th>
         <th>Altezza</th>
@@ -443,6 +449,7 @@
     <tbody>
       <tr>
         <td>F1</td>
+        <td>Cucina</td>
         <td>Finestra</td>
         <td>190 cm</td>
         <td>150 cm</td>
@@ -454,6 +461,7 @@
       </tr>
       <tr>
         <td>F2</td>
+        <td>Cucina</td>
         <td>Porta finestra</td>
         <td>290 cm</td>
         <td>250 cm</td>
@@ -465,6 +473,7 @@
       </tr>
       <tr>
         <td>F3</td>
+        <td>Soggiorno</td>
         <td>Porta finestra</td>
         <td>290 cm</td>
         <td>250 cm</td>
@@ -476,6 +485,7 @@
       </tr>
       <tr>
         <td>F4</td>
+        <td>Soggiorno</td>
         <td>Finestra</td>
         <td>190 cm</td>
         <td>150 cm</td>
@@ -492,16 +502,28 @@
 <div class="table-container" style="margin-top:32px;">
   <table>
     <thead>
-      <tr><th colspan="4" style="color:#b0453a;">Rapporto Aeroilluminante (RAI)</th></tr>
-      <tr><th>Voce</th><th>Calcolo</th><th>Superficie</th><th>RAI</th></tr>
+      <tr><th colspan="5" style="color:#b0453a;">Rapporto Aeroilluminante (RAI) — per stanza</th></tr>
+      <tr><th>Stanza</th><th>Finestre</th><th>Sup. vetrata utile</th><th>Sup. pavimento</th><th>RAI</th></tr>
     </thead>
     <tbody>
-      <tr><td>F1 (190×90*)</td><td>1,90 × 0,90</td><td>1,71 m²</td><td></td></tr>
-      <tr><td>F2 (290×190*)</td><td>2,90 × 1,90</td><td>5,51 m²</td><td></td></tr>
-      <tr><td>Totale vetrata utile</td><td></td><td style="font-weight:600;">7,22 m²</td><td></td></tr>
-      <tr><td>Pavimento stanza</td><td></td><td>31,23 m²</td><td></td></tr>
-      <tr style="border-top:2px solid #d6cfc6;"><td style="font-weight:600;">RAI</td><td>7,22 / 31,23</td><td></td><td style="font-weight:600;color:#5a8199;">0,231</td></tr>
-      <tr><td>Minimo richiesto</td><td></td><td></td><td>0,125</td></tr>
+      <tr>
+        <td>Cucina</td>
+        <td>F1 (190×90*) + F2 (290×190*)</td>
+        <td>1,71 + 5,51 = 7,22 m²</td>
+        <td>31,23 m²</td>
+        <td style="font-weight:600;color:#5a8199;">0,231</td>
+      </tr>
+      <tr>
+        <td>Soggiorno</td>
+        <td>F3 (290×190*) + F4 (190×90*)</td>
+        <td>5,51 + 1,71 = 7,22 m²</td>
+        <td>31,23 m²</td>
+        <td style="font-weight:600;color:#5a8199;">0,231</td>
+      </tr>
+      <tr style="border-top:2px solid #d6cfc6;">
+        <td colspan="4" style="font-weight:600;">Minimo richiesto</td>
+        <td>0,125</td>
+      </tr>
     </tbody>
   </table>
   <p style="font-family:JetBrains Mono,monospace;font-size:0.7rem;color:#9a8d7f;margin-top:8px;text-align:center;">* Altezza utile limitata a 190 cm da terra (aggetto tetto). F1: da dav. 100 cm a 190 cm = 90 cm utili</p>
