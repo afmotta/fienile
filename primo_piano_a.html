@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Primo Piano — Variante P1-A</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f5f2ed;
+    font-family: 'DM Sans', sans-serif;
+    color: #2a2520;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #8a7e72;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #b0a698;
+    margin-bottom: 48px;
+  }
+
+  .drawing-container {
+    width: 100%;
+    max-width: 1100px;
+    overflow-x: auto;
+  }
+
+  svg {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .wall-fill { fill: #e8e2d9; }
+  .wall-stroke { stroke: #2a2520; stroke-width: 1.5; fill: none; }
+  .pillar-fill { fill: #6b5e52; }
+  .pillar-pattern { stroke: #7d6f62; stroke-width: 0.5; opacity: 0.3; }
+  .window-fill { fill: #c8dce8; }
+  .window-stroke { stroke: #5a8199; stroke-width: 1.2; fill: none; }
+  .window-frame { stroke: #5a8199; stroke-width: 0.8; fill: none; }
+  .ground-line { stroke: #8a7e72; stroke-width: 2; }
+  .ground-hatch { stroke: #b0a698; stroke-width: 0.6; }
+  .architrave-zone { fill: #ddd5cb; }
+  .sill-zone { fill: #ddd5cb; }
+
+  .dim-line { stroke: #b0453a; stroke-width: 0.8; }
+  .dim-line-light { stroke: #c9a07a; stroke-width: 0.6; stroke-dasharray: 3,3; }
+  .dim-tick { stroke: #b0453a; stroke-width: 0.8; }
+  .dim-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    fill: #b0453a;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  .dim-text-light {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7.5px;
+    fill: #9a8d7f;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  .dim-text-vert {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    fill: #b0453a;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  .label-text {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    fill: #5a8199;
+    text-anchor: middle;
+    font-weight: 500;
+  }
+  .label-room {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 8px;
+    fill: #8a7e72;
+    text-anchor: middle;
+    font-weight: 400;
+  }
+  .pillar-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7px;
+    fill: #fff;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  .align-line { stroke: #b0453a; stroke-width: 0.5; stroke-dasharray: 6,3; opacity: 0.5; }
+
+  .legend {
+    display: flex;
+    gap: 28px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: #6b5e52;
+  }
+  .legend-swatch {
+    width: 20px;
+    height: 12px;
+    border-radius: 2px;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  .table-container {
+    margin-top: 40px;
+    width: 100%;
+    max-width: 820px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+  }
+  th {
+    text-align: left;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #8a7e72;
+    padding: 8px 12px;
+    border-bottom: 2px solid #d6cfc6;
+  }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e8e2d9;
+    color: #4a4038;
+  }
+  tr:last-child td { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<h1>Primo Piano — Variante P1-A</h1>
+<div class="subtitle">13.470 mm × 2.700 mm — F2/F3 porte finestre 160×250, F1/F4 finestre 60×150</div>
+
+<div class="drawing-container">
+<!--
+  Primo piano. Parete 13,47m × 2,70m.
+  2 pilastri da 30 cm: P1 da 590cm, P2 da 727cm.
+  Campate: 590 | 107 | 590 cm.
+  Colonna frontale 76 cm centrata (635,5→711,5 cm).
+
+  Vertical scale: 0.8 px/cm. Wall top y=40, ground y=256.
+  Horizontal: xOff=70, scale=0.6385 px/cm.
+
+  F1: 60×150, davanzale 100cm, a 65cm da sx → x=111.50, w=38.31, y=56..176
+  F2: 160×250, da terra, a 250cm da sx → x=229.63, w=102.16, y=56..256
+  F3: 160×250, da terra, a 937cm da sx → x=668.37, w=102.16, y=56..256
+  F4: 60×150, davanzale 100cm, a 65cm da dx (=1222cm) → x=850.25, w=38.31, y=56..176
+
+  Pilastri: P1 x=446.72, P2 x=534.20, w=19.16
+-->
+<svg viewBox="0 0 980 370" xmlns="http://www.w3.org/2000/svg" width="980">
+
+  <!-- ============ WALL BODY ============ -->
+  <rect x="70" y="40" width="860" height="216" class="wall-fill" rx="1"/>
+  <rect x="70" y="40" width="860" height="216" class="wall-stroke" rx="1"/>
+
+  <!-- ============ GROUND LINE + HATCH ============ -->
+  <line x1="55" y1="256" x2="945" y2="256" class="ground-line"/>
+  <line x1="60" y1="256" x2="52" y2="264" class="ground-hatch"/>
+  <line x1="75" y1="256" x2="67" y2="264" class="ground-hatch"/>
+  <line x1="90" y1="256" x2="82" y2="264" class="ground-hatch"/>
+  <line x1="105" y1="256" x2="97" y2="264" class="ground-hatch"/>
+  <line x1="900" y1="256" x2="892" y2="264" class="ground-hatch"/>
+  <line x1="915" y1="256" x2="907" y2="264" class="ground-hatch"/>
+  <line x1="930" y1="256" x2="922" y2="264" class="ground-hatch"/>
+  <line x1="945" y1="256" x2="937" y2="264" class="ground-hatch"/>
+
+  <!-- ============ ALIGNMENT LINE (top of all windows at y=56) ============ -->
+  <line x1="12" y1="56" x2="940" y2="56" class="align-line"/>
+
+  <!-- ============ PILLARS ============ -->
+  <!-- P1: 590→620 cm -->
+  <rect x="446.72" y="36" width="19.16" height="224" class="pillar-fill" rx="1"/>
+  <line x1="448" y1="36" x2="463" y2="260" class="pillar-pattern"/>
+  <line x1="453" y1="36" x2="461" y2="260" class="pillar-pattern"/>
+  <line x1="458" y1="36" x2="466" y2="260" class="pillar-pattern"/>
+  <text x="456.30" y="148" class="pillar-label">30</text>
+
+  <!-- P2: 727→757 cm -->
+  <rect x="534.20" y="36" width="19.16" height="224" class="pillar-fill" rx="1"/>
+  <line x1="536" y1="36" x2="551" y2="260" class="pillar-pattern"/>
+  <line x1="541" y1="36" x2="549" y2="260" class="pillar-pattern"/>
+  <line x1="546" y1="36" x2="553" y2="260" class="pillar-pattern"/>
+  <text x="543.78" y="148" class="pillar-label">30</text>
+
+  <!-- ============ F1: 60×150, davanzale 100cm, x=111.50, y=56..176 ============ -->
+  <!-- Architrave -->
+  <rect x="111.50" y="40" width="38.31" height="16" class="architrave-zone"/>
+  <!-- Window -->
+  <rect x="111.50" y="56" width="38.31" height="120" class="window-fill"/>
+  <rect x="111.50" y="56" width="38.31" height="120" class="window-stroke"/>
+  <!-- Transom -->
+  <line x1="111.50" y1="116" x2="149.81" y2="116" class="window-frame"/>
+  <!-- Architrave line -->
+  <line x1="111.50" y1="56" x2="149.81" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
+  <!-- Sill line -->
+  <line x1="108" y1="176" x2="153" y2="176" stroke="#6b5e52" stroke-width="1.2"/>
+  <!-- Labels -->
+  <text x="130.66" y="27" class="label-text">F1 — 60 × 150</text>
+  <text x="130.66" y="37" class="label-room">Bagno Nord</text>
+
+  <!-- ============ F2: 160×250, da terra, x=229.63, y=56..256 ============ -->
+  <!-- Architrave -->
+  <rect x="229.63" y="40" width="102.16" height="16" class="architrave-zone"/>
+  <!-- Window -->
+  <rect x="229.63" y="56" width="102.16" height="200" class="window-fill"/>
+  <rect x="229.63" y="56" width="102.16" height="200" class="window-stroke"/>
+  <!-- Mullions -->
+  <line x1="263.68" y1="56" x2="263.68" y2="256" class="window-frame"/>
+  <line x1="297.74" y1="56" x2="297.74" y2="256" class="window-frame"/>
+  <!-- Transoms -->
+  <line x1="229.63" y1="122" x2="331.79" y2="122" class="window-frame"/>
+  <line x1="229.63" y1="188" x2="331.79" y2="188" class="window-frame"/>
+  <!-- Architrave line -->
+  <line x1="229.63" y1="56" x2="331.79" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
+  <!-- Labels -->
+  <text x="280.71" y="27" class="label-text">F2 — 160 × 250</text>
+  <text x="280.71" y="37" class="label-room">Camera Nord</text>
+
+  <!-- ============ F3: 160×250, da terra, x=668.37, y=56..256 ============ -->
+  <!-- Architrave -->
+  <rect x="668.37" y="40" width="102.16" height="16" class="architrave-zone"/>
+  <!-- Window -->
+  <rect x="668.37" y="56" width="102.16" height="200" class="window-fill"/>
+  <rect x="668.37" y="56" width="102.16" height="200" class="window-stroke"/>
+  <!-- Mullions -->
+  <line x1="702.42" y1="56" x2="702.42" y2="256" class="window-frame"/>
+  <line x1="736.48" y1="56" x2="736.48" y2="256" class="window-frame"/>
+  <!-- Transoms -->
+  <line x1="668.37" y1="122" x2="770.53" y2="122" class="window-frame"/>
+  <line x1="668.37" y1="188" x2="770.53" y2="188" class="window-frame"/>
+  <!-- Architrave line -->
+  <line x1="668.37" y1="56" x2="770.53" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
+  <!-- Labels -->
+  <text x="719.45" y="27" class="label-text">F3 — 160 × 250</text>
+  <text x="719.45" y="37" class="label-room">Camera Sud</text>
+
+  <!-- ============ F4: 60×150, davanzale 100cm, x=850.25, y=56..176 ============ -->
+  <!-- Architrave -->
+  <rect x="850.25" y="40" width="38.31" height="16" class="architrave-zone"/>
+  <!-- Window -->
+  <rect x="850.25" y="56" width="38.31" height="120" class="window-fill"/>
+  <rect x="850.25" y="56" width="38.31" height="120" class="window-stroke"/>
+  <!-- Transom -->
+  <line x1="850.25" y1="116" x2="888.56" y2="116" class="window-frame"/>
+  <!-- Architrave line -->
+  <line x1="850.25" y1="56" x2="888.56" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
+  <!-- Sill line -->
+  <line x1="847" y1="176" x2="892" y2="176" stroke="#6b5e52" stroke-width="1.2"/>
+  <!-- Labels -->
+  <text x="869.41" y="27" class="label-text">F4 — 60 × 150</text>
+  <text x="869.41" y="37" class="label-room">Bagno Sud</text>
+
+  <!-- ============ COLONNA FRONTALE (76 cm, centrata) ============ -->
+  <!-- Da 635.5 a 711.5 cm → x=475.77, w=48.52 -->
+  <defs>
+    <pattern id="colHatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#b0453a" stroke-width="0.4" opacity="0.6"/>
+    </pattern>
+  </defs>
+  <rect x="475.77" y="36" width="48.52" height="224" fill="url(#colHatch)" stroke="#b0453a" stroke-width="1.5" stroke-dasharray="6,4" rx="1"/>
+  <text x="500.03" y="270" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#b0453a" text-anchor="middle">colonna 76 cm</text>
+
+  <!-- ============ VERTICAL DIMENSIONS (left side) ============ -->
+  <!-- Total wall height -->
+  <line x1="38" y1="40" x2="38" y2="256" class="dim-line"/>
+  <line x1="33" y1="40" x2="43" y2="40" class="dim-tick"/>
+  <line x1="33" y1="256" x2="43" y2="256" class="dim-tick"/>
+  <text x="38" y="148" class="dim-text-vert" transform="rotate(-90,38,148)">2.700</text>
+  <line x1="43" y1="40" x2="68" y2="40" stroke="#d6cfc6" stroke-width="0.5"/>
+  <line x1="43" y1="256" x2="68" y2="256" stroke="#d6cfc6" stroke-width="0.5"/>
+
+  <!-- F2/F3 height (porta finestra): y=56..256 -->
+  <line x1="12" y1="56" x2="12" y2="256" class="dim-line"/>
+  <line x1="7" y1="56" x2="17" y2="56" class="dim-tick"/>
+  <line x1="7" y1="256" x2="17" y2="256" class="dim-tick"/>
+  <text x="12" y="156" class="dim-text-vert" transform="rotate(-90,12,156)">2.500</text>
+
+  <!-- Architrave -->
+  <line x1="55" y1="40" x2="55" y2="56" class="dim-line-light"/>
+  <line x1="51" y1="40" x2="59" y2="40" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <line x1="51" y1="56" x2="59" y2="56" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <text x="55" y="48" class="dim-text-light" font-size="6.5" transform="rotate(-90,55,48)">200</text>
+
+  <!-- F1/F4 dims (right side) -->
+  <!-- F1/F4 window height: y=56..176 = 150cm -->
+  <line x1="940" y1="56" x2="940" y2="176" class="dim-line"/>
+  <line x1="935" y1="56" x2="945" y2="56" class="dim-tick"/>
+  <line x1="935" y1="176" x2="945" y2="176" class="dim-tick"/>
+  <text x="940" y="116" class="dim-text-vert" transform="rotate(90,940,116)">1.500</text>
+  <line x1="889" y1="56" x2="938" y2="56" stroke="#d6cfc6" stroke-width="0.5"/>
+  <line x1="889" y1="176" x2="938" y2="176" stroke="#d6cfc6" stroke-width="0.5"/>
+
+  <!-- Sill height from ground: y=176..256 = 100cm -->
+  <line x1="960" y1="176" x2="960" y2="256" class="dim-line"/>
+  <line x1="955" y1="176" x2="965" y2="176" class="dim-tick"/>
+  <line x1="955" y1="256" x2="965" y2="256" class="dim-tick"/>
+  <text x="960" y="216" class="dim-text-vert" transform="rotate(90,960,216)">1.000</text>
+  <line x1="945" y1="176" x2="958" y2="176" stroke="#d6cfc6" stroke-width="0.5"/>
+  <line x1="945" y1="256" x2="958" y2="256" stroke="#d6cfc6" stroke-width="0.5"/>
+
+  <!-- ============ HORIZONTAL DIMENSIONS ============ -->
+  <!-- Overall -->
+  <line x1="70" y1="310" x2="930" y2="310" class="dim-line"/>
+  <line x1="70" y1="304" x2="70" y2="316" class="dim-tick"/>
+  <line x1="930" y1="304" x2="930" y2="316" class="dim-tick"/>
+  <text x="500" y="327" class="dim-text" font-size="11">13.470 mm</text>
+
+  <!-- Campata dims (3 campate) -->
+  <!-- Campata 1: 0→590 cm -->
+  <line x1="70" y1="18" x2="446.72" y2="18" class="dim-line"/>
+  <line x1="70" y1="13" x2="70" y2="23" class="dim-tick"/>
+  <line x1="446.72" y1="13" x2="446.72" y2="23" class="dim-tick"/>
+  <text x="258.36" y="11" class="dim-text">5.900</text>
+
+  <!-- Campata 2: 620→727 cm (107 cm) -->
+  <line x1="465.88" y1="18" x2="534.20" y2="18" class="dim-line"/>
+  <line x1="465.88" y1="13" x2="465.88" y2="23" class="dim-tick"/>
+  <line x1="534.20" y1="13" x2="534.20" y2="23" class="dim-tick"/>
+  <text x="500.04" y="11" class="dim-text">1.070</text>
+
+  <!-- Campata 3: 757→1347 cm (590 cm) -->
+  <line x1="553.36" y1="18" x2="930" y2="18" class="dim-line"/>
+  <line x1="553.36" y1="13" x2="553.36" y2="23" class="dim-tick"/>
+  <line x1="930" y1="13" x2="930" y2="23" class="dim-tick"/>
+  <text x="741.68" y="11" class="dim-text">5.900</text>
+
+  <!-- Window position dims -->
+  <!-- F1: bordo sx → F1 -->
+  <line x1="70" y1="275" x2="111.50" y2="275" class="dim-line-light"/>
+  <line x1="70" y1="271" x2="70" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <line x1="111.50" y1="271" x2="111.50" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <text x="90.75" y="287" class="dim-text-light">650</text>
+
+  <!-- F1 width -->
+  <line x1="111.50" y1="275" x2="149.81" y2="275" class="dim-line"/>
+  <line x1="111.50" y1="271" x2="111.50" y2="279" class="dim-tick"/>
+  <line x1="149.81" y1="271" x2="149.81" y2="279" class="dim-tick"/>
+  <text x="130.66" y="287" class="dim-text">600</text>
+
+  <!-- F1 → F2 gap -->
+  <line x1="149.81" y1="275" x2="229.63" y2="275" class="dim-line-light"/>
+  <line x1="149.81" y1="271" x2="149.81" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <line x1="229.63" y1="271" x2="229.63" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <text x="189.72" y="287" class="dim-text-light">1.250</text>
+
+  <!-- F2 width -->
+  <line x1="229.63" y1="275" x2="331.79" y2="275" class="dim-line"/>
+  <line x1="229.63" y1="271" x2="229.63" y2="279" class="dim-tick"/>
+  <line x1="331.79" y1="271" x2="331.79" y2="279" class="dim-tick"/>
+  <text x="280.71" y="287" class="dim-text">1.600</text>
+
+  <!-- F2 → P1 gap -->
+  <line x1="331.79" y1="275" x2="446.72" y2="275" class="dim-line-light"/>
+  <line x1="331.79" y1="271" x2="331.79" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <line x1="446.72" y1="271" x2="446.72" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <text x="389.26" y="287" class="dim-text-light">1.800</text>
+
+  <!-- P1 → P2 (including pillars: 620→727 = 107 gap, but pillar widths shown in campata) -->
+
+  <!-- P2 → F3 gap -->
+  <line x1="553.36" y1="275" x2="668.37" y2="275" class="dim-line-light"/>
+  <line x1="553.36" y1="271" x2="553.36" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <line x1="668.37" y1="271" x2="668.37" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <text x="610.87" y="287" class="dim-text-light">1.800</text>
+
+  <!-- F3 width -->
+  <line x1="668.37" y1="275" x2="770.53" y2="275" class="dim-line"/>
+  <line x1="668.37" y1="271" x2="668.37" y2="279" class="dim-tick"/>
+  <line x1="770.53" y1="271" x2="770.53" y2="279" class="dim-tick"/>
+  <text x="719.45" y="287" class="dim-text">1.600</text>
+
+  <!-- F3 → F4 gap -->
+  <line x1="770.53" y1="275" x2="850.25" y2="275" class="dim-line-light"/>
+  <line x1="770.53" y1="271" x2="770.53" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <line x1="850.25" y1="271" x2="850.25" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <text x="810.39" y="287" class="dim-text-light">1.250</text>
+
+  <!-- F4 width -->
+  <line x1="850.25" y1="275" x2="888.56" y2="275" class="dim-line"/>
+  <line x1="850.25" y1="271" x2="850.25" y2="279" class="dim-tick"/>
+  <line x1="888.56" y1="271" x2="888.56" y2="279" class="dim-tick"/>
+  <text x="869.41" y="287" class="dim-text">600</text>
+
+  <!-- F4 → bordo dx -->
+  <line x1="888.56" y1="275" x2="930" y2="275" class="dim-line-light"/>
+  <line x1="888.56" y1="271" x2="888.56" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <line x1="930" y1="271" x2="930" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <text x="909.28" y="287" class="dim-text-light">650</text>
+
+  <!-- Vertical guide lines -->
+  <line x1="70" y1="23" x2="70" y2="38" stroke="#d6cfc6" stroke-width="0.5"/>
+  <line x1="930" y1="23" x2="930" y2="38" stroke="#d6cfc6" stroke-width="0.5"/>
+  <line x1="446.72" y1="23" x2="446.72" y2="38" stroke="#d6cfc6" stroke-width="0.5"/>
+  <line x1="465.88" y1="23" x2="465.88" y2="38" stroke="#d6cfc6" stroke-width="0.5"/>
+  <line x1="534.20" y1="23" x2="534.20" y2="38" stroke="#d6cfc6" stroke-width="0.5"/>
+  <line x1="553.36" y1="23" x2="553.36" y2="38" stroke="#d6cfc6" stroke-width="0.5"/>
+
+  <!-- Scale note -->
+  <text x="500" y="355" class="dim-text-light" font-size="8">quote in mm — prospetto primo piano — variante P1-A</text>
+
+</svg>
+</div>
+
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#e8e2d9; border-color:#2a2520;"></div>
+    Muratura
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#6b5e52;"></div>
+    Pilastri (30 cm)
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#c8dce8; border-color:#5a8199;"></div>
+    Finestre / Porte finestre
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#ddd5cb;"></div>
+    Architrave (h 200)
+  </div>
+    <div class="legend-item">
+    <svg width="20" height="12"><rect x="1" y="1" width="18" height="10" fill="none" stroke="#b0453a" stroke-width="1.2" stroke-dasharray="3,2" rx="1"/></svg>
+    Colonna frontale (76 cm)
+  </div>
+  <div class="legend-item">
+    <svg width="20" height="12"><line x1="0" y1="6" x2="20" y2="6" stroke="#b0453a" stroke-width="0.8" stroke-dasharray="4,2" opacity="0.5"/></svg>
+    Filo superiore allineato
+  </div>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Finestra</th>
+        <th>Stanza</th>
+        <th>Tipo</th>
+        <th>Largh.</th>
+        <th>Altezza</th>
+        <th>Da terra</th>
+        <th>Da (x)</th>
+        <th>A (x)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>F1</td>
+        <td>Bagno Nord</td>
+        <td>Finestra</td>
+        <td>60 cm</td>
+        <td>150 cm</td>
+        <td>100 cm</td>
+        <td>0,650 m</td>
+        <td>1,250 m</td>
+      </tr>
+      <tr>
+        <td>F2</td>
+        <td>Camera Nord</td>
+        <td>Porta finestra</td>
+        <td>160 cm</td>
+        <td>250 cm</td>
+        <td>0 cm</td>
+        <td>2,500 m</td>
+        <td>4,100 m</td>
+      </tr>
+      <tr>
+        <td>F3</td>
+        <td>Camera Sud</td>
+        <td>Porta finestra</td>
+        <td>160 cm</td>
+        <td>250 cm</td>
+        <td>0 cm</td>
+        <td>9,370 m</td>
+        <td>10,970 m</td>
+      </tr>
+      <tr>
+        <td>F4</td>
+        <td>Bagno Sud</td>
+        <td>Finestra</td>
+        <td>60 cm</td>
+        <td>150 cm</td>
+        <td>100 cm</td>
+        <td>12,220 m</td>
+        <td>12,820 m</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="table-container" style="margin-top:32px;">
+  <table>
+    <thead>
+      <tr><th colspan="5" style="color:#b0453a;">Rapporto Aeroilluminante (RAI) — per stanza</th></tr>
+      <tr><th>Stanza</th><th>Finestra</th><th>Sup. vetrata utile</th><th>Sup. pavimento</th><th>RAI</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Bagno Nord</td>
+        <td>F1 (60×98*)</td>
+        <td>0,60 × 0,98 = 0,588 m²</td>
+        <td>4,52 m²</td>
+        <td style="font-weight:600;color:#5a8199;">0,130</td>
+      </tr>
+      <tr>
+        <td>Camera Nord</td>
+        <td>F2 (160×138*)</td>
+        <td>1,60 × 1,38 = 2,208 m²</td>
+        <td>17,30 m²</td>
+        <td style="font-weight:600;color:#5a8199;">0,128</td>
+      </tr>
+      <tr>
+        <td>Camera Sud</td>
+        <td>F3 (160×138*)</td>
+        <td>1,60 × 1,38 = 2,208 m²</td>
+        <td>12,40 m²</td>
+        <td style="font-weight:600;color:#5a8199;">0,178</td>
+      </tr>
+      <tr>
+        <td>Bagno Sud</td>
+        <td>F4 (60×98*)</td>
+        <td>0,60 × 0,98 = 0,588 m²</td>
+        <td>4,10 m²</td>
+        <td style="font-weight:600;color:#5a8199;">0,143</td>
+      </tr>
+      <tr style="border-top:2px solid #d6cfc6;">
+        <td colspan="4" style="font-weight:600;">Minimo richiesto</td>
+        <td>0,125</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-family:JetBrains Mono,monospace;font-size:0.7rem;color:#9a8d7f;margin-top:8px;text-align:center;">* Altezza utile: 0–60 cm non conteggiata, 60–172 cm al 100%, 172–250 cm al 33%. Porta finestra: 112 + 78×⅓ = 138 cm. Finestra (dav. 100 cm): 72 + 78×⅓ = 98 cm.</p>
+</div>
+<div style="text-align:center;margin:40px 0 20px;"><a href="./index.html" style="font-family:DM Sans,sans-serif;font-size:0.85rem;color:#5a8199;text-decoration:none;border:1px solid #d6cfc6;padding:10px 24px;border-radius:4px;transition:border-color 0.2s;">← Torna al menu</a></div>
+</body>
+</html>

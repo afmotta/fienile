@@ -2,9 +2,9 @@
 
 ## Contesto
 
-Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione. La parete è al piano terra. Sono state sviluppate 5 varianti di distribuzione, ciascuna con prospetto tecnico in HTML/SVG e tabella riepilogativa.
+Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione. Sono state sviluppate 5 varianti per il piano terra e 4 varianti per il primo piano, ciascuna con prospetto tecnico in HTML/SVG e tabella riepilogativa. È disponibile anche una pagina di confronto interattiva.
 
-## Parametri fissi della parete
+## Parametri fissi della parete — Piano Terra
 
 - **Lunghezza parete**: 13,47 m
 - **Altezza parete**: 2,70 m
@@ -19,13 +19,38 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
   - P3: da 10,08 m a 10,38 m
 - **Colonna frontale**: larga 76 cm, centrata rispetto alla parete (da 635,5 cm a 711,5 cm). Visualizzata nei prospetti con contorno tratteggiato e tratteggiatura diagonale a 45° (opacità 60%).
 
-## Vincoli generali
+## Parametri fissi della parete — Primo Piano
+
+- **Lunghezza parete**: 13,47 m (identica al piano terra)
+- **Altezza parete**: 2,70 m (identica al piano terra)
+- **2 pilastri** da 30 cm, simmetrici, che dividono la parete in 3 campate:
+  - Campata 1: 590 cm
+  - Campata 2: 107 cm (centrale)
+  - Campata 3: 590 cm
+- **Posizione pilastri** (bordo sinistro):
+  - P1: da 5,90 m a 6,20 m
+  - P2: da 7,27 m a 7,57 m
+- **Colonna frontale**: identica al piano terra (76 cm, centrata)
+- **4 stanze** servite dalle finestre:
+  - Bagno Nord (F1): 4,52 m²
+  - Camera Nord (F2): 17,30 m²
+  - Camera Sud (F3): 12,40 m²
+  - Bagno Sud (F4): 4,10 m²
+
+## Vincoli generali — Piano Terra
 
 - Distanza minima dai pilastri: **10 cm** (alcune varianti usano margini maggiori)
 - Distanza minima dal bordo parete: **73,5 cm** (in alcune varianti è 1 m, in altre questo vincolo è rilassato)
 - Le finestre non possono sovrapporsi ai pilastri
 
-## Rapporto Aeroilluminante (RAI)
+## Vincoli generali — Primo Piano
+
+- Le finestre non possono sovrapporsi ai pilastri
+- Le finestre F1/F4 (bagni) sono fisse in tutte le varianti
+- Le finestre F2/F3 (camere) variano in larghezza nelle diverse varianti
+- Il layout è simmetrico
+
+## Rapporto Aeroilluminante (RAI) — Piano Terra
 
 - Il RAI si calcola come: superficie vetrata utile / superficie pavimento
 - Superficie pavimento per stanza: **31,23 m²**
@@ -33,7 +58,19 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
 - **Altezza utile limitata a 190 cm da terra** a causa del tetto spiovente in aggetto (le parti di finestra sopra 190 cm non contano)
 - Minimo richiesto: **0,125**
 
-## Le 5 varianti
+## RAI — Primo Piano
+
+- Il RAI si calcola **per stanza** (4 stanze indipendenti)
+- **Regola altezza utile primo piano**:
+  - 0–60 cm da terra: non conteggiata
+  - 60–172 cm da terra: conteggiata al 100% (112 cm)
+  - 172–250 cm da terra: conteggiata al 33% (78 cm × ⅓ = 26 cm)
+- **Altezza utile effettiva**:
+  - Porte finestre da terra (h 250): 112 + 26 = **138 cm**
+  - Finestre con davanzale 100 cm (h 150): 72 + 26 = **98 cm**
+- Minimo richiesto: **0,125**
+
+## Le 5 varianti — Piano Terra
 
 ### 1. Attuale (di progetto) — `parete_attuale.html`
 - **4 porte finestre identiche**: 200 × 250 cm, tutte da terra
@@ -72,15 +109,41 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
 - **Posizioni**: F1 da 0,1475m, F2 da 3,5375m, F3 da 7,0325m, F4 da 10,5275m
 - **RAI: 0,257** (F1: 2,795×0,90 = 2,52 m², F2: 2,90×1,90 = 5,51 m², totale 8,03 m²)
 
+## Le 4 varianti — Primo Piano
+
+Tutte le varianti hanno F1/F4 fissi (60×150 cm, davanzale a 100 cm, a 65 cm dai bordi).
+Le varianti differiscono solo per la larghezza di F2/F3 (porte finestre da terra, a 250 cm dai bordi).
+
+### 1. P1-A — `primo_piano_a.html` (F2/F3 = 160 cm, minimo RAI)
+
+- **RAI**: Bagno Nord 0,130 / Camera Nord **0,128** / Camera Sud 0,178 / Bagno Sud 0,143
+
+### 2. P1-B — `primo_piano_b.html` (F2/F3 = 170 cm)
+
+- **RAI**: Bagno Nord 0,130 / Camera Nord 0,136 / Camera Sud 0,189 / Bagno Sud 0,143
+
+### 3. P1-C — `primo_piano_c.html` (F2/F3 = 180 cm)
+
+- **RAI**: Bagno Nord 0,130 / Camera Nord 0,144 / Camera Sud 0,200 / Bagno Sud 0,143
+
+### 4. P1-D — `primo_piano_d.html` (F2/F3 = 200 cm, base)
+
+- **RAI**: Bagno Nord 0,130 / Camera Nord 0,160 / Camera Sud 0,223 / Bagno Sud 0,143
+
 ## Struttura dei file
 
 ```
-index.html              ← Indice con link a tutte le varianti (con RAI in descrizione)
-parete_attuale.html     ← Attuale (di progetto)
-parete_regolare.html    ← Variante Regolare
-parete_variante_a.html  ← Variante A
-parete_variante_b.html  ← Variante B
-parete_variante_c.html  ← Variante C
+index.html              ← Indice con link a tutte le varianti PT + P1 + confronto
+parete_attuale.html     ← PT: Attuale (di progetto)
+parete_regolare.html    ← PT: Variante Regolare
+parete_variante_a.html  ← PT: Variante A
+parete_variante_b.html  ← PT: Variante B
+parete_variante_c.html  ← PT: Variante C
+primo_piano_a.html      ← P1: Variante P1-A (F2/F3 = 160 cm)
+primo_piano_b.html      ← P1: Variante P1-B (F2/F3 = 170 cm)
+primo_piano_c.html      ← P1: Variante P1-C (F2/F3 = 180 cm)
+primo_piano_d.html      ← P1: Variante P1-D (F2/F3 = 200 cm)
+confronto.html          ← Confronto interattivo PT + P1 con selettori
 ```
 
 ## Stile grafico dei prospetti
