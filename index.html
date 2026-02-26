@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prospetti Parete — Indice Varianti</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f5f2ed;
+    font-family: 'DM Sans', sans-serif;
+    color: #2a2520;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #8a7e72;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #b0a698;
+    margin-bottom: 48px;
+  }
+
+  .variants {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  a {
+    display: block;
+    padding: 20px 24px;
+    background: #fff;
+    border: 1px solid #e0d9d0;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #2a2520;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  a:hover {
+    border-color: #5a8199;
+    box-shadow: 0 2px 12px rgba(90,129,153,0.12);
+  }
+
+  .variant-title {
+    font-weight: 500;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+  }
+
+  .variant-desc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #8a7e72;
+  }
+</style>
+</head>
+<body>
+
+<h1>Prospetti Parete</h1>
+<div class="subtitle">13.470 mm × 2.700 mm — 5 varianti</div>
+
+<div class="variants">
+
+  <a href="./parete_attuale.html">
+    <div class="variant-title">Attuale (di progetto)</div>
+    <div class="variant-desc">4 porte finestre 200×250 — distanze 1m / 2m / 1m, bordo 73,5 cm — RAI 0,243</div>
+  </a>
+
+  <a href="./parete_regolare.html">
+    <div class="variant-title">Variante Regolare</div>
+    <div class="variant-desc">4 porte finestre 200×250 — centrate in campata, bordo ≥ 73,5 cm — RAI 0,243</div>
+  </a>
+
+  <a href="./parete_variante_a.html">
+    <div class="variant-title">Variante A — Porte finestre h 2.500</div>
+    <div class="variant-desc">F1/F4 190 cm, F2/F3 290 cm — tutte porte finestre da terra — RAI 0,292</div>
+  </a>
+
+  <a href="./parete_variante_b.html">
+    <div class="variant-title">Variante B — F1/F4 finestre h 1.500</div>
+    <div class="variant-desc">F1/F4 190×150 a 1 m da terra, F2/F3 290×250 — filo sup. allineato — RAI 0,231</div>
+  </a>
+
+  <a href="./parete_variante_c.html">
+    <div class="variant-title">Variante C — F1/F4 allargate, margine uniforme</div>
+    <div class="variant-desc">F1/F4 279,5×150, F2/F3 290×250 — margine 14,75 cm uniforme — RAI 0,257</div>
+  </a>
+
+</div>
+
+</body>
+</html>
