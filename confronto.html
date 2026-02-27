@@ -115,6 +115,15 @@
     border-radius: 2px;
     border: 1px solid rgba(0,0,0,0.1);
   }
+
+  .toggle-controls { display: flex; gap: 24px; margin-bottom: 24px; justify-content: center; }
+  .toggle-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #6b5e52; cursor: pointer; }
+  .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #d6cfc6; border-radius: 10px; transition: 0.2s; }
+  .toggle-slider:before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+  .toggle-switch input:checked + .toggle-slider { background: #6b5e52; }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); }
 </style>
 </head>
 <body>
@@ -141,6 +150,16 @@
       <option value="p1b">P1-B — F2/F3 = 170 cm</option>
       <option value="p1a">P1-A — F2/F3 = 160 cm (minimo RAI)</option>
     </select>
+  </div>
+  <div class="control-group" style="flex-direction:row;align-items:center;gap:20px;align-self:center;">
+    <label class="toggle-item">
+      <span class="toggle-switch"><input type="checkbox" id="toggle-pillars" checked><span class="toggle-slider"></span></span>
+      Pilastri
+    </label>
+    <label class="toggle-item">
+      <span class="toggle-switch"><input type="checkbox" id="toggle-column" checked><span class="toggle-slider"></span></span>
+      Colonna
+    </label>
   </div>
 </div>
 
@@ -294,12 +313,14 @@ function generateSVG(pillars, windows, label, id, roomNames) {
   });
 
   // Pillars
+  svg += `<g class="pillars-group">`;
   pillars.forEach(p => {
     const px = cx(p.pos), pw = cw(p.w);
     svg += `<rect x="${px}" y="36" width="${pw}" height="224" fill="#6b5e52" rx="1"/>`;
     svg += `<line x1="${px+2}" y1="36" x2="${px+pw-4}" y2="260" stroke="#7d6f62" stroke-width="0.5" opacity="0.3"/>`;
     svg += `<line x1="${px+7}" y1="36" x2="${px+pw-2}" y2="260" stroke="#7d6f62" stroke-width="0.5" opacity="0.3"/>`;
   });
+  svg += `</g>`;
 
   // Windows
   windows.forEach((win, i) => {
@@ -351,7 +372,9 @@ function generateSVG(pillars, windows, label, id, roomNames) {
 
   // Column (drawn after windows so it's visible on top)
   const colX = cx(COLUMN.pos), colW = cw(COLUMN.w);
+  svg += `<g class="column-group">`;
   svg += `<rect x="${colX}" y="36" width="${colW}" height="224" fill="url(#colH${uid})" stroke="#b0453a" stroke-width="1.5" stroke-dasharray="6,4" rx="1"/>`;
+  svg += `</g>`;
 
   // Label at bottom
   svg += `<text x="500" y="290" font-family="JetBrains Mono, monospace" font-size="8" fill="#9a8d7f" text-anchor="middle">${label}</text>`;
@@ -382,11 +405,26 @@ function render() {
     'pt',
     ['Cucina', 'Cucina', 'Soggiorno', 'Soggiorno']
   );
+
+  // Apply toggles after re-rendering
+  const showPillars = document.getElementById('toggle-pillars').checked;
+  const showColumn = document.getElementById('toggle-column').checked;
+  document.querySelectorAll('.pillars-group').forEach(g => g.style.display = showPillars ? '' : 'none');
+  document.querySelectorAll('.column-group').forEach(g => g.style.display = showColumn ? '' : 'none');
 }
 
 document.getElementById('sel-pt').addEventListener('change', render);
 document.getElementById('sel-p1').addEventListener('change', render);
 render();
+
+function applyToggles() {
+  const showPillars = document.getElementById('toggle-pillars').checked;
+  const showColumn = document.getElementById('toggle-column').checked;
+  document.querySelectorAll('.pillars-group').forEach(g => g.style.display = showPillars ? '' : 'none');
+  document.querySelectorAll('.column-group').forEach(g => g.style.display = showColumn ? '' : 'none');
+}
+document.getElementById('toggle-pillars').addEventListener('change', applyToggles);
+document.getElementById('toggle-column').addEventListener('change', applyToggles);
 </script>
 
 </body>

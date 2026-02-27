@@ -75,12 +75,32 @@
   th { text-align: left; font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #8a7e72; padding: 8px 12px; border-bottom: 2px solid #d6cfc6; }
   td { padding: 8px 12px; border-bottom: 1px solid #e8e2d9; color: #4a4038; }
   tr:last-child td { border-bottom: none; }
+
+  .toggle-controls { display: flex; gap: 24px; margin-bottom: 24px; justify-content: center; }
+  .toggle-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #6b5e52; cursor: pointer; }
+  .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #d6cfc6; border-radius: 10px; transition: 0.2s; }
+  .toggle-slider:before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+  .toggle-switch input:checked + .toggle-slider { background: #6b5e52; }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); }
 </style>
 </head>
 <body>
 
 <h1>Prospetto Parete — Attuale (di progetto)</h1>
 <div class="subtitle">13.470 mm × 2.700 mm — 4 porte finestre 2.000 × 2.500</div>
+
+<div class="toggle-controls">
+  <label class="toggle-item">
+    <span class="toggle-switch"><input type="checkbox" id="toggle-pillars" checked><span class="toggle-slider"></span></span>
+    Pilastri
+  </label>
+  <label class="toggle-item">
+    <span class="toggle-switch"><input type="checkbox" id="toggle-column" checked><span class="toggle-slider"></span></span>
+    Colonna
+  </label>
+</div>
 
 <div class="drawing-container">
 <!--
@@ -116,6 +136,7 @@
   <line x1="930" y1="256" x2="922" y2="264" class="ground-hatch"/>
   <line x1="945" y1="256" x2="937" y2="264" class="ground-hatch"/>
 
+  <g id="pillars-group">
   <!-- ============ PILLARS ============ -->
   <rect x="267.3" y="36" width="19.16" height="224" class="pillar-fill" rx="1"/>
   <line x1="269" y1="36" x2="284" y2="260" class="pillar-pattern"/>
@@ -134,6 +155,7 @@
   <line x1="720" y1="36" x2="728" y2="260" class="pillar-pattern"/>
   <line x1="725" y1="36" x2="732" y2="260" class="pillar-pattern"/>
   <text x="723.16" y="148" class="pillar-label">30</text>
+  </g>
 
   <!-- ============ F1: 73.5 to 273.5 cm ============ -->
   <rect x="116.93" y="40" width="127.7" height="16" class="architrave-zone"/>
@@ -186,8 +208,10 @@
       <line x1="0" y1="0" x2="0" y2="6" stroke="#b0453a" stroke-width="0.4" opacity="1"/>
     </pattern>
   </defs>
+  <g id="column-group">
   <rect x="475.77" y="36" width="48.52" height="224" fill="url(#colHatch)" stroke="#b0453a" stroke-width="1.5" stroke-dasharray="6,4" rx="1"/>
   <text x="500.03" y="270" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#b0453a" text-anchor="middle">colonna 76 cm</text>
+  </g>
 
   <!-- ============ VERTICAL DIMENSIONS (left side) ============ -->
   <!-- Total wall -->
@@ -426,5 +450,13 @@
   <p style="font-family:JetBrains Mono,monospace;font-size:0.7rem;color:#9a8d7f;margin-top:8px;text-align:center;">* Altezza utile limitata a 190 cm da terra (aggetto tetto)</p>
 </div>
 <div style="text-align:center;margin:40px 0 20px;"><a href="./index.html" style="font-family:DM Sans,sans-serif;font-size:0.85rem;color:#5a8199;text-decoration:none;border:1px solid #d6cfc6;padding:10px 24px;border-radius:4px;transition:border-color 0.2s;">← Torna al menu</a></div>
+<script>
+document.getElementById('toggle-pillars').addEventListener('change', function() {
+  document.getElementById('pillars-group').style.display = this.checked ? '' : 'none';
+});
+document.getElementById('toggle-column').addEventListener('change', function() {
+  document.getElementById('column-group').style.display = this.checked ? '' : 'none';
+});
+</script>
 </body>
 </html>
