@@ -109,6 +109,23 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
 - **Posizioni**: F1 da 0,1475m, F2 da 3,5375m, F3 da 7,0325m, F4 da 10,5275m
 - **RAI: 0,257** (F1: 2,795×0,90 = 2,52 m², F2: 2,90×1,90 = 5,51 m², totale 8,03 m²)
 
+### 6. Variante D — `parete_variante_d.html`
+- **F1/F4**: 160 × 150 cm, **finestre con davanzale a 1 m** da terra
+- **F2/F3**: 290 × 250 cm (porte finestre da terra)
+- F1/F4 spostate verso il centro della campata, con margine minimo 1 m dal bordo parete
+- Filo superiore allineato a 2,50 m
+- **Posizioni**: F1 da 1,000m, F2 da 3,5375m, F3 da 7,0325m, F4 da 10,870m
+- **RAI: 0,223** (F1: 1,60×0,90 = 1,44 m², F2: 2,90×1,90 = 5,51 m², totale 6,95 m²)
+
+### 7. Variante E — `parete_variante_e.html`
+- **F1/F4**: 174 × 150 cm, **finestre con davanzale a 1 m** da terra
+- **F2/F3**: 290 × 250 cm (porte finestre da terra)
+- Larghezza F1/F4 calcolata con stesso rapporto L/H di F2/F3 (290/250 = 1,16 → 150×1,16 = 174)
+- F1/F4 con margine minimo 1 m dal bordo parete
+- Filo superiore allineato a 2,50 m
+- **Posizioni**: F1 da 1,000m, F2 da 3,5375m, F3 da 7,0325m, F4 da 10,730m
+- **RAI: 0,227** (F1: 1,74×0,90 = 1,57 m², F2: 2,90×1,90 = 5,51 m², totale 7,08 m²)
+
 ## Le 4 varianti — Primo Piano
 
 Tutte le varianti hanno F1/F4 fissi (60×150 cm, davanzale a 100 cm, a 65 cm dai bordi).
@@ -118,9 +135,9 @@ Le varianti differiscono solo per la larghezza di F2/F3 (porte finestre da terra
 
 - **RAI**: Bagno Nord 0,130 / Camera Nord **0,128** / Camera Sud 0,178 / Bagno Sud 0,143
 
-### 2. P1-B — `primo_piano_b.html` (F2/F3 = 170 cm)
+### 2. P1-B — `primo_piano_b.html` (F2/F3 = 174 cm)
 
-- **RAI**: Bagno Nord 0,130 / Camera Nord 0,136 / Camera Sud 0,189 / Bagno Sud 0,143
+- **RAI**: Bagno Nord 0,130 / Camera Nord 0,139 / Camera Sud 0,194 / Bagno Sud 0,143
 
 ### 3. P1-C — `primo_piano_c.html` (F2/F3 = 180 cm)
 
@@ -139,6 +156,8 @@ parete_regolare.html    ← PT: Variante Regolare
 parete_variante_a.html  ← PT: Variante A
 parete_variante_b.html  ← PT: Variante B
 parete_variante_c.html  ← PT: Variante C
+parete_variante_d.html  ← PT: Variante D
+parete_variante_e.html  ← PT: Variante E
 primo_piano_a.html      ← P1: Variante P1-A (F2/F3 = 160 cm)
 primo_piano_b.html      ← P1: Variante P1-B (F2/F3 = 170 cm)
 primo_piano_c.html      ← P1: Variante P1-C (F2/F3 = 180 cm)

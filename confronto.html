@@ -140,6 +140,8 @@
       <option value="varA">Variante A — F1/F4 190, F2/F3 290</option>
       <option value="varB">Variante B — F1/F4 190×150, F2/F3 290×250</option>
       <option value="varC">Variante C — F1/F4 279.5×150, F2/F3 290×250</option>
+      <option value="varD">Variante D — F1/F4 160×150, F2/F3 290×250</option>
+      <option value="varE">Variante E — F1/F4 174×150, F2/F3 290×250</option>
     </select>
   </div>
   <div class="control-group">
@@ -147,7 +149,7 @@
     <select id="sel-p1">
       <option value="p1d" selected>P1-D — F2/F3 = 200 cm (base)</option>
       <option value="p1c">P1-C — F2/F3 = 180 cm</option>
-      <option value="p1b">P1-B — F2/F3 = 170 cm</option>
+      <option value="p1b">P1-B — F2/F3 = 174 cm</option>
       <option value="p1a">P1-A — F2/F3 = 160 cm (minimo RAI)</option>
     </select>
   </div>
@@ -268,13 +270,31 @@ const PT_VARIANTS = {
       { x: 703.25, w: 290, h: 250, sill: 0 },
       { x: 1052.75, w: 279.5, h: 150, sill: 100 }
     ]
+  },
+  varD: {
+    label: 'Variante D',
+    windows: [
+      { x: 100, w: 160, h: 150, sill: 100 },
+      { x: 353.75, w: 290, h: 250, sill: 0 },
+      { x: 703.25, w: 290, h: 250, sill: 0 },
+      { x: 1087, w: 160, h: 150, sill: 100 }
+    ]
+  },
+  varE: {
+    label: 'Variante E',
+    windows: [
+      { x: 100, w: 174, h: 150, sill: 100 },
+      { x: 353.75, w: 290, h: 250, sill: 0 },
+      { x: 703.25, w: 290, h: 250, sill: 0 },
+      { x: 1073, w: 174, h: 150, sill: 100 }
+    ]
   }
 };
 
 // Primo piano variants
 const P1_VARIANTS = {
   p1a: { label: 'P1-A', f2w: 160 },
-  p1b: { label: 'P1-B', f2w: 170 },
+  p1b: { label: 'P1-B', f2w: 174 },
   p1c: { label: 'P1-C', f2w: 180 },
   p1d: { label: 'P1-D', f2w: 200 }
 };
