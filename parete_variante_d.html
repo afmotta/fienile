@@ -101,6 +101,10 @@
     <span class="toggle-switch"><input type="checkbox" id="toggle-column" checked><span class="toggle-slider"></span></span>
     Colonna
   </label>
+  <label class="toggle-item">
+    <span class="toggle-switch"><input type="checkbox" id="toggle-kitchen" checked><span class="toggle-slider"></span></span>
+    Cucina
+  </label>
 </div>
 
 <div class="drawing-container">
@@ -225,10 +229,21 @@
     <pattern id="colHatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
       <line x1="0" y1="0" x2="0" y2="6" stroke="#b0453a" stroke-width="0.4" opacity="0.6"/>
     </pattern>
+    <pattern id="kitchenHatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#6b5e52" stroke-width="0.4" opacity="0.6"/>
+    </pattern>
   </defs>
   <g id="column-group">
   <rect x="475.77" y="36" width="48.52" height="224" fill="url(#colHatch)" stroke="#b0453a" stroke-width="1.5" stroke-dasharray="6,4" rx="1"/>
   <text x="500.03" y="270" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#b0453a" text-anchor="middle">colonna 76 cm</text>
+  </g>
+
+  <!-- ============ KITCHEN (banco + isola) ============ -->
+  <g id="kitchen-group">
+  <rect x="70" y="184" width="38.31" height="72" fill="url(#kitchenHatch)" stroke="#6b5e52" stroke-width="1.5" stroke-dasharray="6,4" rx="1"/>
+  <text x="89.16" y="220" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#6b5e52" text-anchor="middle" dominant-baseline="middle">banco</text>
+  <rect x="184.93" y="184" width="63.85" height="72" fill="url(#kitchenHatch)" stroke="#6b5e52" stroke-width="1.5" stroke-dasharray="6,4" rx="1"/>
+  <text x="216.86" y="220" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#6b5e52" text-anchor="middle" dominant-baseline="middle">isola</text>
   </g>
 
   <!-- ============ VERTICAL DIMENSIONS (left side) ============ -->
@@ -392,6 +407,10 @@
     Colonna frontale (76 cm)
   </div>
   <div class="legend-item">
+    <svg width="20" height="12"><rect x="1" y="1" width="18" height="10" fill="none" stroke="#6b5e52" stroke-width="1.2" stroke-dasharray="3,2" rx="1"/></svg>
+    Cucina (banco + isola)
+  </div>
+  <div class="legend-item">
     <svg width="20" height="12"><line x1="0" y1="6" x2="20" y2="6" stroke="#b0453a" stroke-width="0.8" stroke-dasharray="4,2" opacity="0.5"/></svg>
     Filo superiore allineato
   </div>
@@ -502,6 +521,9 @@ document.getElementById('toggle-pillars').addEventListener('change', function() 
 });
 document.getElementById('toggle-column').addEventListener('change', function() {
   document.getElementById('column-group').style.display = this.checked ? '' : 'none';
+});
+document.getElementById('toggle-kitchen').addEventListener('change', function() {
+  document.getElementById('kitchen-group').style.display = this.checked ? '' : 'none';
 });
 </script>
 </body>

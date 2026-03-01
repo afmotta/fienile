@@ -122,9 +122,18 @@ Altezza utile effettiva:
 
 ## Toggle visibilita'
 
-Ogni variante ha toggle per pilastri e colonna. I gruppi SVG hanno id:
+Ogni variante ha toggle per pilastri, colonna e cucina. I gruppi SVG hanno id:
 - `id="pillars-group"` — contiene tutti i pilastri
 - `id="column-group"` — contiene la colonna frontale
+- `id="kitchen-group"` — contiene banco e isola cucina (solo PT)
+
+## Cucina (solo Piano Terra)
+
+Elementi cucina visualizzati con contorno tratteggiato `#6b5e52` e pattern diagonale 45°:
+- **Banco**: 60 cm lungo parete × 90 cm alto, attaccato al bordo sinistro (pos. 0–60 cm)
+- **Isola**: 100 cm lungo parete × 90 cm alto, a 120 cm dal banco (pos. 180–280 cm)
+- SVG: banco x=70 w=38.31, isola x=184.93 w=63.85, entrambi y=184 h=72
+- Pattern: `id="kitchenHatch"` (in confronto.html: `id="kitH${uid}"`)
 
 ## Come creare una nuova variante Piano Terra
 

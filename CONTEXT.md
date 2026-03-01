@@ -176,6 +176,7 @@ Tutti i prospetti HTML condividono lo stesso stile:
 - **Architrave**: `#ddd5cb`, 200 mm sopra le finestre, con linea tratteggiata di separazione
 - **Davanzale** (var. B e C): linea `#6b5e52` spessa
 - **Colonna frontale**: contorno tratteggiato `#b0453a` con pattern diagonale 45° (opacità 60%), etichetta sotto
+- **Cucina** (solo PT): banco (60×90 cm, bordo sinistro) e isola (100×90 cm, a 120 cm dal banco), contorno tratteggiato `#6b5e52` con pattern diagonale 45°, toggle per attivare/disattivare
 - **Quote rosse** (`#b0453a`): dimensioni principali (campate, larghezze finestre, totale parete)
 - **Quote chiare** (`#c9a07a`, tratteggiato): margini e gap secondari
 - **Quote verticali**: altezza parete (sinistra), altezza finestre, architrave, davanzale (destra dove applicabile)
