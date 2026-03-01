@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playground Finestre — Piano Terra + Primo Piano</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f5f2ed;
+    font-family: 'DM Sans', sans-serif;
+    color: #2a2520;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #8a7e72;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #b0a698;
+    margin-bottom: 32px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .control-group > label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #8a7e72;
+  }
+
+  select {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    border: 1px solid #d6cfc6;
+    border-radius: 4px;
+    background: #fff;
+    color: #2a2520;
+    cursor: pointer;
+    min-width: 280px;
+  }
+
+  select:focus { outline: none; border-color: #5a8199; }
+
+  .toggle-controls { display: flex; gap: 24px; margin-bottom: 24px; justify-content: center; }
+  .toggle-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #6b5e52; cursor: pointer; }
+  .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #d6cfc6; border-radius: 10px; transition: 0.2s; }
+  .toggle-slider:before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+  .toggle-switch input:checked + .toggle-slider { background: #6b5e52; }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+  .inputs-container {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .floor-inputs h3 {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #5a8199;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .floor-inputs table {
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+  }
+
+  .floor-inputs th {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8a7e72;
+    padding: 4px 6px;
+    border-bottom: 2px solid #d6cfc6;
+    text-align: center;
+  }
+
+  .floor-inputs td {
+    padding: 4px 4px;
+    border-bottom: 1px solid #e8e2d9;
+    text-align: center;
+  }
+
+  .floor-inputs td:first-child {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    color: #5a8199;
+    font-size: 0.8rem;
+  }
+
+  .floor-inputs input[type="number"] {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    width: 68px;
+    padding: 4px 6px;
+    border: 1px solid #d6cfc6;
+    border-radius: 3px;
+    background: #fff;
+    color: #2a2520;
+    text-align: right;
+  }
+
+  .floor-inputs input[type="number"]:focus {
+    outline: none;
+    border-color: #5a8199;
+    box-shadow: 0 0 0 2px rgba(90,129,153,0.15);
+  }
+
+  .drawing-container {
+    width: 100%;
+    max-width: 1100px;
+    overflow-x: auto;
+  }
+
+  svg { display: block; margin: 0 auto; }
+
+  .legend {
+    display: flex;
+    gap: 28px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: #6b5e52;
+  }
+  .legend-swatch {
+    width: 20px;
+    height: 12px;
+    border-radius: 2px;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+</style>
+</head>
+<body>
+
+<h1>Playground Finestre</h1>
+<div class="subtitle">Controlli interattivi — Piano Terra + Primo Piano</div>
+
+<div class="controls">
+  <div class="control-group">
+    <label>Preset Piano Terra</label>
+    <select id="preset-pt">
+      <option value="">— Personalizzato —</option>
+      <option value="attuale" selected>Attuale — 4×200, gap 1m/2m/1m</option>
+      <option value="regolare">Regolare — 4×200, centrate</option>
+      <option value="varA">Variante A — F1/F4 190, F2/F3 290</option>
+      <option value="varB">Variante B — F1/F4 190×150, F2/F3 290×250</option>
+      <option value="varC">Variante C — F1/F4 279.5×150, F2/F3 290×250</option>
+      <option value="varD">Variante D — F1/F4 160×150, F2/F3 290×250</option>
+      <option value="varE">Variante E — F1/F4 174×150, F2/F3 290×250</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>Preset Primo Piano</label>
+    <select id="preset-p1">
+      <option value="">— Personalizzato —</option>
+      <option value="p1d" selected>P1-D — F2/F3 = 200 cm (base)</option>
+      <option value="p1c">P1-C — F2/F3 = 180 cm</option>
+      <option value="p1b">P1-B — F2/F3 = 174 cm</option>
+      <option value="p1a">P1-A — F2/F3 = 160 cm (minimo RAI)</option>
+    </select>
+  </div>
+</div>
+
+<div class="toggle-controls">
+  <label class="toggle-item">
+    <span class="toggle-switch"><input type="checkbox" id="toggle-pillars" checked><span class="toggle-slider"></span></span>
+    Pilastri
+  </label>
+  <label class="toggle-item">
+    <span class="toggle-switch"><input type="checkbox" id="toggle-column" checked><span class="toggle-slider"></span></span>
+    Colonna
+  </label>
+  <label class="toggle-item">
+    <span class="toggle-switch"><input type="checkbox" id="toggle-kitchen" checked><span class="toggle-slider"></span></span>
+    Cucina
+  </label>
+</div>
+
+<div class="inputs-container">
+  <div class="floor-inputs">
+    <h3>Piano Terra</h3>
+    <table>
+      <thead>
+        <tr><th></th><th>Pos. X</th><th>Largh.</th><th>Alt.</th><th>Dav.</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>F1</td><td><input type="number" id="pt-f1-x" step="1"></td><td><input type="number" id="pt-f1-w" step="1"></td><td><input type="number" id="pt-f1-h" step="1"></td><td><input type="number" id="pt-f1-s" step="1"></td></tr>
+        <tr><td>F2</td><td><input type="number" id="pt-f2-x" step="1"></td><td><input type="number" id="pt-f2-w" step="1"></td><td><input type="number" id="pt-f2-h" step="1"></td><td><input type="number" id="pt-f2-s" step="1"></td></tr>
+        <tr><td>F3</td><td><input type="number" id="pt-f3-x" step="1"></td><td><input type="number" id="pt-f3-w" step="1"></td><td><input type="number" id="pt-f3-h" step="1"></td><td><input type="number" id="pt-f3-s" step="1"></td></tr>
+        <tr><td>F4</td><td><input type="number" id="pt-f4-x" step="1"></td><td><input type="number" id="pt-f4-w" step="1"></td><td><input type="number" id="pt-f4-h" step="1"></td><td><input type="number" id="pt-f4-s" step="1"></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="floor-inputs">
+    <h3>Primo Piano</h3>
+    <table>
+      <thead>
+        <tr><th></th><th>Pos. X</th><th>Largh.</th><th>Alt.</th><th>Dav.</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>F1</td><td><input type="number" id="p1-f1-x" step="1"></td><td><input type="number" id="p1-f1-w" step="1"></td><td><input type="number" id="p1-f1-h" step="1"></td><td><input type="number" id="p1-f1-s" step="1"></td></tr>
+        <tr><td>F2</td><td><input type="number" id="p1-f2-x" step="1"></td><td><input type="number" id="p1-f2-w" step="1"></td><td><input type="number" id="p1-f2-h" step="1"></td><td><input type="number" id="p1-f2-s" step="1"></td></tr>
+        <tr><td>F3</td><td><input type="number" id="p1-f3-x" step="1"></td><td><input type="number" id="p1-f3-w" step="1"></td><td><input type="number" id="p1-f3-h" step="1"></td><td><input type="number" id="p1-f3-s" step="1"></td></tr>
+        <tr><td>F4</td><td><input type="number" id="p1-f4-x" step="1"></td><td><input type="number" id="p1-f4-w" step="1"></td><td><input type="number" id="p1-f4-h" step="1"></td><td><input type="number" id="p1-f4-s" step="1"></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="drawing-container">
+  <div id="svg-combined"></div>
+</div>
+
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#e8e2d9; border-color:#2a2520;"></div>
+    Muratura
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#6b5e52;"></div>
+    Pilastri (30 cm)
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#c8dce8; border-color:#5a8199;"></div>
+    Finestre / Porte finestre
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#ddd5cb;"></div>
+    Architrave (h 200)
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#d6cfc6; border-color:#2a2520;"></div>
+    Soletta (50 cm)
+  </div>
+  <div class="legend-item">
+    <svg width="20" height="12"><rect x="1" y="1" width="18" height="10" fill="none" stroke="#b0453a" stroke-width="1.2" stroke-dasharray="3,2" rx="1"/></svg>
+    Colonna frontale (76 cm)
+  </div>
+  <div class="legend-item">
+    <svg width="20" height="12"><rect x="1" y="1" width="18" height="10" fill="none" stroke="#6b5e52" stroke-width="1.2" stroke-dasharray="3,2" rx="1"/></svg>
+    Cucina (banco + isola)
+  </div>
+</div>
+
+<div style="text-align:center;margin:40px 0 20px;"><a href="./index.html" style="font-family:DM Sans,sans-serif;font-size:0.85rem;color:#5a8199;text-decoration:none;border:1px solid #d6cfc6;padding:10px 24px;border-radius:4px;transition:border-color 0.2s;">← Torna al menu</a></div>
+
+<script>
+// === CONSTANTS ===
+const XOFF = 70, SCALE_H = 0.6385, SCALE_V = 0.8;
+const WALL_W = 860;
+
+// Combined layout Y coordinates
+const P1_WALL_TOP = 30, P1_WALL_BOT = 246;   // P1 wall: 216px
+const SLAB_TOP = 246, SLAB_BOT = 286;         // Slab: 40px (50cm)
+const PT_WALL_TOP = 286, PT_WALL_BOT = 502;   // PT wall: 216px
+const WALL_H = 216;
+
+function cx(cm) { return XOFF + cm * SCALE_H; }
+function cw(cm) { return cm * SCALE_H; }
+
+// Pillars
+const PT_PILLARS = [
+  { pos: 309, w: 30 },
+  { pos: 658.5, w: 30 },
+  { pos: 1008, w: 30 }
+];
+const P1_PILLARS = [
+  { pos: 590, w: 30 },
+  { pos: 727, w: 30 }
+];
+
+// Column
+const COLUMN = { pos: 635.5, w: 76 };
+
+// Kitchen
+const KITCHEN = [
+  { pos: 0, w: 60 },    // banco
+  { pos: 180, w: 100 }   // isola
+];
+const KITCHEN_LABELS = ['banco', 'isola'];
+const KITCHEN_H = 90; // cm
+
+// === VARIANT PRESETS ===
+const PT_PRESETS = {
+  attuale: [
+    { x: 73.5, w: 200, h: 250, sill: 0 },
+    { x: 373.5, w: 200, h: 250, sill: 0 },
+    { x: 773.5, w: 200, h: 250, sill: 0 },
+    { x: 1073.5, w: 200, h: 250, sill: 0 }
+  ],
+  regolare: [
+    { x: 73.5, w: 200, h: 250, sill: 0 },
+    { x: 398.75, w: 200, h: 250, sill: 0 },
+    { x: 748.25, w: 200, h: 250, sill: 0 },
+    { x: 1073.5, w: 200, h: 250, sill: 0 }
+  ],
+  varA: [
+    { x: 104.5, w: 190, h: 250, sill: 0 },
+    { x: 353.75, w: 290, h: 250, sill: 0 },
+    { x: 703.25, w: 290, h: 250, sill: 0 },
+    { x: 1052.5, w: 190, h: 250, sill: 0 }
+  ],
+  varB: [
+    { x: 104.5, w: 190, h: 150, sill: 100 },
+    { x: 353.75, w: 290, h: 250, sill: 0 },
+    { x: 703.25, w: 290, h: 250, sill: 0 },
+    { x: 1052.5, w: 190, h: 150, sill: 100 }
+  ],
+  varC: [
+    { x: 14.75, w: 279.5, h: 150, sill: 100 },
+    { x: 353.75, w: 290, h: 250, sill: 0 },
+    { x: 703.25, w: 290, h: 250, sill: 0 },
+    { x: 1052.75, w: 279.5, h: 150, sill: 100 }
+  ],
+  varD: [
+    { x: 100, w: 160, h: 150, sill: 100 },
+    { x: 353.75, w: 290, h: 250, sill: 0 },
+    { x: 703.25, w: 290, h: 250, sill: 0 },
+    { x: 1087, w: 160, h: 150, sill: 100 }
+  ],
+  varE: [
+    { x: 100, w: 174, h: 150, sill: 100 },
+    { x: 353.75, w: 290, h: 250, sill: 0 },
+    { x: 703.25, w: 290, h: 250, sill: 0 },
+    { x: 1073, w: 174, h: 150, sill: 100 }
+  ]
+};
+
+function getP1Preset(f2w) {
+  const f3x = 1347 - 250 - f2w;
+  return [
+    { x: 65, w: 60, h: 150, sill: 100 },
+    { x: 250, w: f2w, h: 250, sill: 0 },
+    { x: f3x, w: f2w, h: 250, sill: 0 },
+    { x: 1222, w: 60, h: 150, sill: 100 }
+  ];
+}
+
+const P1_PRESETS = {
+  p1a: getP1Preset(160),
+  p1b: getP1Preset(174),
+  p1c: getP1Preset(180),
+  p1d: getP1Preset(200)
+};
+
+// === INPUT HELPERS ===
+function getInput(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function setInput(id, val) { document.getElementById(id).value = val; }
+
+function readWindows(prefix) {
+  const wins = [];
+  for (let i = 1; i <= 4; i++) {
+    wins.push({
+      x: getInput(`${prefix}-f${i}-x`),
+      w: getInput(`${prefix}-f${i}-w`),
+      h: getInput(`${prefix}-f${i}-h`),
+      sill: getInput(`${prefix}-f${i}-s`)
+    });
+  }
+  return wins;
+}
+
+function writeWindows(prefix, wins) {
+  wins.forEach((win, i) => {
+    setInput(`${prefix}-f${i+1}-x`, win.x);
+    setInput(`${prefix}-f${i+1}-w`, win.w);
+    setInput(`${prefix}-f${i+1}-h`, win.h);
+    setInput(`${prefix}-f${i+1}-s`, win.sill);
+  });
+}
+
+// === SVG GENERATION ===
+function renderFloorWindows(windows, wallBot, floorLabel) {
+  let svg = '';
+  windows.forEach((win, i) => {
+    const wx = cx(win.x), ww = cw(win.w);
+    const sillPx = win.sill * SCALE_V;
+    const hPx = win.h * SCALE_V;
+    const wy = wallBot - sillPx - hPx;
+    const wyBot = wallBot - sillPx;
+
+    // Architrave
+    svg += `<rect x="${wx}" y="${wy - 16}" width="${ww}" height="16" fill="#ddd5cb"/>`;
+
+    // Window fill + stroke
+    svg += `<rect x="${wx}" y="${wy}" width="${ww}" height="${hPx}" fill="#c8dce8"/>`;
+    svg += `<rect x="${wx}" y="${wy}" width="${ww}" height="${hPx}" stroke="#5a8199" stroke-width="1.2" fill="none"/>`;
+
+    // Mullions
+    if (win.w >= 150) {
+      const third = ww / 3;
+      svg += `<line x1="${wx+third}" y1="${wy}" x2="${wx+third}" y2="${wyBot}" stroke="#5a8199" stroke-width="0.8"/>`;
+      svg += `<line x1="${wx+2*third}" y1="${wy}" x2="${wx+2*third}" y2="${wyBot}" stroke="#5a8199" stroke-width="0.8"/>`;
+    }
+
+    // Transoms
+    if (win.h >= 200) {
+      const seg = hPx / 3;
+      svg += `<line x1="${wx}" y1="${wy+seg}" x2="${wx+ww}" y2="${wy+seg}" stroke="#5a8199" stroke-width="0.8"/>`;
+      svg += `<line x1="${wx}" y1="${wy+2*seg}" x2="${wx+ww}" y2="${wy+2*seg}" stroke="#5a8199" stroke-width="0.8"/>`;
+    } else {
+      const mid = hPx / 2;
+      svg += `<line x1="${wx}" y1="${wy+mid}" x2="${wx+ww}" y2="${wy+mid}" stroke="#5a8199" stroke-width="0.8"/>`;
+    }
+
+    // Architrave dashed line
+    svg += `<line x1="${wx}" y1="${wy}" x2="${wx+ww}" y2="${wy}" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>`;
+
+    // Sill line
+    if (win.sill > 0) {
+      svg += `<line x1="${wx-3}" y1="${wyBot}" x2="${wx+ww+3}" y2="${wyBot}" stroke="#6b5e52" stroke-width="1.2"/>`;
+    }
+
+    // Label
+    const center = wx + ww / 2;
+    svg += `<text x="${center}" y="${wy - 22}" font-family="DM Sans, sans-serif" font-size="9" fill="#5a8199" text-anchor="middle" font-weight="500">F${i+1} — ${win.w}×${win.h}</text>`;
+  });
+  return svg;
+}
+
+function generateCombinedSVG(ptWindows, p1Windows) {
+  let svg = `<svg viewBox="0 0 980 590" xmlns="http://www.w3.org/2000/svg" width="980">`;
+
+  // Defs
+  svg += `<defs>
+    <pattern id="colHatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#b0453a" stroke-width="0.4" opacity="0.6"/>
+    </pattern>
+    <pattern id="kitHatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#6b5e52" stroke-width="0.4" opacity="0.6"/>
+    </pattern>
+  </defs>`;
+
+  // === P1 WALL ===
+  svg += `<rect x="${XOFF}" y="${P1_WALL_TOP}" width="${WALL_W}" height="${WALL_H}" fill="#e8e2d9" rx="1"/>`;
+  svg += `<rect x="${XOFF}" y="${P1_WALL_TOP}" width="${WALL_W}" height="${WALL_H}" stroke="#2a2520" stroke-width="1.5" fill="none" rx="1"/>`;
+
+  // === SLAB ===
+  svg += `<rect x="${XOFF}" y="${SLAB_TOP}" width="${WALL_W}" height="40" fill="#d6cfc6" rx="1"/>`;
+  svg += `<rect x="${XOFF}" y="${SLAB_TOP}" width="${WALL_W}" height="40" stroke="#2a2520" stroke-width="1.5" fill="none" rx="1"/>`;
+
+  // === PT WALL ===
+  svg += `<rect x="${XOFF}" y="${PT_WALL_TOP}" width="${WALL_W}" height="${WALL_H}" fill="#e8e2d9" rx="1"/>`;
+  svg += `<rect x="${XOFF}" y="${PT_WALL_TOP}" width="${WALL_W}" height="${WALL_H}" stroke="#2a2520" stroke-width="1.5" fill="none" rx="1"/>`;
+
+  // === GROUND LINE + HATCH ===
+  svg += `<line x1="55" y1="${PT_WALL_BOT}" x2="945" y2="${PT_WALL_BOT}" stroke="#8a7e72" stroke-width="2"/>`;
+  [60,75,90,105,900,915,930,945].forEach(x => {
+    svg += `<line x1="${x}" y1="${PT_WALL_BOT}" x2="${x-8}" y2="${PT_WALL_BOT+8}" stroke="#b0a698" stroke-width="0.6"/>`;
+  });
+
+  // === PILLARS ===
+  svg += `<g class="pillars-group">`;
+  // P1 pillars
+  P1_PILLARS.forEach(p => {
+    const px = cx(p.pos), pw = cw(p.w);
+    svg += `<rect x="${px}" y="${P1_WALL_TOP - 4}" width="${pw}" height="${WALL_H + 8}" fill="#6b5e52" rx="1"/>`;
+    svg += `<line x1="${px+2}" y1="${P1_WALL_TOP - 4}" x2="${px+pw-4}" y2="${P1_WALL_BOT + 4}" stroke="#7d6f62" stroke-width="0.5" opacity="0.3"/>`;
+    svg += `<line x1="${px+7}" y1="${P1_WALL_TOP - 4}" x2="${px+pw-2}" y2="${P1_WALL_BOT + 4}" stroke="#7d6f62" stroke-width="0.5" opacity="0.3"/>`;
+  });
+  // PT pillars
+  PT_PILLARS.forEach(p => {
+    const px = cx(p.pos), pw = cw(p.w);
+    svg += `<rect x="${px}" y="${PT_WALL_TOP - 4}" width="${pw}" height="${WALL_H + 8}" fill="#6b5e52" rx="1"/>`;
+    svg += `<line x1="${px+2}" y1="${PT_WALL_TOP - 4}" x2="${px+pw-4}" y2="${PT_WALL_BOT + 4}" stroke="#7d6f62" stroke-width="0.5" opacity="0.3"/>`;
+    svg += `<line x1="${px+7}" y1="${PT_WALL_TOP - 4}" x2="${px+pw-2}" y2="${PT_WALL_BOT + 4}" stroke="#7d6f62" stroke-width="0.5" opacity="0.3"/>`;
+  });
+  svg += `</g>`;
+
+  // === WINDOWS ===
+  // P1 windows
+  svg += renderFloorWindows(p1Windows, P1_WALL_BOT, 'P1');
+  // PT windows
+  svg += renderFloorWindows(ptWindows, PT_WALL_BOT, 'PT');
+
+  // === COLUMN ===
+  const colX = cx(COLUMN.pos), colW = cw(COLUMN.w);
+  svg += `<g class="column-group">`;
+  svg += `<rect x="${colX}" y="${P1_WALL_TOP - 4}" width="${colW}" height="${PT_WALL_BOT - P1_WALL_TOP + 8}" fill="url(#colHatch)" stroke="#b0453a" stroke-width="1.5" stroke-dasharray="6,4" rx="1"/>`;
+  svg += `</g>`;
+
+  // === KITCHEN (PT only) ===
+  const kitH = KITCHEN_H * SCALE_V;
+  const kitY = PT_WALL_BOT - kitH;
+  svg += `<g class="kitchen-group">`;
+  KITCHEN.forEach((k, i) => {
+    const kx = cx(k.pos), kw = cw(k.w);
+    svg += `<rect x="${kx}" y="${kitY}" width="${kw}" height="${kitH}" fill="url(#kitHatch)" stroke="#6b5e52" stroke-width="1.5" stroke-dasharray="6,4" rx="1"/>`;
+    svg += `<text x="${kx + kw/2}" y="${kitY + kitH/2}" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#6b5e52" text-anchor="middle" dominant-baseline="middle">${KITCHEN_LABELS[i]}</text>`;
+  });
+  svg += `</g>`;
+
+  // === FLOOR LABELS ===
+  svg += `<text x="${XOFF + WALL_W + 8}" y="${(P1_WALL_TOP + P1_WALL_BOT) / 2}" font-family="DM Sans, sans-serif" font-size="9" fill="#8a7e72" dominant-baseline="middle" transform="rotate(90,${XOFF + WALL_W + 8},${(P1_WALL_TOP + P1_WALL_BOT) / 2})">Primo Piano</text>`;
+  svg += `<text x="${XOFF + WALL_W + 8}" y="${(PT_WALL_TOP + PT_WALL_BOT) / 2}" font-family="DM Sans, sans-serif" font-size="9" fill="#8a7e72" dominant-baseline="middle" transform="rotate(90,${XOFF + WALL_W + 8},${(PT_WALL_TOP + PT_WALL_BOT) / 2})">Piano Terra</text>`;
+  svg += `<text x="${XOFF + WALL_W + 8}" y="${(SLAB_TOP + SLAB_BOT) / 2}" font-family="JetBrains Mono, monospace" font-size="7" fill="#9a8d7f" dominant-baseline="middle" transform="rotate(90,${XOFF + WALL_W + 8},${(SLAB_TOP + SLAB_BOT) / 2})">50 cm</text>`;
+
+  // === VERTICAL DIMENSIONS (left) ===
+  // P1 wall height
+  svg += `<line x1="50" y1="${P1_WALL_TOP}" x2="50" y2="${P1_WALL_BOT}" stroke="#b0453a" stroke-width="0.8"/>`;
+  svg += `<line x1="45" y1="${P1_WALL_TOP}" x2="55" y2="${P1_WALL_TOP}" stroke="#b0453a" stroke-width="0.8"/>`;
+  svg += `<line x1="45" y1="${P1_WALL_BOT}" x2="55" y2="${P1_WALL_BOT}" stroke="#b0453a" stroke-width="0.8"/>`;
+  svg += `<text x="50" y="${(P1_WALL_TOP + P1_WALL_BOT)/2}" font-family="JetBrains Mono, monospace" font-size="8" fill="#b0453a" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90,50,${(P1_WALL_TOP + P1_WALL_BOT)/2})">2.700</text>`;
+
+  // PT wall height
+  svg += `<line x1="50" y1="${PT_WALL_TOP}" x2="50" y2="${PT_WALL_BOT}" stroke="#b0453a" stroke-width="0.8"/>`;
+  svg += `<line x1="45" y1="${PT_WALL_TOP}" x2="55" y2="${PT_WALL_TOP}" stroke="#b0453a" stroke-width="0.8"/>`;
+  svg += `<line x1="45" y1="${PT_WALL_BOT}" x2="55" y2="${PT_WALL_BOT}" stroke="#b0453a" stroke-width="0.8"/>`;
+  svg += `<text x="50" y="${(PT_WALL_TOP + PT_WALL_BOT)/2}" font-family="JetBrains Mono, monospace" font-size="8" fill="#b0453a" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90,50,${(PT_WALL_TOP + PT_WALL_BOT)/2})">2.700</text>`;
+
+  // === HORIZONTAL DIMENSION (bottom) ===
+  svg += `<line x1="${XOFF}" y1="560" x2="${XOFF + WALL_W}" y2="560" stroke="#b0453a" stroke-width="0.8"/>`;
+  svg += `<line x1="${XOFF}" y1="554" x2="${XOFF}" y2="566" stroke="#b0453a" stroke-width="0.8"/>`;
+  svg += `<line x1="${XOFF + WALL_W}" y1="554" x2="${XOFF + WALL_W}" y2="566" stroke="#b0453a" stroke-width="0.8"/>`;
+  svg += `<text x="500" y="576" font-family="JetBrains Mono, monospace" font-size="10" fill="#b0453a" text-anchor="middle">13.470 mm</text>`;
+
+  svg += `</svg>`;
+  return svg;
+}
+
+// === RENDER ===
+function render() {
+  const ptWindows = readWindows('pt');
+  const p1Windows = readWindows('p1');
+  document.getElementById('svg-combined').innerHTML = generateCombinedSVG(ptWindows, p1Windows);
+  applyToggles();
+}
+
+// === TOGGLES ===
+function applyToggles() {
+  const showPillars = document.getElementById('toggle-pillars').checked;
+  const showColumn = document.getElementById('toggle-column').checked;
+  const showKitchen = document.getElementById('toggle-kitchen').checked;
+  document.querySelectorAll('.pillars-group').forEach(g => g.style.display = showPillars ? '' : 'none');
+  document.querySelectorAll('.column-group').forEach(g => g.style.display = showColumn ? '' : 'none');
+  document.querySelectorAll('.kitchen-group').forEach(g => g.style.display = showKitchen ? '' : 'none');
+}
+
+// === PRESET LOADERS ===
+function loadPTPreset(key) {
+  if (!key || !PT_PRESETS[key]) return;
+  writeWindows('pt', PT_PRESETS[key]);
+  render();
+}
+
+function loadP1Preset(key) {
+  if (!key || !P1_PRESETS[key]) return;
+  writeWindows('p1', P1_PRESETS[key]);
+  render();
+}
+
+// === EVENT LISTENERS ===
+document.getElementById('preset-pt').addEventListener('change', function() { loadPTPreset(this.value); });
+document.getElementById('preset-p1').addEventListener('change', function() { loadP1Preset(this.value); });
+
+document.getElementById('toggle-pillars').addEventListener('change', applyToggles);
+document.getElementById('toggle-column').addEventListener('change', applyToggles);
+document.getElementById('toggle-kitchen').addEventListener('change', applyToggles);
+
+// Live update on any input change
+document.querySelectorAll('.floor-inputs input[type="number"]').forEach(input => {
+  input.addEventListener('input', function() {
+    // Clear preset selector when manually editing
+    const prefix = this.id.startsWith('pt-') ? 'preset-pt' : 'preset-p1';
+    document.getElementById(prefix).value = '';
+    render();
+  });
+});
+
+// === INITIAL LOAD ===
+loadPTPreset('attuale');
+loadP1Preset('p1d');
+</script>
+
+</body>
+</html>

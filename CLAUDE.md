@@ -11,6 +11,7 @@ Prima di qualsiasi modifica, leggi sempre `CONTEXT.md` per i parametri completi.
 ```
 index.html              — Indice con link a tutte le varianti
 confronto.html          — Confronto interattivo PT + P1 con selettori dropdown
+playground.html         — Playground interattivo con controlli per tutte le 8 finestre
 parete_attuale.html     — Piano Terra: Attuale (4×200×250)
 parete_regolare.html    — Piano Terra: Regolare (centrate in campata)
 parete_variante_a.html  — Piano Terra: Variante A (F1/F4 190, F2/F3 290)
