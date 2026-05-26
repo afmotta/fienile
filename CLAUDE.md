@@ -100,11 +100,11 @@ Ogni finestra ha questi elementi nell'ordine:
 ```
 RAI = superficie_vetrata_utile / superficie_pavimento
 superficie_pavimento = 31.23 m² per stanza
-altezza_utile = min(altezza_finestra, 190cm_da_terra)
+I primi 60 cm da terra non vengono conteggiati
 ```
 
-Per finestre da terra (h 250): altezza utile = 190 cm
-Per finestre con davanzale 100 cm (h 150): altezza utile = 90 cm (da 100 a 190)
+Per finestre da terra (h 250): altezza utile = 250 − 60 = 190 cm
+Per finestre con davanzale 100 cm (h 150): altezza utile = 150 cm (tutta la finestra è sopra i 60 cm)
 Minimo RAI richiesto: 0.125
 
 ## Calcolo RAI — Primo Piano

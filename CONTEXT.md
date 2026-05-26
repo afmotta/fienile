@@ -55,7 +55,7 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
 - Il RAI si calcola come: superficie vetrata utile / superficie pavimento
 - Superficie pavimento per stanza: **31,23 m²**
 - La casa ha **due stanze identiche** al piano terra; per il calcolo si usano F1 e F2 (simmetria con F3 e F4)
-- **Altezza utile limitata a 190 cm da terra** a causa del tetto spiovente in aggetto (le parti di finestra sopra 190 cm non contano)
+- **Altezza utile**: i primi 60 cm da terra non vengono conteggiati; la parte della finestra sopra i 60 cm conta al 100% (stessa regola del primo piano, senza ulteriori limiti superiori per il PT)
 - Minimo richiesto: **0,125**
 
 ## RAI — Primo Piano
@@ -99,7 +99,7 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
 - **F2/F3**: 290 × 250 cm (porte finestre da terra)
 - Filo superiore allineato a 2,50 m per tutte le finestre
 - Stesse posizioni orizzontali della Variante A
-- **RAI: 0,231** (F1: 1,90×0,90 = 1,71 m², F2: 2,90×1,90 = 5,51 m², totale 7,22 m²)
+- **RAI: 0,268** (F1: 1,90×1,50 = 2,85 m², F2: 2,90×1,90 = 5,51 m², totale 8,36 m²)
 
 ### 5. Variante C — `parete_variante_c.html`
 - **F1/F4**: 279,5 × 150 cm, **finestre con davanzale a 1 m**, larghezza massimizzata
@@ -107,7 +107,7 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
 - Margine uniforme di 14,75 cm (uguale per tutte, sia da bordo che da pilastro)
 - Filo superiore allineato a 2,50 m
 - **Posizioni**: F1 da 0,1475m, F2 da 3,5375m, F3 da 7,0325m, F4 da 10,5275m
-- **RAI: 0,257** (F1: 2,795×0,90 = 2,52 m², F2: 2,90×1,90 = 5,51 m², totale 8,03 m²)
+- **RAI: 0,311** (F1: 2,795×1,50 = 4,19 m², F2: 2,90×1,90 = 5,51 m², totale 9,70 m²)
 
 ### 6. Variante D — `parete_variante_d.html`
 - **F1/F4**: 160 × 150 cm, **finestre con davanzale a 1 m** da terra
@@ -115,7 +115,7 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
 - F1/F4 spostate verso il centro della campata, con margine minimo 1 m dal bordo parete
 - Filo superiore allineato a 2,50 m
 - **Posizioni**: F1 da 1,000m, F2 da 3,5375m, F3 da 7,0325m, F4 da 10,870m
-- **RAI: 0,223** (F1: 1,60×0,90 = 1,44 m², F2: 2,90×1,90 = 5,51 m², totale 6,95 m²)
+- **RAI: 0,253** (F1: 1,60×1,50 = 2,40 m², F2: 2,90×1,90 = 5,51 m², totale 7,91 m²)
 
 ### 7. Variante E — `parete_variante_e.html`
 - **F1/F4**: 174 × 150 cm, **finestre con davanzale a 1 m** da terra
@@ -124,7 +124,7 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
 - F1/F4 con margine minimo 1 m dal bordo parete
 - Filo superiore allineato a 2,50 m
 - **Posizioni**: F1 da 1,000m, F2 da 3,5375m, F3 da 7,0325m, F4 da 10,730m
-- **RAI: 0,227** (F1: 1,74×0,90 = 1,57 m², F2: 2,90×1,90 = 5,51 m², totale 7,08 m²)
+- **RAI: 0,260** (F1: 1,74×1,50 = 2,61 m², F2: 2,90×1,90 = 5,51 m², totale 8,12 m²)
 
 ## Le 4 varianti — Primo Piano
 
