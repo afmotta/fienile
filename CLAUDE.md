@@ -14,9 +14,9 @@ CONTEXT.md                              — Parametri tecnici completi, vincoli,
 
 src/
 ├── piano-terra/
-│   └── parete_variante_e.html          — Variante E (corrente: F1/F4 174×150)
+│   └── piano_terra.html                — Piano Terra (F1/F4 174×150)
 ├── primo-piano/
-│   └── primo_piano_b.html              — P1-B (corrente: F2/F3=174cm)
+│   └── primo_piano.html                — Primo Piano (F2/F3=174cm)
 └── archivio/
     ├── confronto.html                  — Confronto interattivo PT + P1
     ├── playground.html                 — Playground interattivo 8 finestre
