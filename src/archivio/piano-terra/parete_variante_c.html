@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Distribuzione Finestre — Variante A</title>
+<title>Distribuzione Finestre — Variante C</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -43,10 +43,7 @@
     overflow-x: auto;
   }
 
-  svg {
-    display: block;
-    margin: 0 auto;
-  }
+  svg { display: block; margin: 0 auto; }
 
   .wall-fill { fill: #e8e2d9; }
   .wall-stroke { stroke: #2a2520; stroke-width: 1.5; fill: none; }
@@ -57,97 +54,27 @@
   .window-frame { stroke: #5a8199; stroke-width: 0.8; fill: none; }
   .ground-line { stroke: #8a7e72; stroke-width: 2; }
   .ground-hatch { stroke: #b0a698; stroke-width: 0.6; }
-
+  .architrave-zone { fill: #ddd5cb; }
   .dim-line { stroke: #b0453a; stroke-width: 0.8; }
   .dim-line-light { stroke: #c9a07a; stroke-width: 0.6; stroke-dasharray: 3,3; }
   .dim-tick { stroke: #b0453a; stroke-width: 0.8; }
-  .dim-text {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    fill: #b0453a;
-    text-anchor: middle;
-    dominant-baseline: middle;
-  }
-  .dim-text-light {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 7.5px;
-    fill: #9a8d7f;
-    text-anchor: middle;
-    dominant-baseline: middle;
-  }
-  .dim-text-vert {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    fill: #b0453a;
-    text-anchor: middle;
-    dominant-baseline: middle;
-  }
-  .label-text {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 10px;
-    fill: #5a8199;
-    text-anchor: middle;
-    font-weight: 500;
-  }
-  .pillar-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 7px;
-    fill: #fff;
-    text-anchor: middle;
-    dominant-baseline: middle;
-  }
-  .label-room { font-family: 'DM Sans', sans-serif; font-size: 8px; fill: #8a7e72; text-anchor: middle; font-weight: 400; }
+  .dim-text { font-family: 'JetBrains Mono', monospace; font-size: 9px; fill: #b0453a; text-anchor: middle; dominant-baseline: middle; }
+  .dim-text-light { font-family: 'JetBrains Mono', monospace; font-size: 7.5px; fill: #9a8d7f; text-anchor: middle; dominant-baseline: middle; }
+  .dim-text-vert { font-family: 'JetBrains Mono', monospace; font-size: 9px; fill: #b0453a; text-anchor: middle; dominant-baseline: middle; }
+  .label-text { font-family: 'DM Sans', sans-serif; font-size: 10px; fill: #5a8199; text-anchor: middle; font-weight: 500; }
+  .pillar-label { font-family: 'JetBrains Mono', monospace; font-size: 7px; fill: #fff; text-anchor: middle; dominant-baseline: middle; }
   .margin-zone { fill: #f0ccc8; opacity: 0.3; }
-  .architrave-zone { fill: #ddd5cb; }
+  .align-line { stroke: #b0453a; stroke-width: 0.5; stroke-dasharray: 6,3; opacity: 0.5; }
+  .label-room { font-family: 'DM Sans', sans-serif; font-size: 8px; fill: #8a7e72; text-anchor: middle; font-weight: 400; }
 
-  .legend {
-    display: flex;
-    gap: 28px;
-    margin-top: 40px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.78rem;
-    color: #6b5e52;
-  }
-  .legend-swatch {
-    width: 20px;
-    height: 12px;
-    border-radius: 2px;
-    border: 1px solid rgba(0,0,0,0.1);
-  }
+  .legend { display: flex; gap: 28px; margin-top: 40px; flex-wrap: wrap; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: #6b5e52; }
+  .legend-swatch { width: 20px; height: 12px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.1); }
 
-  .table-container {
-    margin-top: 40px;
-    width: 100%;
-    max-width: 750px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
-  }
-  th {
-    text-align: left;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 500;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #8a7e72;
-    padding: 8px 12px;
-    border-bottom: 2px solid #d6cfc6;
-  }
-  td {
-    padding: 8px 12px;
-    border-bottom: 1px solid #e8e2d9;
-    color: #4a4038;
-  }
+  .table-container { margin-top: 40px; width: 100%; max-width: 820px; }
+  table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+  th { text-align: left; font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #8a7e72; padding: 8px 12px; border-bottom: 2px solid #d6cfc6; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e8e2d9; color: #4a4038; }
   tr:last-child td { border-bottom: none; }
 
   .toggle-controls { display: flex; gap: 24px; margin-bottom: 24px; justify-content: center; }
@@ -162,8 +89,8 @@
 </head>
 <body>
 
-<h1>Prospetto Parete — Variante A</h1>
-<div class="subtitle">13.470 mm × 2.700 mm — 4 porte finestre, 3 pilastri</div>
+<h1>Prospetto Parete — Variante C</h1>
+<div class="subtitle">13.470 mm × 2.700 mm — F1/F4 finestre 2.795 × 1.500, F2/F3 porte finestre 2.900 × 2.500</div>
 
 <div class="toggle-controls">
   <label class="toggle-item">
@@ -182,19 +109,33 @@
 
 <div class="drawing-container">
 <!--
-  Layout:
-  - Horizontal: 860px for 1347cm → scale 0.6385 px/cm, offset x=70 (left margin for vert dims)
-  - Vertical: wall 2.7m, windows 2.5m from ground
-  - Vert scale: let's use 0.8 px/cm → 270cm = 216px
-  - Wall top y=40, wall bottom y=256, ground at y=256
-  - Window: 250cm = 200px, from ground up → y=56 to y=256
-  - Architrave: 20cm = 16px → y=40 to y=56
+  Horizontal: xOff=70, scale=0.6385 px/cm, wall 70..930 (860px)
+  Vertical: wall top y=40, ground y=256 (216px for 270cm, scale 0.8px/cm)
+
+  F2/F3 unchanged: porta finestra y=56..256
+  F1/F4: 150cm, sill 100cm → y=56..176
+
+  Positions:
+  F1: 14.75cm to 294.25cm → x = 70+14.75*0.6385 = 79.42, w = 279.5*0.6385 = 178.46
+  F2: 353.75cm to 643.75cm → x = 295.97, w = 185.17 (unchanged)
+  F3: 703.25cm to 993.25cm → x = 518.93, w = 185.17 (unchanged)
+  F4: 1052.75cm to 1332.25cm → x = 70+1052.75*0.6385 = 742.18, w = 178.46
+
+  Let me recalculate:
+  F1 start: 14.75cm → 70 + 14.75*0.6385 = 70 + 9.42 = 79.42
+  F1 end: 294.25cm → 70 + 294.25*0.6385 = 70 + 187.88 = 257.88
+  F1 width px: 178.46
+
+  F4 start: 1052.75cm → 70 + 1052.75*0.6385 = 70 + 672.18 = 742.18
+  F4 end: 1332.25cm → 70 + 1332.25*0.6385 = 70 + 850.70 = 920.70
+  F4 width px: 178.52 (~178.46)
+
+  Pillar positions (same as before):
+  P1: 309cm → 70+309*0.6385 = 267.3, width 19.16
+  P2: 658.5cm → 70+658.5*0.6385 = 490.44, width 19.16
+  P3: 1008cm → 70+1008*0.6385 = 713.58, width 19.16
 -->
 <svg viewBox="0 0 980 370" xmlns="http://www.w3.org/2000/svg" width="980">
-
-  <!-- Offsets: xOff=70, wall: x=70..930 (860px), yTop=40, yBot=256 (216px for 270cm) -->
-  <!-- Vert scale: 0.8 px/cm -->
-  <!-- Horiz scale: 0.6385 px/cm, pos(cm) = 70 + cm * 0.6385 -->
 
   <!-- ============ WALL BODY ============ -->
   <rect x="70" y="40" width="860" height="216" class="wall-fill" rx="1"/>
@@ -202,7 +143,6 @@
 
   <!-- ============ GROUND LINE + HATCH ============ -->
   <line x1="55" y1="256" x2="945" y2="256" class="ground-line"/>
-  <!-- ground hatching -->
   <line x1="60" y1="256" x2="52" y2="264" class="ground-hatch"/>
   <line x1="75" y1="256" x2="67" y2="264" class="ground-hatch"/>
   <line x1="90" y1="256" x2="82" y2="264" class="ground-hatch"/>
@@ -212,27 +152,23 @@
   <line x1="930" y1="256" x2="922" y2="264" class="ground-hatch"/>
   <line x1="945" y1="256" x2="937" y2="264" class="ground-hatch"/>
 
-  <!-- ============ MARGIN ZONES (1m from edges) ============ -->
-  <rect x="70" y="40" width="63.85" height="216" class="margin-zone"/>
-  <rect x="866.15" y="40" width="63.85" height="216" class="margin-zone"/>
+  <!-- ============ ALIGNMENT LINE (top at y=56) ============ -->
+  <line x1="12" y1="56" x2="940" y2="56" class="align-line"/>
 
   <g id="pillars-group">
-  <!-- ============ PILLARS (full height) ============ -->
-  <!-- Pillar 1: 309-339 cm → x=267.3..286.46 -->
+  <!-- ============ PILLARS ============ -->
   <rect x="267.3" y="36" width="19.16" height="224" class="pillar-fill" rx="1"/>
   <line x1="269" y1="36" x2="284" y2="260" class="pillar-pattern"/>
   <line x1="274" y1="36" x2="282" y2="260" class="pillar-pattern"/>
   <line x1="279" y1="36" x2="286" y2="260" class="pillar-pattern"/>
   <text x="276.88" y="148" class="pillar-label">30</text>
 
-  <!-- Pillar 2: 658.5-688.5 cm → x=490.44..509.6 -->
   <rect x="490.44" y="36" width="19.16" height="224" class="pillar-fill" rx="1"/>
   <line x1="492" y1="36" x2="507" y2="260" class="pillar-pattern"/>
   <line x1="497" y1="36" x2="505" y2="260" class="pillar-pattern"/>
   <line x1="502" y1="36" x2="509" y2="260" class="pillar-pattern"/>
   <text x="500.02" y="148" class="pillar-label">30</text>
 
-  <!-- Pillar 3: 1008-1038 cm → x=713.58..732.74 -->
   <rect x="713.58" y="36" width="19.16" height="224" class="pillar-fill" rx="1"/>
   <line x1="715" y1="36" x2="730" y2="260" class="pillar-pattern"/>
   <line x1="720" y1="36" x2="728" y2="260" class="pillar-pattern"/>
@@ -240,23 +176,23 @@
   <text x="723.16" y="148" class="pillar-label">30</text>
   </g>
 
-  <!-- ============ WINDOWS (porte finestre: 250cm from ground, architrave 20cm on top) ============ -->
-  <!-- Window bottom = ground = y=256, window top = 256 - 200 = y=56, architrave y=40..56 -->
-
-  <!-- F1: 104.5 to 294.5 cm → x=136.73..258.05 -->
-  <rect x="136.73" y="40" width="121.32" height="16" class="architrave-zone"/>
-  <rect x="136.73" y="56" width="121.32" height="200" class="window-fill" rx="0"/>
-  <rect x="136.73" y="56" width="121.32" height="200" class="window-stroke"/>
-  <!-- mullion + transoms -->
-  <line x1="197.39" y1="56" x2="197.39" y2="256" class="window-frame"/>
-  <line x1="136.73" y1="122" x2="258.05" y2="122" class="window-frame"/>
-  <line x1="136.73" y1="188" x2="258.05" y2="188" class="window-frame"/>
+  <!-- ============ F1: 279.5×150, from 14.75 to 294.25 cm, y=56..176 ============ -->
+  <rect x="79.42" y="40" width="178.46" height="16" class="architrave-zone"/>
+  <rect x="79.42" y="56" width="178.46" height="120" class="window-fill"/>
+  <rect x="79.42" y="56" width="178.46" height="120" class="window-stroke"/>
+  <!-- mullions (3 panes) -->
+  <line x1="138.87" y1="56" x2="138.87" y2="176" class="window-frame"/>
+  <line x1="198.33" y1="56" x2="198.33" y2="176" class="window-frame"/>
+  <!-- transom -->
+  <line x1="79.42" y1="116" x2="257.88" y2="116" class="window-frame"/>
   <!-- architrave line -->
-  <line x1="136.73" y1="56" x2="258.05" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
-  <text x="197.39" y="32" class="label-text">F1 — 190 × 250</text>
-  <text x="197.39" y="42" class="label-room">Cucina</text>
+  <line x1="79.42" y1="56" x2="257.88" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
+  <!-- sill -->
+  <line x1="76" y1="176" x2="261" y2="176" stroke="#6b5e52" stroke-width="1.2"/>
+  <text x="168.65" y="32" class="label-text">F1 — 279,5 × 150</text>
+  <text x="168.65" y="42" class="label-room">Cucina</text>
 
-  <!-- F2: 353.75 to 643.75 cm → x=295.97..481.14 -->
+  <!-- ============ F2: 290×250 (unchanged) ============ -->
   <rect x="295.97" y="40" width="185.17" height="16" class="architrave-zone"/>
   <rect x="295.97" y="56" width="185.17" height="200" class="window-fill"/>
   <rect x="295.97" y="56" width="185.17" height="200" class="window-stroke"/>
@@ -268,7 +204,7 @@
   <text x="388.55" y="32" class="label-text">F2 — 290 × 250</text>
   <text x="388.55" y="42" class="label-room">Cucina</text>
 
-  <!-- F3: 703.25 to 993.25 cm → x=518.93..704.1 -->
+  <!-- ============ F3: 290×250 (unchanged) ============ -->
   <rect x="518.93" y="40" width="185.17" height="16" class="architrave-zone"/>
   <rect x="518.93" y="56" width="185.17" height="200" class="window-fill"/>
   <rect x="518.93" y="56" width="185.17" height="200" class="window-stroke"/>
@@ -280,16 +216,17 @@
   <text x="611.51" y="32" class="label-text">F3 — 290 × 250</text>
   <text x="611.51" y="42" class="label-room">Soggiorno</text>
 
-  <!-- F4: 1052.5 to 1242.5 cm → x=741.93..863.25 -->
-  <rect x="741.93" y="40" width="121.32" height="16" class="architrave-zone"/>
-  <rect x="741.93" y="56" width="121.32" height="200" class="window-fill"/>
-  <rect x="741.93" y="56" width="121.32" height="200" class="window-stroke"/>
-  <line x1="802.59" y1="56" x2="802.59" y2="256" class="window-frame"/>
-  <line x1="741.93" y1="122" x2="863.25" y2="122" class="window-frame"/>
-  <line x1="741.93" y1="188" x2="863.25" y2="188" class="window-frame"/>
-  <line x1="741.93" y1="56" x2="863.25" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
-  <text x="802.59" y="32" class="label-text">F4 — 190 × 250</text>
-  <text x="802.59" y="42" class="label-room">Soggiorno</text>
+  <!-- ============ F4: 279.5×150, from 1052.75 to 1332.25 cm, y=56..176 ============ -->
+  <rect x="742.18" y="40" width="178.46" height="16" class="architrave-zone"/>
+  <rect x="742.18" y="56" width="178.46" height="120" class="window-fill"/>
+  <rect x="742.18" y="56" width="178.46" height="120" class="window-stroke"/>
+  <line x1="801.63" y1="56" x2="801.63" y2="176" class="window-frame"/>
+  <line x1="861.09" y1="56" x2="861.09" y2="176" class="window-frame"/>
+  <line x1="742.18" y1="116" x2="920.64" y2="116" class="window-frame"/>
+  <line x1="742.18" y1="56" x2="920.64" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
+  <line x1="739" y1="176" x2="924" y2="176" stroke="#6b5e52" stroke-width="1.2"/>
+  <text x="831.41" y="32" class="label-text">F4 — 279,5 × 150</text>
+  <text x="831.41" y="42" class="label-room">Soggiorno</text>
 
   <!-- ============ COLONNA FRONTALE (76 cm, centrata) ============ -->
   <!-- Da 635.5 a 711.5 cm → x=475.77, w=48.52 -->
@@ -315,80 +252,88 @@
   </g>
 
   <!-- ============ VERTICAL DIMENSIONS (left side) ============ -->
-  <!-- Total wall height: y=40 to y=256 = 2700mm -->
+  <!-- Total wall -->
   <line x1="38" y1="40" x2="38" y2="256" class="dim-line"/>
   <line x1="33" y1="40" x2="43" y2="40" class="dim-tick"/>
   <line x1="33" y1="256" x2="43" y2="256" class="dim-tick"/>
   <text x="38" y="148" class="dim-text-vert" transform="rotate(-90,38,148)">2.700</text>
-  <!-- guide lines -->
   <line x1="43" y1="40" x2="68" y2="40" stroke="#d6cfc6" stroke-width="0.5"/>
   <line x1="43" y1="256" x2="68" y2="256" stroke="#d6cfc6" stroke-width="0.5"/>
 
-  <!-- Window height: y=56 to y=256 = 2500mm -->
+  <!-- F2/F3 height -->
   <line x1="12" y1="56" x2="12" y2="256" class="dim-line"/>
   <line x1="7" y1="56" x2="17" y2="56" class="dim-tick"/>
   <line x1="7" y1="256" x2="17" y2="256" class="dim-tick"/>
   <text x="12" y="156" class="dim-text-vert" transform="rotate(-90,12,156)">2.500</text>
-  <!-- guide line to window top -->
-  <line x1="17" y1="56" x2="135" y2="56" stroke="#d6cfc6" stroke-width="0.5"/>
 
-  <!-- Architrave height: y=40 to y=56 = 200mm -->
+  <!-- Architrave -->
   <line x1="55" y1="40" x2="55" y2="56" class="dim-line-light"/>
   <line x1="51" y1="40" x2="59" y2="40" style="stroke:#c9a07a;stroke-width:0.6;"/>
   <line x1="51" y1="56" x2="59" y2="56" style="stroke:#c9a07a;stroke-width:0.6;"/>
   <text x="55" y="48" class="dim-text-light" font-size="6.5" transform="rotate(-90,55,48)">200</text>
 
-  <!-- ============ HORIZONTAL DIMENSIONS (below wall) ============ -->
+  <!-- F1/F4 height (right side) -->
+  <line x1="940" y1="56" x2="940" y2="176" class="dim-line"/>
+  <line x1="935" y1="56" x2="945" y2="56" class="dim-tick"/>
+  <line x1="935" y1="176" x2="945" y2="176" class="dim-tick"/>
+  <text x="940" y="116" class="dim-text-vert" transform="rotate(90,940,116)">1.500</text>
+  <line x1="922" y1="56" x2="938" y2="56" stroke="#d6cfc6" stroke-width="0.5"/>
+  <line x1="922" y1="176" x2="938" y2="176" stroke="#d6cfc6" stroke-width="0.5"/>
+
+  <!-- Sill height -->
+  <line x1="960" y1="176" x2="960" y2="256" class="dim-line"/>
+  <line x1="955" y1="176" x2="965" y2="176" class="dim-tick"/>
+  <line x1="955" y1="256" x2="965" y2="256" class="dim-tick"/>
+  <text x="960" y="216" class="dim-text-vert" transform="rotate(90,960,216)">1.000</text>
+  <line x1="945" y1="176" x2="958" y2="176" stroke="#d6cfc6" stroke-width="0.5"/>
+  <line x1="945" y1="256" x2="958" y2="256" stroke="#d6cfc6" stroke-width="0.5"/>
+
+  <!-- ============ HORIZONTAL DIMENSIONS ============ -->
   <!-- Overall -->
   <line x1="70" y1="310" x2="930" y2="310" class="dim-line"/>
   <line x1="70" y1="304" x2="70" y2="316" class="dim-tick"/>
   <line x1="930" y1="304" x2="930" y2="316" class="dim-tick"/>
   <text x="500" y="327" class="dim-text" font-size="11">13.470 mm</text>
 
-  <!-- Campata dimensions (above wall) -->
-  <!-- These are now above the labels, so let's put them at y=18 -->
-  <!-- C1: 0-309 -->
+  <!-- Campata dims (top) -->
   <line x1="70" y1="18" x2="267.3" y2="18" class="dim-line"/>
   <line x1="70" y1="13" x2="70" y2="23" class="dim-tick"/>
   <line x1="267.3" y1="13" x2="267.3" y2="23" class="dim-tick"/>
   <text x="168.65" y="11" class="dim-text">3.090</text>
 
-  <!-- C2: 339-658.5 -->
   <line x1="286.46" y1="18" x2="490.44" y2="18" class="dim-line"/>
   <line x1="286.46" y1="13" x2="286.46" y2="23" class="dim-tick"/>
   <line x1="490.44" y1="13" x2="490.44" y2="23" class="dim-tick"/>
   <text x="388.45" y="11" class="dim-text">3.195</text>
 
-  <!-- C3: 688.5-1008 -->
   <line x1="509.6" y1="18" x2="713.58" y2="18" class="dim-line"/>
   <line x1="509.6" y1="13" x2="509.6" y2="23" class="dim-tick"/>
   <line x1="713.58" y1="13" x2="713.58" y2="23" class="dim-tick"/>
   <text x="611.59" y="11" class="dim-text">3.195</text>
 
-  <!-- C4: 1038-1347 -->
   <line x1="732.74" y1="18" x2="930" y2="18" class="dim-line"/>
   <line x1="732.74" y1="13" x2="732.74" y2="23" class="dim-tick"/>
   <line x1="930" y1="13" x2="930" y2="23" class="dim-tick"/>
   <text x="831.37" y="11" class="dim-text">3.090</text>
 
-  <!-- ============ WINDOW POSITION DIMS (below wall) ============ -->
-  <!-- F1 start from left edge -->
-  <line x1="70" y1="275" x2="136.73" y2="275" class="dim-line-light"/>
+  <!-- Window position dims (below wall) -->
+  <!-- F1: edge gap -->
+  <line x1="70" y1="275" x2="79.42" y2="275" class="dim-line-light"/>
   <line x1="70" y1="271" x2="70" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
-  <line x1="136.73" y1="271" x2="136.73" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
-  <text x="103.37" y="287" class="dim-text-light">1.045</text>
+  <line x1="79.42" y1="271" x2="79.42" y2="279" style="stroke:#c9a07a;stroke-width:0.6;"/>
+  <text x="74.5" y="287" class="dim-text-light" font-size="6">148</text>
 
   <!-- F1 width -->
-  <line x1="136.73" y1="275" x2="258.05" y2="275" class="dim-line"/>
-  <line x1="136.73" y1="271" x2="136.73" y2="279" class="dim-tick"/>
-  <line x1="258.05" y1="271" x2="258.05" y2="279" class="dim-tick"/>
-  <text x="197.39" y="287" class="dim-text">1.900</text>
+  <line x1="79.42" y1="275" x2="257.88" y2="275" class="dim-line"/>
+  <line x1="79.42" y1="271" x2="79.42" y2="279" class="dim-tick"/>
+  <line x1="257.88" y1="271" x2="257.88" y2="279" class="dim-tick"/>
+  <text x="168.65" y="287" class="dim-text">2.795</text>
 
-  <!-- F1 to pillar 1 -->
-  <line x1="258.05" y1="275" x2="267.3" y2="275" class="dim-line-light"/>
-  <text x="262.5" y="287" class="dim-text-light" font-size="6">145</text>
+  <!-- F1 to P1 -->
+  <line x1="257.88" y1="275" x2="267.3" y2="275" class="dim-line-light"/>
+  <text x="262.5" y="287" class="dim-text-light" font-size="6">148</text>
 
-  <!-- F2 from pillar 1 -->
+  <!-- P1 to F2 -->
   <line x1="286.46" y1="275" x2="295.97" y2="275" class="dim-line-light"/>
   <text x="291" y="287" class="dim-text-light" font-size="6">148</text>
 
@@ -398,11 +343,11 @@
   <line x1="481.14" y1="271" x2="481.14" y2="279" class="dim-tick"/>
   <text x="388.55" y="287" class="dim-text">2.900</text>
 
-  <!-- F2 to pillar 2 -->
+  <!-- F2 to P2 -->
   <line x1="481.14" y1="275" x2="490.44" y2="275" class="dim-line-light"/>
   <text x="485.5" y="287" class="dim-text-light" font-size="6">148</text>
 
-  <!-- F3 from pillar 2 -->
+  <!-- P2 to F3 -->
   <line x1="509.6" y1="275" x2="518.93" y2="275" class="dim-line-light"/>
   <text x="514" y="287" class="dim-text-light" font-size="6">148</text>
 
@@ -412,25 +357,25 @@
   <line x1="704.1" y1="271" x2="704.1" y2="279" class="dim-tick"/>
   <text x="611.51" y="287" class="dim-text">2.900</text>
 
-  <!-- F3 to pillar 3 -->
+  <!-- F3 to P3 -->
   <line x1="704.1" y1="275" x2="713.58" y2="275" class="dim-line-light"/>
   <text x="708.5" y="287" class="dim-text-light" font-size="6">148</text>
 
-  <!-- F4 from pillar 3 -->
-  <line x1="732.74" y1="275" x2="741.93" y2="275" class="dim-line-light"/>
-  <text x="737" y="287" class="dim-text-light" font-size="6">145</text>
+  <!-- P3 to F4 -->
+  <line x1="732.74" y1="275" x2="742.18" y2="275" class="dim-line-light"/>
+  <text x="737.5" y="287" class="dim-text-light" font-size="6">148</text>
 
   <!-- F4 width -->
-  <line x1="741.93" y1="275" x2="863.25" y2="275" class="dim-line"/>
-  <line x1="741.93" y1="271" x2="741.93" y2="279" class="dim-tick"/>
-  <line x1="863.25" y1="271" x2="863.25" y2="279" class="dim-tick"/>
-  <text x="802.59" y="287" class="dim-text">1.900</text>
+  <line x1="742.18" y1="275" x2="920.64" y2="275" class="dim-line"/>
+  <line x1="742.18" y1="271" x2="742.18" y2="279" class="dim-tick"/>
+  <line x1="920.64" y1="271" x2="920.64" y2="279" class="dim-tick"/>
+  <text x="831.41" y="287" class="dim-text">2.795</text>
 
-  <!-- F4 to right edge -->
-  <line x1="863.25" y1="275" x2="930" y2="275" class="dim-line-light"/>
-  <text x="896.62" y="287" class="dim-text-light">1.045</text>
+  <!-- F4 to edge -->
+  <line x1="920.64" y1="275" x2="930" y2="275" class="dim-line-light"/>
+  <text x="925.5" y="287" class="dim-text-light" font-size="6">148</text>
 
-  <!-- ============ VERTICAL GUIDE LINES ============ -->
+  <!-- Vertical guide lines -->
   <line x1="70" y1="23" x2="70" y2="38" stroke="#d6cfc6" stroke-width="0.5"/>
   <line x1="930" y1="23" x2="930" y2="38" stroke="#d6cfc6" stroke-width="0.5"/>
   <line x1="267.3" y1="23" x2="267.3" y2="38" stroke="#d6cfc6" stroke-width="0.5"/>
@@ -440,8 +385,7 @@
   <line x1="713.58" y1="23" x2="713.58" y2="38" stroke="#d6cfc6" stroke-width="0.5"/>
   <line x1="732.74" y1="23" x2="732.74" y2="38" stroke="#d6cfc6" stroke-width="0.5"/>
 
-  <!-- Scale note -->
-  <text x="500" y="355" class="dim-text-light" font-size="8">quote in mm — prospetto frontale</text>
+  <text x="500" y="355" class="dim-text-light" font-size="8">quote in mm — prospetto frontale — variante C</text>
 
 </svg>
 </div>
@@ -457,7 +401,7 @@
   </div>
   <div class="legend-item">
     <div class="legend-swatch" style="background:#c8dce8; border-color:#5a8199;"></div>
-    Porte finestre (h 2.500)
+    Finestre / Porte finestre
   </div>
   <div class="legend-item">
     <div class="legend-swatch" style="background:#ddd5cb;"></div>
@@ -472,8 +416,8 @@
     Cucina (banco + isola)
   </div>
   <div class="legend-item">
-    <div class="legend-swatch" style="background:#f0ccc8;"></div>
-    Margine 1 m bordi
+    <svg width="20" height="12"><line x1="0" y1="6" x2="20" y2="6" stroke="#b0453a" stroke-width="0.8" stroke-dasharray="4,2" opacity="0.5"/></svg>
+    Filo superiore allineato
   </div>
 </div>
 
@@ -483,54 +427,59 @@
       <tr>
         <th>Finestra</th>
         <th>Stanza</th>
+        <th>Tipo</th>
         <th>Largh.</th>
         <th>Altezza</th>
-        <th>Da</th>
-        <th>A</th>
-        <th>Marg. sx</th>
-        <th>Marg. dx</th>
+        <th>Da terra</th>
+        <th>Da (x)</th>
+        <th>A (x)</th>
+        <th>Margine</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td>F1</td>
         <td>Cucina</td>
-        <td>190 cm</td>
-        <td>250 cm</td>
-        <td>1,045 m</td>
-        <td>2,945 m</td>
-        <td>4,5 cm</td>
-        <td>4,5 cm</td>
+        <td>Finestra</td>
+        <td>279,5 cm</td>
+        <td>150 cm</td>
+        <td>100 cm</td>
+        <td>0,1475 m</td>
+        <td>2,9425 m</td>
+        <td>14,75 cm</td>
       </tr>
       <tr>
         <td>F2</td>
         <td>Cucina</td>
+        <td>Porta finestra</td>
         <td>290 cm</td>
         <td>250 cm</td>
-        <td>3,538 m</td>
-        <td>6,438 m</td>
-        <td>4,75 cm</td>
-        <td>4,75 cm</td>
+        <td>0 cm</td>
+        <td>3,5375 m</td>
+        <td>6,4375 m</td>
+        <td>14,75 cm</td>
       </tr>
       <tr>
         <td>F3</td>
         <td>Soggiorno</td>
+        <td>Porta finestra</td>
         <td>290 cm</td>
         <td>250 cm</td>
-        <td>7,033 m</td>
-        <td>9,933 m</td>
-        <td>4,75 cm</td>
-        <td>4,75 cm</td>
+        <td>0 cm</td>
+        <td>7,0325 m</td>
+        <td>9,9325 m</td>
+        <td>14,75 cm</td>
       </tr>
       <tr>
         <td>F4</td>
         <td>Soggiorno</td>
-        <td>190 cm</td>
-        <td>250 cm</td>
-        <td>10,525 m</td>
-        <td>12,425 m</td>
-        <td>4,5 cm</td>
-        <td>4,5 cm</td>
+        <td>Finestra</td>
+        <td>279,5 cm</td>
+        <td>150 cm</td>
+        <td>100 cm</td>
+        <td>10,5275 m</td>
+        <td>13,3225 m</td>
+        <td>14,75 cm</td>
       </tr>
     </tbody>
   </table>
@@ -545,17 +494,17 @@
     <tbody>
       <tr>
         <td>Cucina</td>
-        <td>F1 (190×190*) + F2 (290×190*)</td>
-        <td>3,61 + 5,51 = 9,12 m²</td>
+        <td>F1 (279,5×150*) + F2 (290×190*)</td>
+        <td>4,19 + 5,51 = 9,70 m²</td>
         <td>31,23 m²</td>
-        <td style="font-weight:600;color:#5a8199;">0,292</td>
+        <td style="font-weight:600;color:#5a8199;">0,311</td>
       </tr>
       <tr>
         <td>Soggiorno</td>
-        <td>F3 (290×190*) + F4 (190×190*)</td>
-        <td>5,51 + 3,61 = 9,12 m²</td>
+        <td>F3 (290×190*) + F4 (279,5×150*)</td>
+        <td>5,51 + 4,19 = 9,70 m²</td>
         <td>31,23 m²</td>
-        <td style="font-weight:600;color:#5a8199;">0,292</td>
+        <td style="font-weight:600;color:#5a8199;">0,311</td>
       </tr>
       <tr style="border-top:2px solid #d6cfc6;">
         <td colspan="4" style="font-weight:600;">Minimo richiesto</td>
@@ -563,9 +512,9 @@
       </tr>
     </tbody>
   </table>
-  <p style="font-family:JetBrains Mono,monospace;font-size:0.7rem;color:#9a8d7f;margin-top:8px;text-align:center;">* Altezza utile: i primi 60 cm da terra non vengono conteggiati. Porte finestre da terra (h 250): 250 − 60 = 190 cm utili</p>
+  <p style="font-family:JetBrains Mono,monospace;font-size:0.7rem;color:#9a8d7f;margin-top:8px;text-align:center;">* Altezza utile: i primi 60 cm da terra non vengono conteggiati. F1/F4 con davanzale a 100 cm (interamente sopra i 60 cm): 150 cm utili. F2/F3 da terra (h 250): 190 cm utili</p>
 </div>
-<div style="text-align:center;margin:40px 0 20px;"><a href="./index.html" style="font-family:DM Sans,sans-serif;font-size:0.85rem;color:#5a8199;text-decoration:none;border:1px solid #d6cfc6;padding:10px 24px;border-radius:4px;transition:border-color 0.2s;">← Torna al menu</a></div>
+<div style="text-align:center;margin:40px 0 20px;"><a href="../../../index.html" style="font-family:DM Sans,sans-serif;font-size:0.85rem;color:#5a8199;text-decoration:none;border:1px solid #d6cfc6;padding:10px 24px;border-radius:4px;transition:border-color 0.2s;">← Torna al menu</a></div>
 <script>
 document.getElementById('toggle-pillars').addEventListener('change', function() {
   document.getElementById('pillars-group').style.display = this.checked ? '' : 'none';
