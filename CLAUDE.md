@@ -9,21 +9,29 @@ Prima di qualsiasi modifica, leggi sempre `CONTEXT.md` per i parametri completi.
 ## Struttura file
 
 ```
-index.html              — Indice con link a tutte le varianti
-confronto.html          — Confronto interattivo PT + P1 con selettori dropdown
-playground.html         — Playground interattivo con controlli per tutte le 8 finestre
-parete_attuale.html     — Piano Terra: Attuale (4×200×250)
-parete_regolare.html    — Piano Terra: Regolare (centrate in campata)
-parete_variante_a.html  — Piano Terra: Variante A (F1/F4 190, F2/F3 290)
-parete_variante_b.html  — Piano Terra: Variante B (F1/F4 finestre h150, F2/F3 porte h250)
-parete_variante_c.html  — Piano Terra: Variante C (F1/F4 allargate, margine uniforme)
-parete_variante_d.html  — Piano Terra: Variante D (F1/F4 160×150, bordo 1m)
-parete_variante_e.html  — Piano Terra: Variante E (F1/F4 174×150, stesso rapporto L/H)
-primo_piano_a.html      — Primo Piano: P1-A (F2/F3=160cm)
-primo_piano_b.html      — Primo Piano: P1-B (F2/F3=170cm)
-primo_piano_c.html      — Primo Piano: P1-C (F2/F3=180cm)
-primo_piano_d.html      — Primo Piano: P1-D (F2/F3=200cm)
-CONTEXT.md              — Parametri tecnici completi, vincoli, formule
+index.html                              — Indice principale
+CONTEXT.md                              — Parametri tecnici completi, vincoli, formule
+
+src/
+├── piano-terra/                        — Iterazione corrente: Piano Terra
+├── primo-piano/                        — Iterazione corrente: Primo Piano
+└── archivio/
+    ├── piano-terra/                    — Varianti esplorazione PT (fase decisionale)
+    │   parete_attuale.html             —   Attuale (4×200×250)  [ancora alla root]
+    │   parete_regolare.html            —   Regolare (centrate in campata)
+    │   parete_variante_a.html          —   Variante A (F1/F4 190, F2/F3 290)
+    │   parete_variante_b.html          —   Variante B (F1/F4 finestre h150)
+    │   parete_variante_c.html          —   Variante C (F1/F4 allargate)
+    │   parete_variante_d.html          —   Variante D (F1/F4 160×150, bordo 1m)
+    │   parete_variante_e.html          —   Variante E (F1/F4 174×150)
+    └── primo-piano/                    — Varianti esplorazione P1 (fase decisionale)
+        primo_piano_a.html              —   P1-A (F2/F3=160cm)  [ancora alla root]
+        primo_piano_b.html              —   P1-B (F2/F3=170cm)
+        primo_piano_c.html              —   P1-C (F2/F3=180cm)
+        primo_piano_d.html              —   P1-D (F2/F3=200cm)
+
+Nota: i file di esplorazione sono ancora alla root — verranno spostati
+nelle cartelle archivio quando aggiorneremo la navigazione.
 ```
 
 ## Convenzioni SVG — Piano Terra
