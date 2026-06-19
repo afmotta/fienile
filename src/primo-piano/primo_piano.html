@@ -170,15 +170,15 @@
 <body>
 
 <h1>Prospetto Parete — Primo Piano</h1>
-<div class="subtitle">13.470 mm × 2.700 mm — F2/F3 porte finestre 174×250, F1/F4 finestre 60×150</div>
+<div class="subtitle">13.470 mm × 2.700 mm — F2/F3 porte finestre 174×250 (2 ante), F1/F4 finestre 60×150</div>
 
 <div class="toggle-controls">
   <label class="toggle-item">
-    <span class="toggle-switch"><input type="checkbox" id="toggle-pillars" checked><span class="toggle-slider"></span></span>
+    <span class="toggle-switch"><input type="checkbox" id="toggle-pillars"><span class="toggle-slider"></span></span>
     Pilastri
   </label>
   <label class="toggle-item">
-    <span class="toggle-switch"><input type="checkbox" id="toggle-column" checked><span class="toggle-slider"></span></span>
+    <span class="toggle-switch"><input type="checkbox" id="toggle-column"><span class="toggle-slider"></span></span>
     Colonna
   </label>
 </div>
@@ -237,14 +237,12 @@
   <text x="543.78" y="148" class="pillar-label">30</text>
   </g>
 
-  <!-- ============ F1: 60×150, davanzale 100cm, x=111.50, y=56..176 ============ -->
+  <!-- ============ F1: 60×150, davanzale 100cm, y=56..176 ============ -->
   <!-- Architrave -->
   <rect x="111.50" y="40" width="38.31" height="16" class="architrave-zone"/>
   <!-- Window -->
   <rect x="111.50" y="56" width="38.31" height="120" class="window-fill"/>
   <rect x="111.50" y="56" width="38.31" height="120" class="window-stroke"/>
-  <!-- Transom -->
-  <line x1="111.50" y1="116" x2="149.81" y2="116" class="window-frame"/>
   <!-- Architrave line -->
   <line x1="111.50" y1="56" x2="149.81" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
   <!-- Sill line -->
@@ -253,50 +251,40 @@
   <text x="130.66" y="27" class="label-text">F1 — 60 × 150</text>
   <text x="130.66" y="37" class="label-room">Bagno Nord</text>
 
-  <!-- ============ F2: 174×250, da terra, x=229.63, y=56..256 ============ -->
+  <!-- ============ F2: 174×250 — porta finestra 2 ante, da terra, y=56..256 ============ -->
   <!-- Architrave -->
   <rect x="229.63" y="40" width="111.10" height="16" class="architrave-zone"/>
   <!-- Window -->
   <rect x="229.63" y="56" width="111.10" height="200" class="window-fill"/>
   <rect x="229.63" y="56" width="111.10" height="200" class="window-stroke"/>
-  <!-- Mullions -->
-  <line x1="266.66" y1="56" x2="266.66" y2="256" class="window-frame"/>
-  <line x1="303.70" y1="56" x2="303.70" y2="256" class="window-frame"/>
-  <!-- Transoms -->
-  <line x1="229.63" y1="122" x2="340.73" y2="122" class="window-frame"/>
-  <line x1="229.63" y1="188" x2="340.73" y2="188" class="window-frame"/>
+  <!-- montante centrale (2 ante) -->
+  <line x1="285.18" y1="56" x2="285.18" y2="256" class="window-stroke"/>
   <!-- Architrave line -->
   <line x1="229.63" y1="56" x2="340.73" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
   <!-- Labels -->
   <text x="285.18" y="27" class="label-text">F2 — 174 × 250</text>
   <text x="285.18" y="37" class="label-room">Camera Nord</text>
 
-  <!-- ============ F3: 174×250, da terra, x=659.33, y=56..256 ============ -->
+  <!-- ============ F3: 174×250 — porta finestra 2 ante, da terra, y=56..256 ============ -->
   <!-- Architrave -->
   <rect x="659.33" y="40" width="111.10" height="16" class="architrave-zone"/>
   <!-- Window -->
   <rect x="659.33" y="56" width="111.10" height="200" class="window-fill"/>
   <rect x="659.33" y="56" width="111.10" height="200" class="window-stroke"/>
-  <!-- Mullions -->
-  <line x1="696.36" y1="56" x2="696.36" y2="256" class="window-frame"/>
-  <line x1="733.40" y1="56" x2="733.40" y2="256" class="window-frame"/>
-  <!-- Transoms -->
-  <line x1="659.33" y1="122" x2="770.43" y2="122" class="window-frame"/>
-  <line x1="659.33" y1="188" x2="770.43" y2="188" class="window-frame"/>
+  <!-- montante centrale (2 ante) -->
+  <line x1="714.88" y1="56" x2="714.88" y2="256" class="window-stroke"/>
   <!-- Architrave line -->
   <line x1="659.33" y1="56" x2="770.43" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
   <!-- Labels -->
   <text x="714.88" y="27" class="label-text">F3 — 174 × 250</text>
   <text x="714.88" y="37" class="label-room">Camera Sud</text>
 
-  <!-- ============ F4: 60×150, davanzale 100cm, x=850.25, y=56..176 ============ -->
+  <!-- ============ F4: 60×150, davanzale 100cm, y=56..176 ============ -->
   <!-- Architrave -->
   <rect x="850.25" y="40" width="38.31" height="16" class="architrave-zone"/>
   <!-- Window -->
   <rect x="850.25" y="56" width="38.31" height="120" class="window-fill"/>
   <rect x="850.25" y="56" width="38.31" height="120" class="window-stroke"/>
-  <!-- Transom -->
-  <line x1="850.25" y1="116" x2="888.56" y2="116" class="window-frame"/>
   <!-- Architrave line -->
   <line x1="850.25" y1="56" x2="888.56" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
   <!-- Sill line -->
@@ -483,6 +471,10 @@
     <svg width="20" height="12"><line x1="0" y1="6" x2="20" y2="6" stroke="#b0453a" stroke-width="0.8" stroke-dasharray="4,2" opacity="0.5"/></svg>
     Filo superiore allineato
   </div>
+  <div class="legend-item">
+    <svg width="20" height="12"><rect x="1" y="1" width="18" height="10" fill="#c8dce8" stroke="#5a8199" stroke-width="0.8"/><line x1="10" y1="1" x2="10" y2="11" stroke="#5a8199" stroke-width="0.8"/></svg>
+    F2/F3 — 2 ante
+  </div>
 </div>
 
 <div class="table-container">
@@ -513,7 +505,7 @@
       <tr>
         <td>F2</td>
         <td>Camera Nord</td>
-        <td>Porta finestra</td>
+        <td>Porta finestra (2 ante)</td>
         <td>174 cm</td>
         <td>250 cm</td>
         <td>0 cm</td>
@@ -523,7 +515,7 @@
       <tr>
         <td>F3</td>
         <td>Camera Sud</td>
-        <td>Porta finestra</td>
+        <td>Porta finestra (2 ante)</td>
         <td>174 cm</td>
         <td>250 cm</td>
         <td>0 cm</td>
@@ -594,6 +586,10 @@ document.getElementById('toggle-pillars').addEventListener('change', function() 
 });
 document.getElementById('toggle-column').addEventListener('change', function() {
   document.getElementById('column-group').style.display = this.checked ? '' : 'none';
+});
+// stato iniziale: pilastri e colonna off di default
+['pillars','column'].forEach(function(k){
+  document.getElementById(k+'-group').style.display = document.getElementById('toggle-'+k).checked ? '' : 'none';
 });
 </script>
 </body>

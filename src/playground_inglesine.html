@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playground Inglesine — Varianti suddivisioni</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f5f2ed;
+    font-family: 'DM Sans', sans-serif;
+    color: #2a2520;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #8a7e72;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #b0a698;
+    margin-bottom: 32px;
+    text-align: center;
+    max-width: 640px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .control-group > label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #8a7e72;
+  }
+
+  select {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    border: 1px solid #d6cfc6;
+    border-radius: 4px;
+    background: #fff;
+    color: #2a2520;
+    cursor: pointer;
+    min-width: 280px;
+  }
+
+  select:focus { outline: none; border-color: #5a8199; }
+
+  .toggle-controls { display: flex; gap: 24px; margin-bottom: 24px; justify-content: center; flex-wrap: wrap; }
+  .toggle-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #6b5e52; cursor: pointer; }
+  .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #d6cfc6; border-radius: 10px; transition: 0.2s; }
+  .toggle-slider:before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+  .toggle-switch input:checked + .toggle-slider { background: #6b5e52; }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+  .win-inputs {
+    margin-bottom: 32px;
+  }
+
+  .win-inputs table {
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+  }
+
+  .win-inputs th {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8a7e72;
+    padding: 6px 10px;
+    border-bottom: 2px solid #d6cfc6;
+    text-align: center;
+  }
+
+  .win-inputs td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #e8e2d9;
+    text-align: center;
+  }
+
+  .win-inputs td:first-child {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    color: #5a8199;
+    font-size: 0.8rem;
+    text-align: left;
+  }
+
+  .win-inputs .dim { color: #b0a698; font-size: 0.72rem; }
+
+  .win-inputs input[type="number"] {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    width: 54px;
+    padding: 4px 6px;
+    border: 1px solid #d6cfc6;
+    border-radius: 3px;
+    background: #fff;
+    color: #2a2520;
+    text-align: right;
+  }
+
+  .win-inputs input[type="number"]:focus {
+    outline: none;
+    border-color: #5a8199;
+    box-shadow: 0 0 0 2px rgba(90,129,153,0.15);
+  }
+
+  .win-inputs .count { color: #6b5e52; font-weight: 500; }
+
+  .drawing-container {
+    width: 100%;
+    max-width: 1100px;
+    overflow-x: auto;
+  }
+
+  svg { display: block; margin: 0 auto; }
+
+  .legend {
+    display: flex;
+    gap: 28px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: #6b5e52;
+  }
+  .legend-swatch {
+    width: 20px;
+    height: 12px;
+    border-radius: 2px;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+</style>
+</head>
+<body>
+
+<h1>Playground Inglesine</h1>
+<div class="subtitle">Le inglesine (montanti/traversi) sono indicate PER PANNELLO. Le finestre a 2 pannelli — tutto il Piano Terra e P1 F2/F3 — ripetono la griglia su entrambe le metà (divise dal montante centrale o dalla divisione scorrevole). P1 F1/F4 sono a pannello singolo. Stile di base (classico o contemporaneo scorrevole) sempre mantenuto; le inglesine si aggiungono sopra.</div>
+
+<div class="controls">
+  <div class="control-group">
+    <label>Piano</label>
+    <select id="floor">
+      <option value="pt" selected>Piano Terra — F1/F4 174×150, F2/F3 290×250</option>
+      <option value="p1">Primo Piano — F1/F4 60×150, F2/F3 174×250</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>Applica a tutte le finestre</label>
+    <select id="preset">
+      <option value="">— Personalizzato —</option>
+      <option value="default">Ripristina classico (default del piano)</option>
+      <option value="nessuna">Nessuna inglesina</option>
+      <option value="oriz2">Solo orizzontali — 2 traversi</option>
+      <option value="oriz3">Solo orizzontali — 3 traversi</option>
+      <option value="vert1">Solo verticali — 1 montante</option>
+      <option value="vert3">Solo verticali — 3 montanti</option>
+      <option value="grid22">Griglia 2×2 (1 mont. + 1 trav.)</option>
+      <option value="grid33">Griglia 3×3 (2 mont. + 2 trav.)</option>
+      <option value="ante2">Griglia fitta (3 mont. + 4 trav.)</option>
+    </select>
+  </div>
+</div>
+
+<div class="toggle-controls">
+  <label class="toggle-item">
+    <span class="toggle-switch"><input type="checkbox" id="toggle-pillars"><span class="toggle-slider"></span></span>
+    Pilastri
+  </label>
+  <label class="toggle-item">
+    <span class="toggle-switch"><input type="checkbox" id="toggle-column"><span class="toggle-slider"></span></span>
+    Colonna
+  </label>
+</div>
+
+<div class="win-inputs">
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Dimensioni</th>
+        <th>Montanti<br>per pannello</th>
+        <th>Traversi<br>per pannello</th>
+        <th>Riquadri<br>(totali)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>F1</td><td class="dim" id="w0-dim"></td>
+        <td><input type="number" id="w0-v" min="0" max="12" step="1"></td>
+        <td><input type="number" id="w0-h" min="0" max="12" step="1"></td>
+        <td class="count" id="w0-count"></td>
+      </tr>
+      <tr>
+        <td>F2</td><td class="dim" id="w1-dim"></td>
+        <td><input type="number" id="w1-v" min="0" max="12" step="1"></td>
+        <td><input type="number" id="w1-h" min="0" max="12" step="1"></td>
+        <td class="count" id="w1-count"></td>
+      </tr>
+      <tr>
+        <td>F3</td><td class="dim" id="w2-dim"></td>
+        <td><input type="number" id="w2-v" min="0" max="12" step="1"></td>
+        <td><input type="number" id="w2-h" min="0" max="12" step="1"></td>
+        <td class="count" id="w2-count"></td>
+      </tr>
+      <tr>
+        <td>F4</td><td class="dim" id="w3-dim"></td>
+        <td><input type="number" id="w3-v" min="0" max="12" step="1"></td>
+        <td><input type="number" id="w3-h" min="0" max="12" step="1"></td>
+        <td class="count" id="w3-count"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="drawing-container">
+  <div id="svg-out"></div>
+</div>
+
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#e8e2d9; border-color:#2a2520;"></div>
+    Muratura
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#6b5e52;"></div>
+    Pilastri (30 cm)
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#c8dce8; border-color:#5a8199;"></div>
+    Finestre / Porte finestre
+  </div>
+  <div class="legend-item">
+    <svg width="20" height="12"><rect x="1" y="1" width="18" height="10" fill="#c8dce8" stroke="#5a8199" stroke-width="0.8"/><line x1="10" y1="1" x2="10" y2="11" stroke="#5a8199" stroke-width="0.6"/><line x1="1" y1="4.3" x2="19" y2="4.3" stroke="#5a8199" stroke-width="0.4"/><line x1="1" y1="7.6" x2="19" y2="7.6" stroke="#5a8199" stroke-width="0.4"/></svg>
+    Inglesine (montanti + traversi)
+  </div>
+  <div class="legend-item">
+    <svg width="20" height="12"><rect x="1" y="1" width="18" height="10" fill="none" stroke="#b0453a" stroke-width="1.2" stroke-dasharray="3,2" rx="1"/></svg>
+    Colonna frontale (76 cm)
+  </div>
+</div>
+
+<div style="text-align:center;margin:40px 0 20px;"><a href="../index.html" style="font-family:DM Sans,sans-serif;font-size:0.85rem;color:#5a8199;text-decoration:none;border:1px solid #d6cfc6;padding:10px 24px;border-radius:4px;transition:border-color 0.2s;">← Torna al menu</a></div>
+
+<script>
+// === COORDINATE SYSTEM (single floor prospetto) ===
+const XOFF = 70, SCALE_H = 0.6385, SCALE_V = 0.8;
+const WALL_W = 860, WALL_TOP = 40, WALL_BOT = 256;
+function cx(cm) { return XOFF + cm * SCALE_H; }
+function cw(cm) { return cm * SCALE_H; }
+
+// === FLOOR GEOMETRY ===
+// Ogni finestra ha uno stile base ("classic" o "contemp"); le inglesine
+// si AGGIUNGONO sopra lo stile. PT F2/F3 sono scorrevoli contemporanee.
+const FLOORS = {
+  pt: {
+    windows: [
+      { x: 100,    w: 174, h: 150, sill: 100, room: 'Cucina',    style: 'classic', central: true,  panels: 2 },
+      { x: 353.75, w: 290, h: 250, sill: 0,   room: 'Cucina',    style: 'contemp', mobileSide: 'left',  mobileW: 145, central: false, panels: 2 },
+      { x: 703.25, w: 290, h: 250, sill: 0,   room: 'Soggiorno', style: 'contemp', mobileSide: 'right', mobileW: 145, central: false, panels: 2 },
+      { x: 1073,   w: 174, h: 150, sill: 100, room: 'Soggiorno', style: 'classic', central: true,  panels: 2 }
+    ],
+    pillars: [309, 658.5, 1008],
+    // default inglesine PER PANNELLO (montanti/traversi); montante centrale fisso, divide i 2 pannelli
+    ing: [ {v:1,h:2}, {v:0,h:0}, {v:0,h:0}, {v:1,h:2} ]
+  },
+  p1: {
+    windows: [
+      { x: 65,   w: 60,  h: 150, sill: 100, room: 'Bagno Nord',  style: 'classic', central: false, panels: 1 },
+      { x: 250,  w: 174, h: 250, sill: 0,   room: 'Camera Nord', style: 'classic', central: true,  panels: 2 },
+      { x: 923,  w: 174, h: 250, sill: 0,   room: 'Camera Sud',  style: 'classic', central: true,  panels: 2 },
+      { x: 1222, w: 60,  h: 150, sill: 100, room: 'Bagno Sud',   style: 'classic', central: false, panels: 1 }
+    ],
+    pillars: [590, 727],
+    ing: [ {v:1,h:2}, {v:1,h:4}, {v:1,h:4}, {v:1,h:2} ]
+  }
+};
+const PILLAR_W = 30;
+const COLUMN = { pos: 635.5, w: 76 };
+
+// === GLOBAL PRESETS (pattern applied to all 4 windows) ===
+const PRESETS = {
+  nessuna: {v:0,h:0},
+  oriz2:   {v:0,h:2},
+  oriz3:   {v:0,h:3},
+  vert1:   {v:1,h:0},
+  vert3:   {v:3,h:0},
+  grid22:  {v:1,h:1},
+  grid33:  {v:2,h:2},
+  ante2:   {v:3,h:4}
+};
+
+// === MUTABLE STATE: inglesine per window for each floor ===
+const state = {
+  pt: FLOORS.pt.ing.map(o => ({...o})),
+  p1: FLOORS.p1.ing.map(o => ({...o}))
+};
+let floor = 'pt';
+
+// === HELPERS ===
+function el(id){ return document.getElementById(id); }
+
+// Le inglesine (montanti/traversi) sono PER PANNELLO. Le finestre a 2 pannelli
+// (tutto il PT + P1 F2/F3) ripetono la griglia su entrambe le metà.
+// Riquadri totali = (montanti+1) × (traversi+1) × numero pannelli.
+function paneCount(ing, win){
+  const perPanel = (ing.v + 1) * (ing.h + 1);
+  return perPanel * (win.panels || 1);
+}
+
+// === INPUTS <-> STATE ===
+function syncInputsFromState(){
+  const wins = FLOORS[floor].windows;
+  state[floor].forEach((ing, i) => {
+    el(`w${i}-v`).value = ing.v;
+    el(`w${i}-h`).value = ing.h;
+    el(`w${i}-dim`).textContent = `${wins[i].w}×${wins[i].h} · ${wins[i].style === 'contemp' ? 'contemp.' : 'classico'} · ${wins[i].panels} pann.`;
+    el(`w${i}-count`).textContent = paneCount(ing, wins[i]);
+  });
+}
+
+function readStateFromInputs(){
+  state[floor] = [0,1,2,3].map(i => ({
+    v: Math.max(0, parseInt(el(`w${i}-v`).value) || 0),
+    h: Math.max(0, parseInt(el(`w${i}-h`).value) || 0)
+  }));
+}
+
+// === SVG: inglesine of a single window ===
+function inglesineSVG(wx, wy, ww, hPx, ing, central, panels){
+  let s = '';
+  const wyBot = wy + hPx;
+  const halves = (panels === 2) ? 2 : 1;
+  const panelW = ww / halves;
+  // montanti: ing.v per ciascun pannello (metà)
+  for (let p = 0; p < halves; p++){
+    const px = wx + p * panelW;
+    for (let k = 1; k <= ing.v; k++){
+      const bx = px + panelW * k / (ing.v + 1);
+      s += `<line x1="${bx}" y1="${wy}" x2="${bx}" y2="${wyBot}" stroke="#5a8199" stroke-width="0.8"/>`;
+    }
+  }
+  // traversi: ing.h per pannello — linee orizzontali a tutta larghezza (identiche nei due pannelli)
+  for (let k = 1; k <= ing.h; k++){
+    const by = wy + hPx * k / (ing.h + 1);
+    s += `<line x1="${wx}" y1="${by}" x2="${wx + ww}" y2="${by}" stroke="#5a8199" stroke-width="0.8"/>`;
+  }
+  // montante centrale: divisore tra i due pannelli (finestre classiche a 2 ante)
+  if (central){
+    const cxm = wx + ww / 2;
+    s += `<line x1="${cxm}" y1="${wy}" x2="${cxm}" y2="${wyBot}" stroke="#5a8199" stroke-width="1.4"/>`;
+  }
+  return s;
+}
+
+// === SVG: contemporary scorrevole overlay (telaio + maniglia + freccia) ===
+function contempSVG(win, wx, wy, ww, hPx){
+  const wyBot = wy + hPx;
+  const mobileW = cw(win.mobileW);
+  let divX, mobL, mobR, dir;
+  if (win.mobileSide === 'left'){
+    divX = wx + mobileW; mobL = wx; mobR = divX; dir = 1;        // scorre verso il centro (dx)
+  } else {
+    divX = wx + ww - mobileW; mobL = divX; mobR = wx + ww; dir = -1; // scorre verso il centro (sx)
+  }
+  let s = '';
+  // divisione scorrevole / campo fisso
+  s += `<line x1="${divX}" y1="${wy}" x2="${divX}" y2="${wyBot}" stroke="#5a8199" stroke-width="1.2"/>`;
+  // telaio incassato dell'anta scorrevole
+  const inset = 4;
+  s += `<rect x="${mobL + inset}" y="${wy + inset}" width="${mobR - mobL - 2*inset}" height="${hPx - 2*inset}" stroke="#5a8199" stroke-width="0.8" fill="none"/>`;
+  // freccia di scorrimento (verso il campo fisso)
+  const ay = wy + hPx / 2;
+  const acx = (mobL + mobR) / 2;
+  const half = 20;
+  const x1 = acx - dir*half, x2 = acx + dir*half;
+  s += `<line x1="${x1}" y1="${ay}" x2="${x2}" y2="${ay}" stroke="#5a8199" stroke-width="0.8"/>`;
+  s += `<line x1="${x2}" y1="${ay}" x2="${x2 - dir*6}" y2="${ay - 4}" stroke="#5a8199" stroke-width="0.8"/>`;
+  s += `<line x1="${x2}" y1="${ay}" x2="${x2 - dir*6}" y2="${ay + 4}" stroke="#5a8199" stroke-width="0.8"/>`;
+  // maniglia sul montante d'incontro
+  const hx = divX - dir*7;
+  s += `<line x1="${hx}" y1="${ay - 8}" x2="${hx}" y2="${ay + 8}" stroke="#5a8199" stroke-width="1.5"/>`;
+  return s;
+}
+
+// === SVG: full window ===
+function renderWindow(win, ing, idx){
+  const wx = cx(win.x), ww = cw(win.w);
+  const hPx = win.h * SCALE_V;
+  const wyBot = WALL_BOT - win.sill * SCALE_V;
+  const wy = wyBot - hPx;
+  let s = '';
+  // architrave
+  s += `<rect x="${wx}" y="${wy - 16}" width="${ww}" height="16" fill="#ddd5cb"/>`;
+  // glass
+  s += `<rect x="${wx}" y="${wy}" width="${ww}" height="${hPx}" fill="#c8dce8"/>`;
+  // inglesine (aggiunte sopra il vetro, sotto gli elementi di stile)
+  s += inglesineSVG(wx, wy, ww, hPx, ing, win.central, win.panels);
+  // stile base contemporaneo (scorrevole) sopra le inglesine
+  if (win.style === 'contemp'){
+    s += contempSVG(win, wx, wy, ww, hPx);
+  }
+  // outer frame
+  s += `<rect x="${wx}" y="${wy}" width="${ww}" height="${hPx}" stroke="#5a8199" stroke-width="1.2" fill="none"/>`;
+  // architrave dashed line
+  s += `<line x1="${wx}" y1="${wy}" x2="${wx + ww}" y2="${wy}" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>`;
+  // sill
+  if (win.sill > 0){
+    s += `<line x1="${wx - 3}" y1="${wyBot}" x2="${wx + ww + 3}" y2="${wyBot}" stroke="#6b5e52" stroke-width="1.2"/>`;
+  }
+  // labels
+  const cxc = wx + ww / 2;
+  const styleLbl = win.style === 'contemp' ? ' · contemp.' : ' · classico';
+  s += `<text x="${cxc}" y="${wy - 24}" font-family="DM Sans, sans-serif" font-size="10" fill="#5a8199" text-anchor="middle" font-weight="500">F${idx+1} — ${win.w}×${win.h}${styleLbl}</text>`;
+  s += `<text x="${cxc}" y="${wy - 14}" font-family="DM Sans, sans-serif" font-size="8" fill="#8a7e72" text-anchor="middle">${win.room}</text>`;
+  return s;
+}
+
+// === SVG: whole drawing ===
+function generateSVG(){
+  const f = FLOORS[floor];
+  let svg = `<svg viewBox="0 0 980 370" xmlns="http://www.w3.org/2000/svg" width="980">`;
+
+  svg += `<defs>
+    <pattern id="colHatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#b0453a" stroke-width="0.4" opacity="0.6"/>
+    </pattern>
+  </defs>`;
+
+  // wall
+  svg += `<rect x="${XOFF}" y="${WALL_TOP}" width="${WALL_W}" height="${WALL_BOT - WALL_TOP}" fill="#e8e2d9" rx="1"/>`;
+  svg += `<rect x="${XOFF}" y="${WALL_TOP}" width="${WALL_W}" height="${WALL_BOT - WALL_TOP}" stroke="#2a2520" stroke-width="1.5" fill="none" rx="1"/>`;
+
+  // ground line + hatch
+  svg += `<line x1="55" y1="${WALL_BOT}" x2="945" y2="${WALL_BOT}" stroke="#8a7e72" stroke-width="2"/>`;
+  [60,75,90,105,900,915,930,945].forEach(x => {
+    svg += `<line x1="${x}" y1="${WALL_BOT}" x2="${x-8}" y2="${WALL_BOT+8}" stroke="#b0a698" stroke-width="0.6"/>`;
+  });
+
+  // pillars
+  svg += `<g class="pillars-group">`;
+  f.pillars.forEach(pos => {
+    const px = cx(pos), pw = cw(PILLAR_W);
+    svg += `<rect x="${px}" y="${WALL_TOP - 4}" width="${pw}" height="${WALL_BOT - WALL_TOP + 8}" fill="#6b5e52" rx="1"/>`;
+    svg += `<line x1="${px+2}" y1="${WALL_TOP-4}" x2="${px+pw-4}" y2="${WALL_BOT+4}" stroke="#7d6f62" stroke-width="0.5" opacity="0.3"/>`;
+    svg += `<line x1="${px+7}" y1="${WALL_TOP-4}" x2="${px+pw-2}" y2="${WALL_BOT+4}" stroke="#7d6f62" stroke-width="0.5" opacity="0.3"/>`;
+  });
+  svg += `</g>`;
+
+  // windows
+  f.windows.forEach((win, i) => { svg += renderWindow(win, state[floor][i], i); });
+
+  // column
+  const colX = cx(COLUMN.pos), colW = cw(COLUMN.w);
+  svg += `<g class="column-group">`;
+  svg += `<rect x="${colX}" y="${WALL_TOP - 4}" width="${colW}" height="${WALL_BOT - WALL_TOP + 8}" fill="url(#colHatch)" stroke="#b0453a" stroke-width="1.5" stroke-dasharray="6,4" rx="1"/>`;
+  svg += `<text x="${colX + colW/2}" y="${WALL_BOT + 14}" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#b0453a" text-anchor="middle">colonna 76 cm</text>`;
+  svg += `</g>`;
+
+  // overall horizontal dimension
+  svg += `<line x1="${XOFF}" y1="310" x2="${XOFF + WALL_W}" y2="310" stroke="#b0453a" stroke-width="0.8"/>`;
+  svg += `<line x1="${XOFF}" y1="304" x2="${XOFF}" y2="316" stroke="#b0453a" stroke-width="0.8"/>`;
+  svg += `<line x1="${XOFF + WALL_W}" y1="304" x2="${XOFF + WALL_W}" y2="316" stroke="#b0453a" stroke-width="0.8"/>`;
+  svg += `<text x="500" y="327" font-family="JetBrains Mono, monospace" font-size="11" fill="#b0453a" text-anchor="middle">13.470 mm</text>`;
+
+  svg += `</svg>`;
+  return svg;
+}
+
+// === TOGGLES ===
+function applyToggles(){
+  const showP = el('toggle-pillars').checked;
+  const showC = el('toggle-column').checked;
+  document.querySelectorAll('.pillars-group').forEach(g => g.style.display = showP ? '' : 'none');
+  document.querySelectorAll('.column-group').forEach(g => g.style.display = showC ? '' : 'none');
+}
+
+// === RENDER ===
+function render(){
+  el('svg-out').innerHTML = generateSVG();
+  // refresh riquadri counts
+  state[floor].forEach((ing, i) => { el(`w${i}-count`).textContent = paneCount(ing, FLOORS[floor].windows[i]); });
+  applyToggles();
+}
+
+// === EVENTS ===
+el('floor').addEventListener('change', function(){
+  floor = this.value;
+  el('preset').value = '';
+  syncInputsFromState();
+  render();
+});
+
+el('preset').addEventListener('change', function(){
+  const key = this.value;
+  if (key === 'default'){
+    state[floor] = FLOORS[floor].ing.map(o => ({...o}));
+  } else if (PRESETS[key]){
+    state[floor] = [0,1,2,3].map(() => ({...PRESETS[key]}));
+  } else {
+    return;
+  }
+  syncInputsFromState();
+  render();
+});
+
+document.querySelectorAll('.win-inputs input').forEach(input => {
+  input.addEventListener('input', function(){
+    readStateFromInputs();
+    el('preset').value = '';
+    render();
+  });
+});
+
+el('toggle-pillars').addEventListener('change', applyToggles);
+el('toggle-column').addEventListener('change', applyToggles);
+
+// === INIT ===
+syncInputsFromState();
+render();
+</script>
+
+</body>
+</html>

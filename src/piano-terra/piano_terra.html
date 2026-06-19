@@ -90,19 +90,19 @@
 <body>
 
 <h1>Prospetto Parete — Piano Terra</h1>
-<div class="subtitle">13.470 mm × 2.700 mm — F1/F4 finestre 1.740 × 1.500, F2/F3 porte finestre 2.900 × 2.500 — stesso rapporto L/H</div>
+<div class="subtitle">13.470 mm × 2.700 mm — F1/F4 finestre 1.740 × 1.500 (2 ante), F2/F3 porte finestre 2.900 × 2.500 (contemporaneo, scorrevole 1.450 + fisso 1.450 — simmetrico)</div>
 
 <div class="toggle-controls">
   <label class="toggle-item">
-    <span class="toggle-switch"><input type="checkbox" id="toggle-pillars" checked><span class="toggle-slider"></span></span>
+    <span class="toggle-switch"><input type="checkbox" id="toggle-pillars"><span class="toggle-slider"></span></span>
     Pilastri
   </label>
   <label class="toggle-item">
-    <span class="toggle-switch"><input type="checkbox" id="toggle-column" checked><span class="toggle-slider"></span></span>
+    <span class="toggle-switch"><input type="checkbox" id="toggle-column"><span class="toggle-slider"></span></span>
     Colonna
   </label>
   <label class="toggle-item">
-    <span class="toggle-switch"><input type="checkbox" id="toggle-kitchen" checked><span class="toggle-slider"></span></span>
+    <span class="toggle-switch"><input type="checkbox" id="toggle-kitchen"><span class="toggle-slider"></span></span>
     Cucina
   </label>
 </div>
@@ -167,15 +167,12 @@
   <text x="723.16" y="148" class="pillar-label">30</text>
   </g>
 
-  <!-- ============ F1: 174×150, from 100 to 274 cm, y=56..176 ============ -->
+  <!-- ============ F1: 174×150 — 2 ante, y=56..176 ============ -->
   <rect x="133.85" y="40" width="111.10" height="16" class="architrave-zone"/>
   <rect x="133.85" y="56" width="111.10" height="120" class="window-fill"/>
   <rect x="133.85" y="56" width="111.10" height="120" class="window-stroke"/>
-  <!-- mullions (3 panes) -->
-  <line x1="170.88" y1="56" x2="170.88" y2="176" class="window-frame"/>
-  <line x1="207.92" y1="56" x2="207.92" y2="176" class="window-frame"/>
-  <!-- transom -->
-  <line x1="133.85" y1="116" x2="244.95" y2="116" class="window-frame"/>
+  <!-- montante centrale (2 ante) -->
+  <line x1="189.40" y1="56" x2="189.40" y2="176" class="window-stroke"/>
   <!-- architrave line -->
   <line x1="133.85" y1="56" x2="244.95" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
   <!-- sill -->
@@ -183,39 +180,46 @@
   <text x="189.40" y="32" class="label-text">F1 — 174 × 150</text>
   <text x="189.40" y="42" class="label-room">Cucina</text>
 
-  <!-- ============ F2: 290×250 (unchanged) ============ -->
+  <!-- ============ F2: 290×250 — contemporaneo, scorrevole 145 (sx) + fisso 145 — simmetrico ============ -->
   <rect x="295.97" y="40" width="185.17" height="16" class="architrave-zone"/>
   <rect x="295.97" y="56" width="185.17" height="200" class="window-fill"/>
   <rect x="295.97" y="56" width="185.17" height="200" class="window-stroke"/>
-  <line x1="357.64" y1="56" x2="357.64" y2="256" class="window-frame"/>
-  <line x1="419.31" y1="56" x2="419.31" y2="256" class="window-frame"/>
-  <line x1="295.97" y1="122" x2="481.14" y2="122" class="window-frame"/>
-  <line x1="295.97" y1="188" x2="481.14" y2="188" class="window-frame"/>
+  <!-- divisione scorrevole / campo fisso (145:145) -->
+  <line x1="388.55" y1="56" x2="388.55" y2="256" class="window-stroke"/>
+  <!-- parte scorrevole (sx): telaio incassato + freccia di scorrimento -->
+  <rect x="299.97" y="60" width="84.58" height="192" class="window-frame"/>
+  <line x1="322" y1="156" x2="362" y2="156" stroke="#5a8199" stroke-width="0.8"/>
+  <line x1="362" y1="156" x2="356" y2="152" stroke="#5a8199" stroke-width="0.8"/>
+  <line x1="362" y1="156" x2="356" y2="160" stroke="#5a8199" stroke-width="0.8"/>
+  <line x1="382" y1="148" x2="382" y2="164" stroke="#5a8199" stroke-width="1.5"/>
+  <!-- campo fisso: nessuna suddivisione -->
   <line x1="295.97" y1="56" x2="481.14" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
-  <text x="388.55" y="32" class="label-text">F2 — 290 × 250</text>
+  <text x="388.55" y="32" class="label-text">F2 — 290 × 250 · contemporaneo</text>
   <text x="388.55" y="42" class="label-room">Cucina</text>
 
-  <!-- ============ F3: 290×250 (unchanged) ============ -->
+  <!-- ============ F3: 290×250 — contemporaneo, fisso 145 + scorrevole 145 (dx) — simmetrico ============ -->
   <rect x="518.93" y="40" width="185.17" height="16" class="architrave-zone"/>
   <rect x="518.93" y="56" width="185.17" height="200" class="window-fill"/>
   <rect x="518.93" y="56" width="185.17" height="200" class="window-stroke"/>
-  <line x1="580.6" y1="56" x2="580.6" y2="256" class="window-frame"/>
-  <line x1="642.27" y1="56" x2="642.27" y2="256" class="window-frame"/>
-  <line x1="518.93" y1="122" x2="704.1" y2="122" class="window-frame"/>
-  <line x1="518.93" y1="188" x2="704.1" y2="188" class="window-frame"/>
+  <!-- divisione campo fisso / scorrevole (145:145) -->
+  <line x1="611.52" y1="56" x2="611.52" y2="256" class="window-stroke"/>
+  <!-- parte scorrevole (dx): telaio incassato + freccia di scorrimento -->
+  <rect x="615.52" y="60" width="84.58" height="192" class="window-frame"/>
+  <line x1="678" y1="156" x2="638" y2="156" stroke="#5a8199" stroke-width="0.8"/>
+  <line x1="638" y1="156" x2="644" y2="152" stroke="#5a8199" stroke-width="0.8"/>
+  <line x1="638" y1="156" x2="644" y2="160" stroke="#5a8199" stroke-width="0.8"/>
+  <line x1="618" y1="148" x2="618" y2="164" stroke="#5a8199" stroke-width="1.5"/>
+  <!-- campo fisso: nessuna suddivisione -->
   <line x1="518.93" y1="56" x2="704.1" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
-  <text x="611.51" y="32" class="label-text">F3 — 290 × 250</text>
+  <text x="611.51" y="32" class="label-text">F3 — 290 × 250 · contemporaneo</text>
   <text x="611.51" y="42" class="label-room">Soggiorno</text>
 
-  <!-- ============ F4: 174×150, from 1073 to 1247 cm, y=56..176 ============ -->
+  <!-- ============ F4: 174×150 — 2 ante, y=56..176 ============ -->
   <rect x="755.11" y="40" width="111.10" height="16" class="architrave-zone"/>
   <rect x="755.11" y="56" width="111.10" height="120" class="window-fill"/>
   <rect x="755.11" y="56" width="111.10" height="120" class="window-stroke"/>
-  <!-- mullions (3 panes) -->
-  <line x1="792.14" y1="56" x2="792.14" y2="176" class="window-frame"/>
-  <line x1="829.18" y1="56" x2="829.18" y2="176" class="window-frame"/>
-  <!-- transom -->
-  <line x1="755.11" y1="116" x2="866.21" y2="116" class="window-frame"/>
+  <!-- montante centrale (2 ante) -->
+  <line x1="810.66" y1="56" x2="810.66" y2="176" class="window-stroke"/>
   <!-- architrave line -->
   <line x1="755.11" y1="56" x2="866.21" y2="56" stroke="#8a7e72" stroke-width="0.8" stroke-dasharray="2,2"/>
   <!-- sill -->
@@ -414,6 +418,14 @@
     <svg width="20" height="12"><line x1="0" y1="6" x2="20" y2="6" stroke="#b0453a" stroke-width="0.8" stroke-dasharray="4,2" opacity="0.5"/></svg>
     Filo superiore allineato
   </div>
+  <div class="legend-item">
+    <svg width="20" height="12"><rect x="1" y="1" width="18" height="10" fill="#c8dce8" stroke="#5a8199" stroke-width="0.8"/><line x1="10" y1="1" x2="10" y2="11" stroke="#5a8199" stroke-width="0.8"/></svg>
+    F1/F4 — 2 ante
+  </div>
+  <div class="legend-item">
+    <svg width="20" height="12"><rect x="1" y="1" width="18" height="10" fill="#c8dce8" stroke="#5a8199" stroke-width="0.8"/><line x1="10" y1="1" x2="10" y2="11" stroke="#5a8199" stroke-width="0.8"/><rect x="1.8" y="2" width="7.4" height="8" fill="none" stroke="#5a8199" stroke-width="0.4"/></svg>
+    F2/F3 — contemporaneo (scorrevole + fisso)
+  </div>
 </div>
 
 <div class="table-container">
@@ -436,7 +448,7 @@
       <tr>
         <td>F1</td>
         <td>Cucina</td>
-        <td>Finestra</td>
+        <td>Finestra (2 ante)</td>
         <td>174 cm</td>
         <td>150 cm</td>
         <td>100 cm</td>
@@ -448,7 +460,7 @@
       <tr>
         <td>F2</td>
         <td>Cucina</td>
-        <td>Porta finestra</td>
+        <td>P. finestra · contemp. (scorrevole 145 + fisso 145, simmetrico)</td>
         <td>290 cm</td>
         <td>250 cm</td>
         <td>0 cm</td>
@@ -460,7 +472,7 @@
       <tr>
         <td>F3</td>
         <td>Soggiorno</td>
-        <td>Porta finestra</td>
+        <td>P. finestra · contemp. (fisso 145 + scorrevole 145, simmetrico)</td>
         <td>290 cm</td>
         <td>250 cm</td>
         <td>0 cm</td>
@@ -472,7 +484,7 @@
       <tr>
         <td>F4</td>
         <td>Soggiorno</td>
-        <td>Finestra</td>
+        <td>Finestra (2 ante)</td>
         <td>174 cm</td>
         <td>150 cm</td>
         <td>100 cm</td>
@@ -524,6 +536,10 @@ document.getElementById('toggle-column').addEventListener('change', function() {
 });
 document.getElementById('toggle-kitchen').addEventListener('change', function() {
   document.getElementById('kitchen-group').style.display = this.checked ? '' : 'none';
+});
+// stato iniziale: pilastri, colonna e cucina off di default
+['pillars','column','kitchen'].forEach(function(k){
+  document.getElementById(k+'-group').style.display = document.getElementById('toggle-'+k).checked ? '' : 'none';
 });
 </script>
 </body>
