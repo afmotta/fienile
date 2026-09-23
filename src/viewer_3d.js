@@ -67,7 +67,7 @@ const $ = (id) => document.getElementById(id);
 const state = {
   varPT: 'E', varP1: 'B',
   floor: 'cottoMilano', brick: 'naturale',
-  showUpper: true, showKitchen: true, showFurniture: true, showLights: false, showAO: true,
+  showUpper: true, showRoof: true, showKitchen: true, showFurniture: true, showLights: false, showAO: true,
   exposure: 0.9, hour: 16, date: null,
 };
 const today = new Date();
@@ -420,7 +420,7 @@ function build() {
     scene.remove(house);
   }
   house = new THREE.Group();
-  for (const k of ['pt', 'upper', 'kitchen', 'furniture', 'lights', 'ground']) {
+  for (const k of ['pt', 'upper', 'roof', 'kitchen', 'furniture', 'lights', 'ground']) {
     G[k] = new THREE.Group(); house.add(G[k]);
   }
   const L = P.L, D = P.profEdificio, t = P.tW, H = P.hPiano, S = P.solaio;
@@ -489,8 +489,8 @@ function build() {
   const heE = roofH(D) - ((xe - D) / (D - T.colmoX)) * (T.colmoH - T.hEst);  // prolungamento falda est
   const under = [[xw, hwE], [T.colmoX, T.colmoH], [xe, heE]];
   const lay = (pts, dy0, dy1) => [...pts.map(([x, y]) => [x, y + dy0]), ...pts.slice().reverse().map(([x, y]) => [x, y + dy1])];
-  extrude(lay(under, 0, 0.12), -tt - 0.5, L + tt + 0.5, M.tavolato, G.upper);
-  extrude(lay(under, 0.12, 0.32), -tt - 0.6, L + tt + 0.6, M.coppi, G.upper);
+  extrude(lay(under, 0, 0.12), -tt - 0.5, L + tt + 0.5, M.tavolato, G.roof);
+  extrude(lay(under, 0.12, 0.32), -tt - 0.6, L + tt + 0.6, M.coppi, G.roof);
 
   // --- cucina di progetto (banco lungo la testata nord, isola)
   const C = P.cucina;
@@ -620,6 +620,7 @@ function applyMaterials() {
 function applyVisibility() {
   if (!house) return;
   G.upper.visible = state.showUpper;
+  G.roof.visible = state.showRoof;
   G.kitchen.visible = state.showKitchen;
   G.furniture.visible = state.showFurniture;
   G.lights.visible = state.showLights;
@@ -628,6 +629,11 @@ function applyVisibility() {
 }
 
 const on = (id, ev, fn) => $(id).addEventListener(ev, fn);
+// imposta un toggle da codice (viste, camminata) tenendo allineata la checkbox
+function setToggle(k, v) {
+  if (state[k] === v) return;
+  state[k] = v; $(k).checked = v; applyVisibility();
+}
 on('varPT', 'change', (e) => { state.varPT = e.target.value; raiHint(); build(); });
 on('varP1', 'change', (e) => { state.varP1 = e.target.value; build(); });
 on('hour', 'input', (e) => { state.hour = +e.target.value; updateSun(); });
@@ -638,7 +644,7 @@ document.querySelectorAll('.chips button').forEach((b) => b.addEventListener('cl
 }));
 on('floor', 'change', (e) => { state.floor = e.target.value; applyMaterials(); });
 on('brick', 'change', (e) => { state.brick = e.target.value; applyMaterials(); });
-for (const k of ['showUpper', 'showKitchen', 'showFurniture', 'showLights', 'showAO'])
+for (const k of ['showUpper', 'showRoof', 'showKitchen', 'showFurniture', 'showLights', 'showAO'])
   on(k, 'change', (e) => { state[k] = e.target.checked; applyVisibility(); });
 on('exposure', 'input', (e) => { state.exposure = +e.target.value; renderer.toneMappingExposure = state.exposure; });
 
@@ -659,7 +665,8 @@ function setView(name) {
   if (v.far && innerWidth < innerHeight) camera.position.sub(controls.target).multiplyScalar(1.9).add(controls.target);
   controls.update();
   const wantUpper = v.upper !== false;
-  if (state.showUpper !== wantUpper) { state.showUpper = wantUpper; $('showUpper').checked = wantUpper; applyVisibility(); }
+  setToggle('showUpper', wantUpper);
+  setToggle('showRoof', wantUpper);
 }
 document.querySelectorAll('.views button').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
 
@@ -668,7 +675,8 @@ const keys = {};
 addEventListener('keydown', (e) => { keys[e.code] = true; });
 addEventListener('keyup', (e) => { keys[e.code] = false; });
 on('walkbtn', 'click', () => {
-  if (!state.showUpper) { state.showUpper = true; $('showUpper').checked = true; applyVisibility(); }
+  setToggle('showUpper', true);
+  setToggle('showRoof', true);
   camera.position.set(4.2, 1.6, 1.2); camera.lookAt(1, 1.5, 8);
   walk.lock();
 });
