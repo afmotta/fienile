@@ -17,6 +17,9 @@ src/
 │   └── piano_terra.html                — Piano Terra (F1/F4 174×150)
 ├── primo-piano/
 │   └── primo_piano.html                — Primo Piano (F2/F3=174cm)
+├── viewer_3d.html / viewer_3d.js       — Vista 3D interattiva (three.js)
+├── blender/
+│   └── fienile_pt_render.py            — Scena Blender + render varianti materiali PT
 └── archivio/
     ├── confronto.html                  — Confronto interattivo PT + P1
     ├── playground.html                 — Playground interattivo 8 finestre
