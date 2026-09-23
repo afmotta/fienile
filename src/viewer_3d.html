@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Fienile — Vista 3D</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f5f2ed;
+    --ink: #2a2520;
+    --muted: #8a7e72;
+    --faint: #b0a698;
+    --line: #e0d9d0;
+    --accent: #5a8199;
+    --quote: #b0453a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--ink);
+    overflow: hidden;
+  }
+  #stage { position: fixed; inset: 0; }
+  #stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+  /* ---------- pannello ---------- */
+  #panel {
+    position: fixed; top: 16px; left: 16px; bottom: 16px;
+    width: 300px;
+    background: rgba(245, 242, 237, 0.94);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    display: flex; flex-direction: column;
+    backdrop-filter: blur(6px);
+    z-index: 10;
+  }
+  #panel header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  #panel h1 { font-size: 1rem; font-weight: 500; letter-spacing: 0.02em; }
+  #panel header p { font-size: 0.78rem; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .scroll { overflow-y: auto; padding: 4px 20px 20px; flex: 1; }
+  section { padding-top: 18px; }
+  h2 {
+    font-size: 0.8rem; font-weight: 500; color: var(--accent);
+    margin-bottom: 10px;
+  }
+  label.row, .row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; font-size: 0.82rem; margin-bottom: 9px;
+  }
+  select, input[type=date] {
+    font: inherit; font-size: 0.8rem; color: var(--ink);
+    background: #fff; border: 1px solid var(--line); border-radius: 4px;
+    padding: 5px 8px; min-width: 0; flex: 0 1 160px;
+  }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  input[type=checkbox] { accent-color: var(--accent); width: 15px; height: 15px; }
+  select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  .hint { font-size: 0.74rem; color: var(--muted); line-height: 1.4; margin: -2px 0 10px; }
+
+  /* lettura del sole: la parte "viva" del pannello */
+  .sunread {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin: 4px 0 6px;
+  }
+  .sunread .time {
+    font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; font-weight: 500;
+    color: var(--quote); letter-spacing: -0.02em;
+  }
+  .sunread .pos { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); text-align: right; line-height: 1.5; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 10px; }
+  .chips button, .views button {
+    font: inherit; font-size: 0.76rem; color: var(--ink);
+    background: #fff; border: 1px solid var(--line); border-radius: 4px;
+    padding: 5px 9px; cursor: pointer;
+  }
+  .chips button:hover, .views button:hover { border-color: var(--accent); }
+  .views { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .views button { text-align: left; }
+  .views button.wide { grid-column: span 2; }
+  .actions { display: flex; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--line); }
+  .actions button {
+    flex: 1; font: inherit; font-size: 0.8rem; cursor: pointer;
+    border-radius: 4px; padding: 8px 10px;
+    background: var(--accent); color: #fff; border: 1px solid var(--accent);
+  }
+  .actions button.ghost { background: #fff; color: var(--ink); border-color: var(--line); }
+  .back { display: block; font-size: 0.76rem; color: var(--muted); padding: 0 20px 14px; text-decoration: none; }
+  .back:hover { color: var(--accent); }
+
+  #walkhint {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    background: rgba(42, 37, 32, 0.82); color: #f5f2ed;
+    font-size: 0.8rem; padding: 8px 14px; border-radius: 4px;
+    display: none; z-index: 20; pointer-events: none;
+  }
+  #status {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; color: var(--muted); z-index: 30; background: var(--bg);
+    text-align: center; padding: 24px; line-height: 1.5;
+  }
+  #toggle { display: none; }
+
+  @media (max-width: 720px) {
+    #panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 62vh;
+             border-radius: 10px 10px 0 0; border-bottom: none;
+             padding-bottom: env(safe-area-inset-bottom, 0px); transition: transform .25s ease; }
+    #panel.closed { transform: translateY(calc(100% - 52px)); }
+    #panel header { padding: 14px 20px 10px; cursor: pointer; }
+    #toggle { display: inline; float: right; font-size: 0.78rem; color: var(--accent); }
+    #walkbtn { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { #panel { transition: none; } }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="stage"></div>
+<div id="status">Caricamento del modello…</div>
+<div id="walkhint">W A S D per muoverti · mouse per guardare · Esc per uscire</div>
+
+<aside id="panel">
+  <header id="panelhead">
+    <h1>Fienile, vista 3D <span id="toggle">Mostra controlli</span></h1>
+    <p>Modello semplificato per valutazioni rapide: proporzioni, finestre, luce naturale.</p>
+  </header>
+  <div class="scroll">
+    <section>
+      <h2>Finestre parete ovest</h2>
+      <label class="row">Piano terra <select id="varPT"></select></label>
+      <label class="row">Primo piano <select id="varP1"></select></label>
+      <p class="hint" id="raiPT"></p>
+    </section>
+
+    <section>
+      <h2>Sole a Pioltello</h2>
+      <div class="sunread">
+        <span class="time" id="timeRead">16:00</span>
+        <span class="pos" id="sunRead">az —<br>el —</span>
+      </div>
+      <input type="range" id="hour" min="5" max="22" step="0.25" value="16" aria-label="Ora del giorno">
+      <div class="chips">
+        <button data-date="12-21">21 dic</button>
+        <button data-date="03-21">21 mar</button>
+        <button data-date="06-21">21 giu</button>
+        <button data-date="09-23">23 set</button>
+      </div>
+      <label class="row">Giorno <input type="date" id="date"></label>
+    </section>
+
+    <section>
+      <h2>Punti di vista</h2>
+      <div class="views">
+        <button data-view="ovest">Facciata ovest</button>
+        <button data-view="portico">Dal portico</button>
+        <button data-view="nord">Soggiorno da nord</button>
+        <button data-view="sud">Soggiorno da sud</button>
+        <button data-view="pianta" class="wide">Piano terra dall'alto</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Materiali</h2>
+      <label class="row">Pavimento
+        <select id="floor">
+          <option value="cottoMilano">Cotto Milano Terracotta 120×120 (di progetto)</option>
+          <option value="rovere">Rovere naturale</option>
+          <option value="rovereFume">Rovere fumé</option>
+          <option value="resina">Resina grigia</option>
+          <option value="cotto">Cotto tradizionale 30×30</option>
+          <option value="gres">Gres effetto cemento 60×60</option>
+        </select>
+      </label>
+      <label class="row">Mattone
+        <select id="brick">
+          <option value="naturale">Naturale</option>
+          <option value="scialbato">Scialbato a calce</option>
+        </select>
+      </label>
+    </section>
+
+    <section>
+      <h2>Mostra</h2>
+      <label class="row">Primo piano e tetto <input type="checkbox" id="showUpper" checked></label>
+      <label class="row">Cucina di progetto <input type="checkbox" id="showKitchen" checked></label>
+      <label class="row">Arredo indicativo <input type="checkbox" id="showFurniture" checked></label>
+      <label class="row">Luci interne (sera) <input type="checkbox" id="showLights"></label>
+      <label class="row">Ombreggiatura ambientale <input type="checkbox" id="showAO" checked></label>
+      <label class="row" style="display:block">Esposizione
+        <input type="range" id="exposure" min="0.2" max="2" step="0.05" value="0.9" aria-label="Esposizione">
+      </label>
+    </section>
+  </div>
+  <div class="actions">
+    <button id="walkbtn" class="ghost">Cammina dentro</button>
+    <button id="shot">Salva immagine</button>
+  </div>
+  <a class="back" href="../index.html">Torna al menu</a>
+</aside>
+
+<script>
+  // se il modulo non parte (CDN irraggiungibile o WebGL assente) lo diciamo chiaramente
+  setTimeout(() => {
+    if (!window.__viewerReady) {
+      document.getElementById('status').textContent =
+        'Il modello non si è caricato. Serve un browser con WebGL e l\'accesso a cdn.jsdelivr.net: ricarica la pagina o prova da un altro browser.';
+    }
+  }, 15000);
+</script>
+
+<script type="module" src="./viewer_3d.js"></script>
+</body>
+</html>
