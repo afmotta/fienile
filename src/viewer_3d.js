@@ -503,15 +503,15 @@ function build() {
   box(ix0 + 0.05, 0, C.isola.z[0] + 0.05, ix0 + C.isola.lungo - 0.05, 0.1, C.isola.z[1] - 0.05, M.scuro, G.kitchen);
 
   // --- arredo indicativo: tavolo tra cucina e colonna, divano e tappeto nella metà sud
-  const tz0 = 3.55, tz1 = 5.75, tx0 = xi + 1.30, tx1 = xi + 2.30;
+  const tz0 = 4.15, tz1 = 5.15, tx0 = xi + 0.70, tx1 = xi + 2.90;
   box(tx0, 0.72, tz0, tx1, 0.76, tz1, M.legno, G.furniture);
   for (const [x, z] of [[tx0 + 0.06, tz0 + 0.06], [tx1 - 0.11, tz0 + 0.06], [tx0 + 0.06, tz1 - 0.11], [tx1 - 0.11, tz1 - 0.11]])
     box(x, 0, z, x + 0.05, 0.72, z + 0.05, M.scuro, G.furniture);
   for (let i = 0; i < 3; i++) for (const side of [-1, 1]) {
-    const z = tz0 + 0.3 + i * 0.7, x = side < 0 ? tx0 - 0.5 : tx1 + 0.08;
-    box(x, 0.44, z, x + 0.42, 0.48, z + 0.44, M.scuro, G.furniture);
-    const bx = side < 0 ? x : x + 0.38;
-    box(bx, 0.48, z, bx + 0.04, 0.85, z + 0.44, M.scuro, G.furniture);
+    const x = tx0 + 0.3 + i * 0.7, z = side < 0 ? tz0 - 0.5 : tz1 + 0.08;
+    box(x, 0.44, z, x + 0.44, 0.48, z + 0.42, M.scuro, G.furniture);
+    const bz = side < 0 ? z : z + 0.38;
+    box(x, 0.48, bz, x + 0.44, 0.85, bz + 0.04, M.scuro, G.furniture);
   }
   box(xi + 0.9, 0, 8.3, xi + 3.7, 0.012, 11.6, M.tessuto, G.furniture, { cast: false });
   const sx = xi + 3.3;
