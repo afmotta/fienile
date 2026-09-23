@@ -39,11 +39,11 @@ NORTH_ZONE_Y = 10.20                 # filo interno muro nord dell'edificio
 # ----------------------------------------------------------------------------
 PRESETS = {
     "rovere_calce": dict(floor="rovere_naturale", walls="calce_bianca", stone="pietra",
-                         ceiling="travi_rovere", kitchen="laccato_bianco", sofa="lino_sabbia"),
+                         ceiling="calce_bianca", kitchen="laccato_bianco", sofa="lino_sabbia"),
     "resina_intonaco": dict(floor="resina_grigia", walls="intonaco_bianco", stone="intonaco_bianco",
                             ceiling="intonaco_bianco", kitchen="rovere_fronti", sofa="tessuto_antracite"),
     "cotto_salvia": dict(floor="cotto", walls="calce_calda", stone="pietra",
-                         ceiling="travi_scure", kitchen="verde_salvia", sofa="velluto_ruggine"),
+                         ceiling="calce_calda", kitchen="verde_salvia", sofa="velluto_ruggine"),
 }
 SCENES = ["giorno", "sera"]
 CAMERAS = {  # nome: (posizione, punto guardato, focale mm)
@@ -263,9 +263,6 @@ LIB = {
     "calce_bianca":    lambda: m_plaster("calce_bianca", "#ece6db", grain=0.06),
     "calce_calda":     lambda: m_plaster("calce_calda", "#e3d3bc", grain=0.06),
     "pietra":          lambda: m_stone("pietra"),
-    # soffitto con travi: il materiale è quello delle travi, il fondo resta intonaco
-    "travi_rovere":    lambda: m_wood("travi_rovere", "#b58a5c", "#7d5a3a", planks=False, grain_dir="Y", rough=0.7),
-    "travi_scure":     lambda: m_wood("travi_scure", "#6e513a", "#3f2c1f", planks=False, grain_dir="Y", rough=0.7),
     # cucina
     "laccato_bianco":  lambda: m_simple("laccato_bianco", "#f2f0ec", 0.35),
     "rovere_fronti":   lambda: m_wood("rovere_fronti", "#c19b70", "#936f4b", planks=False, grain_dir="Y", rough=0.5),
@@ -321,17 +318,8 @@ def build():
     v += [(a, b, c+0.25) for a, b, c in v]
     mesh("falda_portico", v, [(0,1,2,3),(7,6,5,4),(0,4,5,1),(1,5,6,2),(2,6,7,3),(3,7,4,0)], "roof")
     box("terreno", -40, -40, -0.06, 40, 40, -0.04, "ground")
-    build_ceiling_beams()
     build_furniture()
     build_cove()
-
-def build_ceiling_beams(step=0.60, w=0.12, h=0.18):
-    x = 0.30
-    while x < ROOM_X - 0.1:
-        if not (CENTRAL_PIER[0]-0.05 < x < CENTRAL_PIER[2]+0.05):
-            box("trave", x-w/2, 0, H_CEIL-h, x+w/2, ROOM_Y, H_CEIL, "beams")
-        x += step
-    box("trave_principale", CENTRAL_PIER[0], 0, H_CEIL-0.30, CENTRAL_PIER[2], ROOM_Y, H_CEIL-h, "beams")
 
 def build_furniture():
     Hn = NORTH_WALL[0]
@@ -427,10 +415,7 @@ def apply_preset(p):
     set_role_material("floor", mat(p["floor"]))
     set_role_material("walls", mat(p["walls"]))
     set_role_material("stone", mat(p["stone"]))
-    ceil = p["ceiling"]
-    set_role_material("ceiling_base", mat(p["walls"] if ceil.startswith("travi") else ceil))
-    for ob in ROLE_OBJS.get("beams", []): ob.hide_render = not ceil.startswith("travi")
-    if ceil.startswith("travi"): set_role_material("beams", mat(ceil))
+    set_role_material("ceiling_base", mat(p["ceiling"]))
     set_role_material("kitchen", mat(p["kitchen"]))
     set_role_material("sofa", mat(p["sofa"]))
     set_role_material("worktop", m_simple("top_pietra", "#d8d3ca", 0.35))
