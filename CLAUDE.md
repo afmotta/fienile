@@ -18,6 +18,7 @@ src/
 ├── primo-piano/
 │   └── primo_piano.html                — Primo Piano (F2/F3=174cm)
 ├── viewer_3d.html / viewer_3d.js       — Vista 3D interattiva (three.js)
+├── render/render.html                — Galleria render Blender (img/ da aggiorna_render.sh)
 ├── texture/cottomilano/                — Cotto Milano 120×120 ultramatt: 6 colori × 5 facce (dal produttore, 512 px sRGB)
 ├── blender/
 │   └── fienile_pt_render.py            — Scena Blender allineata al viewer 3D + render varianti Cotto Milano

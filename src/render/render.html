@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Render Piano Terra</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f5f2ed;
+    font-family: 'DM Sans', sans-serif;
+    color: #2a2520;
+    padding: 40px 16px 60px;
+  }
+
+  .wrap { max-width: 1100px; margin: 0 auto; }
+
+  .back {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #8a7e72;
+    text-decoration: none;
+  }
+  .back:hover { color: #5a8199; }
+
+  h1 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #8a7e72;
+    margin: 20px 0 8px;
+  }
+
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #b0a698;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+    margin-bottom: 16px;
+  }
+
+  .group-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5a8199;
+    margin-bottom: 6px;
+  }
+
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .seg button {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    background: #fff;
+    border: 1px solid #e0d9d0;
+    border-radius: 6px;
+    color: #2a2520;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .seg button:hover { border-color: #5a8199; }
+  .seg button[aria-pressed="true"] {
+    border-color: #5a8199;
+    box-shadow: 0 0 0 1px #5a8199 inset;
+    color: #5a8199;
+    font-weight: 500;
+  }
+  .seg button:focus-visible { outline: 2px solid #5a8199; outline-offset: 2px; }
+
+  .swatch {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: -1px;
+    border: 1px solid rgba(0,0,0,0.12);
+  }
+
+  figure {
+    background: #fff;
+    border: 1px solid #e0d9d0;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .main-img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    background: #e8e2d9;
+  }
+
+  figcaption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #8a7e72;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  figcaption a { color: #5a8199; text-decoration: none; }
+  figcaption a:hover { text-decoration: underline; }
+
+  h2 {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5a8199;
+    margin: 32px 0 12px;
+  }
+
+  .grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+  .grid.tre { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+  .thumb {
+    font: inherit;
+    text-align: left;
+    padding: 0;
+    background: #fff;
+    border: 1px solid #e0d9d0;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .thumb:hover { border-color: #5a8199; box-shadow: 0 2px 12px rgba(90,129,153,0.12); }
+  .thumb[aria-current="true"] { border-color: #5a8199; box-shadow: 0 0 0 1px #5a8199; }
+  .thumb:focus-visible { outline: 2px solid #5a8199; outline-offset: 2px; }
+  .thumb img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #e8e2d9; }
+  .thumb span {
+    display: block;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    color: #6b5e52;
+  }
+
+  .note {
+    font-size: 0.8rem;
+    color: #8a7e72;
+    line-height: 1.6;
+    margin-top: 32px;
+    max-width: 70ch;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a class="back" href="../../index.html">← Indice</a>
+<h1>Render Piano Terra</h1>
+<div class="subtitle">
+  Blender Cycles · finestre PT variante E, P1 variante B · cucina Veneta Cucine Sakura Presa<br>
+  Pavimento Cotto Milano 120×120 ultramatt · sole reale a Pioltello il 24/09/2026
+</div>
+
+<div class="controls">
+  <div>
+    <div class="group-label" id="lbl-colore">Pavimento</div>
+    <div class="seg" id="colore" role="group" aria-labelledby="lbl-colore"></div>
+  </div>
+  <div>
+    <div class="group-label" id="lbl-scena">Scena</div>
+    <div class="seg" id="scena" role="group" aria-labelledby="lbl-scena"></div>
+  </div>
+  <div>
+    <div class="group-label" id="lbl-vista">Punto di vista</div>
+    <div class="seg" id="vista" role="group" aria-labelledby="lbl-vista"></div>
+  </div>
+</div>
+
+<figure>
+  <a id="full" href="#" target="_blank" rel="noopener"><img class="main-img" id="main" alt=""></a>
+  <figcaption><span id="caption"></span><a id="fullLink" href="#" target="_blank" rel="noopener">Apri a piena risoluzione</a></figcaption>
+</figure>
+
+<h2>Stesso punto di vista, tre colori</h2>
+<div class="grid tre" id="perColore"></div>
+
+<h2>Tutti i punti di vista</h2>
+<div class="grid" id="perVista"></div>
+
+<p class="note">
+  I render usano lo stesso modello del viewer 3D (script <code>src/blender/fienile_pt_render.py</code>):
+  la posa delle lastre è identica in tutti i colori, così il confronto riguarda solo la tinta.
+  Il divano è escluso; tavolo, sedie, tappeto e tavolino sono arredo indicativo.
+</p>
+
+</div>
+<script>
+  const COLORI = {
+    argilla:    { nome: 'Argilla',    tinta: '#d3c5b6' },
+    terracotta: { nome: 'Terracotta', tinta: '#cfa27c' },
+    mattone:    { nome: 'Mattone',    tinta: '#c58f69' },
+  };
+  const SCENE = { giorno: 'Giorno · 16:00', sera: 'Sera · 20:30, luci accese' };
+  const VISTE = {
+    sud:     'Soggiorno da sud',
+    nord:    'Soggiorno da nord',
+    portico: 'Dal portico',
+    ovest:   'Facciata ovest',
+    pianta:  'Piano terra dall\'alto',
+  };
+  const state = { colore: 'terracotta', scena: 'giorno', vista: 'sud' };
+
+  const file = (v, c, s) => `${v}__${c}__${s}.jpg`;
+  const full = (v, c, s) => `img/${file(v, c, s)}`;
+  const mini = (v, c, s) => `img/mini/${file(v, c, s)}`;
+  const $ = (id) => document.getElementById(id);
+
+  // lo stato vive nell'hash (#terracotta/giorno/sud), così un link porta alla stessa immagine
+  function readHash() {
+    const [c, s, v] = location.hash.slice(1).split('/');
+    if (COLORI[c]) state.colore = c;
+    if (SCENE[s]) state.scena = s;
+    if (VISTE[v]) state.vista = v;
+  }
+
+  function seg(el, data, key, label) {
+    el.innerHTML = '';
+    for (const [k, v] of Object.entries(data)) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', String(state[key] === k));
+      if (key === 'colore') { const sw = document.createElement('span'); sw.className = 'swatch'; sw.style.background = v.tinta; b.append(sw); }
+      b.append(label(v));
+      b.addEventListener('click', () => set({ [key]: k }));
+      el.append(b);
+    }
+  }
+
+  function thumb(src, text, current, onClick) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'thumb';
+    if (current) b.setAttribute('aria-current', 'true');
+    const img = document.createElement('img'); img.src = src; img.alt = text; img.loading = 'lazy';
+    const sp = document.createElement('span'); sp.textContent = text;
+    b.append(img, sp); b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function render() {
+    const { colore: c, scena: s, vista: v } = state;
+    seg($('colore'), COLORI, 'colore', (x) => x.nome);
+    seg($('scena'), SCENE, 'scena', (x) => x);
+    seg($('vista'), VISTE, 'vista', (x) => x);
+    const text = `${VISTE[v]} — Cotto Milano ${COLORI[c].nome} — ${SCENE[s]}`;
+    $('main').src = full(v, c, s); $('main').alt = text;
+    $('full').href = $('fullLink').href = full(v, c, s);
+    $('caption').textContent = text;
+    $('perColore').replaceChildren(...Object.keys(COLORI).map((k) =>
+      thumb(mini(v, k, s), COLORI[k].nome, k === c, () => set({ colore: k }))));
+    $('perVista').replaceChildren(...Object.keys(VISTE).map((k) =>
+      thumb(mini(k, c, s), VISTE[k], k === v, () => set({ vista: k }))));
+  }
+
+  function set(patch) {
+    Object.assign(state, patch);
+    history.replaceState(null, '', `#${state.colore}/${state.scena}/${state.vista}`);
+    render();
+  }
+
+  readHash();
+  render();
+  addEventListener('hashchange', () => { readHash(); render(); });
+</script>
+</body>
+</html>

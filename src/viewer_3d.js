@@ -807,7 +807,7 @@ on('exposure', 'input', (e) => { state.exposure = +e.target.value; renderer.tone
 const VIEWS = {
   ovest:   { pos: [-19, 4.5, P.L / 2 - 4], tgt: [0, 3.2, P.L / 2], far: true },
   portico: { pos: [-3.0, 1.6, 0.9], tgt: [0.3, 1.4, 9.5] },
-  nord:    { pos: [4.7, 1.65, 3.15], tgt: [0.9, 1.15, 13] },
+  nord:    { pos: [4.6, 1.65, 3.45], tgt: [0.9, 1.15, 13] },   // appena a sud del frigo
   sud:     { pos: [4.4, 1.6, P.L - 0.6], tgt: [0.9, 1.1, 2] },
   pianta:  { pos: [P.profEdificio / 2 - 0.5, 21, P.L / 2 + 0.01], tgt: [P.profEdificio / 2 - 0.5, 0, P.L / 2], upper: false, far: true },
 };

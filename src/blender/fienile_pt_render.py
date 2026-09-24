@@ -18,6 +18,7 @@ Uso:
   blender -b -P fienile_pt_render.py -- --preview          (bassa risoluzione, pochi campioni)
   blender    -P fienile_pt_render.py -- --build-only       (apre la scena per navigarla, niente render)
   blender -b -P fienile_pt_render.py -- --no-roof --no-p1   (come i toggle "Tetto" e "Primo piano" del viewer)
+  blender -b -P fienile_pt_render.py -- --no-sofa           (arredo senza il divano)
 """
 import bpy, bmesh, math, sys, os, argparse, colorsys, datetime
 from mathutils import Vector, Euler
@@ -79,7 +80,7 @@ VAR_P1 = {"B": _p1(1.74), "A": _p1(1.60), "C": _p1(1.80), "D": _p1(2.00)}
 CAMERAS = {
     "ovest":   dict(pos=(-19, 4.5, P["L"] / 2 - 4), tgt=(0, 3.2, P["L"] / 2)),
     "portico": dict(pos=(-3.0, 1.6, 0.9), tgt=(0.3, 1.4, 9.5)),
-    "nord":    dict(pos=(4.7, 1.65, 3.15), tgt=(0.9, 1.15, 13)),
+    "nord":    dict(pos=(4.6, 1.65, 3.45), tgt=(0.9, 1.15, 13)),   # appena a sud del frigo
     "sud":     dict(pos=(4.4, 1.6, P["L"] - 0.6), tgt=(0.9, 1.1, 2)),
     "pianta":  dict(pos=(P["profEdificio"] / 2 - 0.5, 21, P["L"] / 2 + 0.01),
                     tgt=(P["profEdificio"] / 2 - 0.5, 0, P["L"] / 2), upper=False),
@@ -109,6 +110,8 @@ def reset():
     GROUPS.clear(); FLOOR_OBJS.clear()
     for g in ("pt", "upper", "roof", "kitchen", "furniture", "lights", "ground"):
         GROUPS[g] = bpy.data.collections.new(g); ROOT.children.link(GROUPS[g])
+    # il divano sta in una collection figlia dell'arredo, per poterlo escludere da solo
+    GROUPS["sofa"] = bpy.data.collections.new("sofa"); GROUPS["furniture"].children.link(GROUPS["sofa"])
 
 def V(x, y, z):
     """viewer (x est, y alto, z sud) → Blender (X est, Y nord, Z alto); Y = 0 sulla testata sud interna."""
@@ -657,8 +660,8 @@ def build(var_pt, var_p1):
             box(x, 0.48, bzz, x + 0.44, 0.85, bzz + 0.04, "scuro", "furniture", "schienale")
     box(xi + 0.9, 0, 8.3, xi + 3.7, 0.012, 11.6, "tessuto", "furniture", "tappeto")
     sx = xi + 3.3
-    box(sx, 0.1, 8.5, sx + 0.95, 0.42, 11.4, "tessuto", "furniture", "divano")
-    box(sx + 0.72, 0.42, 8.5, sx + 0.95, 0.82, 11.4, "tessuto", "furniture", "divano_schienale")
+    box(sx, 0.1, 8.5, sx + 0.95, 0.42, 11.4, "tessuto", "sofa", "divano")
+    box(sx + 0.72, 0.42, 8.5, sx + 0.95, 0.82, 11.4, "tessuto", "sofa", "divano_schienale")
     box(xi + 1.6, 0, 9.4, xi + 2.4, 0.36, 10.4, "legno", "furniture", "tavolino")
 
     # --- luci interne: profili LED a sguscio + punti luce caldi
@@ -750,7 +753,7 @@ def cameras():
 def set_visibility(cam, a, lights):
     upper = CAMERAS[cam].get("upper", True)
     show = dict(upper=upper and not a.no_p1, roof=upper and not a.no_roof,
-                kitchen=not a.no_kitchen, furniture=not a.no_furniture, lights=lights)
+                kitchen=not a.no_kitchen, furniture=not a.no_furniture, sofa=not a.no_sofa, lights=lights)
     for g, v in show.items():
         GROUPS[g].hide_render = GROUPS[g].hide_viewport = not v
 
@@ -782,6 +785,13 @@ def render_setup(preview, gpu):
     except Exception: pass
     sc.render.image_settings.file_format = "PNG"
 
+def is_black(path):
+    # un render interrotto dalla GPU viene salvato tutto nero: lo riconosciamo per riprovare
+    import numpy as np
+    im = bpy.data.images.load(path); px = np.empty(im.size[0] * im.size[1] * 4, np.float32)
+    im.pixels.foreach_get(px); bpy.data.images.remove(im)
+    return float(px.reshape(-1, 4)[:, :3].max()) < 0.02
+
 def main():
     argv = sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else []
     ap = argparse.ArgumentParser()
@@ -801,6 +811,7 @@ def main():
     ap.add_argument("--no-roof", action="store_true", help="nasconde il tetto")
     ap.add_argument("--no-kitchen", action="store_true", help="nasconde la cucina (Sakura)")
     ap.add_argument("--no-furniture", action="store_true", help="nasconde l'arredo indicativo")
+    ap.add_argument("--no-sofa", action="store_true", help="nasconde solo il divano")
     a = ap.parse_args(argv)
     reset(); build(a.var_pt, a.var_p1); cams = cameras(); render_setup(a.preview, a.gpu)
     presets = a.preset or list(PRESETS); scenes = a.scene or list(SCENES); camnames = a.camera or list(CAMERAS)
@@ -818,8 +829,11 @@ def main():
                 set_visibility(cn, a, sk == "sera")
                 sc.camera = cams[cn]
                 sc.render.filepath = os.path.join(out, f"{cn}__PT-{a.var_pt}__{pn}__{sk}.png")
-                print("RENDER", sc.render.filepath, flush=True)
-                bpy.ops.render.render(write_still=True)
+                for tentativo in range(3):
+                    print("RENDER", sc.render.filepath, flush=True)
+                    bpy.ops.render.render(write_still=True)
+                    if not is_black(sc.render.filepath): break
+                    print("RENDER NERO, lo rifaccio", flush=True)   # a volte Cycles su GPU si interrompe senza errori
 
 if __name__ == "__main__":
     main()
