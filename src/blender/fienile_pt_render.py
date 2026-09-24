@@ -481,15 +481,18 @@ def west_wall(y0, windows, group, ox=0.0):
             box(ox - 0.04, y0 + sill - 0.03, a - 0.03, ox + t - 0.1, y0 + sill, b + 0.03, "davanzale", group, "davanzale")
         box(ox, top, a, ox + t, y0 + H, b, WALL, group, "architrave")
         if sill == 0: box(ox - 0.02, y0 - 0.02, a, ox + t, y0, b, "davanzale", group, "soglia")
-        # telaio a ~2/3 dello spessore, verso l'interno
-        fx0, fx1, fw, yb = ox + t - 0.16, ox + t - 0.09, 0.055, y0 + sill
+        # telaio a ~2/3 dello spessore, verso l'interno: traversi a tutta larghezza, montanti tra i traversi
+        # e vetri solo nelle luci; i pezzi non si compenetrano (agli incroci Cycles dava pixel neri)
+        fx0, fx1, fw, yb, mw = ox + t - 0.16, ox + t - 0.09, 0.055, y0 + sill, 0.03
         box(fx0, yb, a, fx1, yb + fw, b, "telaio", group, "telaio")
         box(fx0, top - fw, a, fx1, top, b, "telaio", group, "telaio")
-        box(fx0, yb, a, fx1, top, a + fw, "telaio", group, "telaio")
-        box(fx0, yb, b - fw, fx1, top, b, "telaio", group, "telaio")
+        box(fx0, yb + fw, a, fx1, top - fw, a + fw, "telaio", group, "telaio")
+        box(fx0, yb + fw, b - fw, fx1, top - fw, b, "telaio", group, "telaio")
         # come nei prospetti: le finestre grandi sono divise in due, le strette hanno un'anta sola
-        if w > 1.1: box(fx0, yb, a + w / 2 - 0.03, fx1, top, a + w / 2 + 0.03, "telaio", group, "montante")
-        box(fx0 + 0.03, yb, a, fx0 + 0.035, top, b, "vetro", group, "vetro")
+        zm = a + w / 2
+        luci = [(a + fw, zm - mw), (zm + mw, b - fw)] if w > 1.1 else [(a + fw, b - fw)]
+        if w > 1.1: box(fx0, yb + fw, zm - mw, fx1, top - fw, zm + mw, "telaio", group, "montante")
+        for za, zb in luci: box(fx0 + 0.03, yb + fw, za, fx0 + 0.035, top - fw, zb, "vetro", group, "vetro")
 
 def railing(yb, z0, z1, group):
     """Parapetto in ferro: corrimano e corrente inferiore piatti, montanti, bacchette verticali."""

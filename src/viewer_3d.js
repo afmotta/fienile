@@ -437,15 +437,17 @@ function westWall(y0, windows, group, ox = 0) {
     }
     box(ox, top, a, ox + t, y0 + H, b, WALL(), group);                       // architrave
     if (sill === 0) box(ox - 0.02, y0 - 0.02, a, ox + t, y0, b, M.davanzale, group, { cast: false }); // soglia
-    // telaio a ~2/3 dello spessore, verso l'interno
-    const fx0 = ox + t - 0.16, fx1 = ox + t - 0.09, fw = 0.055, yb = y0 + sill;
+    // telaio a ~2/3 dello spessore, verso l'interno: traversi a tutta larghezza, montanti tra i traversi
+    // e vetri solo nelle luci, senza pezzi che si compenetrano (in Blender davano pixel neri agli incroci)
+    const fx0 = ox + t - 0.16, fx1 = ox + t - 0.09, fw = 0.055, yb = y0 + sill, mw = 0.03;
     box(fx0, yb, a, fx1, yb + fw, b, M.telaio, group);
     box(fx0, top - fw, a, fx1, top, b, M.telaio, group);
-    box(fx0, yb, a, fx1, top, a + fw, M.telaio, group);
-    box(fx0, yb, b - fw, fx1, top, b, M.telaio, group);
+    box(fx0, yb + fw, a, fx1, top - fw, a + fw, M.telaio, group);
+    box(fx0, yb + fw, b - fw, fx1, top - fw, b, M.telaio, group);
     // come nei prospetti: le finestre grandi sono divise in due (2 ante, o scorrevole + fisso), le strette hanno un'anta sola
-    if (w > 1.1) box(fx0, yb, a + w / 2 - 0.03, fx1, top, a + w / 2 + 0.03, M.telaio, group);
-    box(fx0 + 0.03, yb, a, fx0 + 0.035, top, b, M.vetro, group, { cast: false });
+    const zm = a + w / 2, luci = w > 1.1 ? [[a + fw, zm - mw], [zm + mw, b - fw]] : [[a + fw, b - fw]];
+    if (w > 1.1) box(fx0, yb + fw, zm - mw, fx1, top - fw, zm + mw, M.telaio, group);
+    for (const [za, zb] of luci) box(fx0 + 0.03, yb + fw, za, fx0 + 0.035, top - fw, zb, M.vetro, group, { cast: false });
   }
 }
 
