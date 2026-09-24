@@ -92,12 +92,13 @@ CAMERAS = {
 FOV_Y = 55            # apertura verticale della camera del viewer (gradi)
 
 # preset: cambia solo il colore del Cotto Milano (pavimento PT, portico, terrazzo)
-PRESETS = ("argilla", "creta", "terracotta", "mattone")
+PRESETS = ("creta", "terracotta")
 # giorno: sole all'ora scelta, luci spente; sera: luci interne accese (toggle "Luci interne" del viewer)
 SCENES = ("giorno", "sera")
 
 # Cotto Milano 120×120 ultramatt: stessi parametri di COTTO_MILANO nel viewer.
-TEX_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "texture", "cottomilano")
+TEX_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "texture")
+TEX_DIR = os.path.join(TEX_ROOT, "cottomilano")
 COTTO = dict(facce=5, nx=8, nz=12, lato=1.2, seme=57, px=512)
 
 # ----------------------------------------------------------------------------
@@ -401,6 +402,17 @@ def m_cotto(colore, rough=0.85, suffix=""):
     nt.links.new(coords(nt), nz.inputs["Vector"]); bump(nt, nz.outputs["Fac"], p, 0.05, 0.002)
     return m
 
+def m_photo(name, rel, meters, rough=0.5):
+    """Foto di un materiale del produttore (src/texture/<rel>) sulle UV in metri, ripetuta a specchio."""
+    m, r = new_mat(name)
+    if not r: return m
+    nt, p = r
+    tx = node(nt, "ShaderNodeTexImage"); tx.extension = "MIRROR"
+    tx.image = bpy.data.images.load(os.path.join(TEX_ROOT, rel), check_existing=True)
+    nt.links.new(uv_coords(nt, (1 / meters[0], 1 / meters[1], 1)), tx.inputs["Vector"])
+    nt.links.new(tx.outputs["Color"], p.inputs["Base Color"]); p.inputs["Roughness"].default_value = rough
+    return m
+
 def m_emit(name, kelvin=3000, strength=18):
     m = bpy.data.materials.get(name)
     if m: return m
@@ -428,7 +440,7 @@ LIB = {
     "coppi":       lambda: m_simple("coppi", "#9f5638", 0.85),
     "tavolato":    lambda: m_wood("tavolato", "#80664f", "#5a4636", grain_dir="Y", rough=0.8),
     "prato":       lambda: m_simple("prato", "#66753f", 1.0),
-    "ante":        lambda: m_wood("ante_rovere", "#d0a47a", "#a8784e", planks=False, grain_dir="Z", rough=0.6),
+    "ante":        lambda: m_photo("ante_rovere", "cucina/rovere_ikebana.jpg", (0.30, 0.283), 0.6),  # rovere Ikebana
     "laccato":     lambda: m_simple("laccato_verde_avocado", "#8c8a62", 0.7),
     "travertino":  lambda: m_plaster("travertino", "#dccab0", rough=0.55, grain=0.01),
     "bronzo":      lambda: m_simple("bronzo", "#5f4b37", 0.45, metal=0.6),

@@ -215,23 +215,14 @@ function tileTex(size, c1, c2, joint, seed, tilesPerTex) {
     }
   });
 }
-function grainTex(base, seed) {
-  // venatura continua per le ante in rovere (senza doghe): tassello 0,8 × 1,6 m, fibra verticale
-  const [r0, g0, b0] = base;
-  return canvasTex(512, 1024, [0.8, 1.6], (g, w, h) => {
-    const rnd = rand(seed);
-    g.fillStyle = `rgb(${r0},${g0},${b0})`; g.fillRect(0, 0, w, h);
-    for (let i = 0; i < 260; i++) {
-      const x = rnd() * w;
-      g.globalAlpha = 0.05 + rnd() * 0.08;
-      g.strokeStyle = rnd() > 0.45 ? '#5a3b22' : '#f4dcc0';
-      g.lineWidth = 0.6 + rnd() * 2.2;
-      g.beginPath(); g.moveTo(x, 0);
-      g.bezierCurveTo(x + (rnd() - 0.5) * 30, h * 0.33, x + (rnd() - 0.5) * 30, h * 0.66, x, h);
-      g.stroke();
-    }
-    g.globalAlpha = 1;
-  });
+// foto di un materiale del produttore, ripetuta a specchio (niente giunte) alla scala reale
+function photoTex(url, meters) {
+  const t = new THREE.TextureLoader().load(url);
+  t.wrapS = t.wrapT = THREE.MirroredRepeatWrapping;
+  t.repeat.set(1 / meters[0], 1 / meters[1]);
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
 }
 function brickTex(seed) {
   // mattone ~25 × 5,5 cm, fuga 1 cm: il tassello è 1,04 × 0,52 m (4 teste × 8 corsi)
@@ -341,7 +332,8 @@ const TEX = {
   plaster: noiseTex([1, 1], 18, 7),
   rovere: woodTex([206, 158, 104], 11),
   rovereFume: woodTex([128, 102, 80], 12),
-  anteRovere: grainTex([196, 150, 104], 17),
+  // rovere Ikebana della Sakura: campione Veneta Cucine ritagliato, circa 30 × 28 cm, fibra verticale
+  anteRovere: photoTex('./texture/cucina/rovere_ikebana.jpg', [0.30, 0.283]),
   cotto: tileTex(0.30, '#b4643e', '#9c5230', '#bdb4a6', 13, 4),
   gres: tileTex(0.60, '#a6a29b', '#9c9891', '#8f8b85', 14, 2),
   resina: noiseTex([2, 2], 26, 15),
