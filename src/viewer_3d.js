@@ -39,7 +39,24 @@ const P = {
   parapetto: { h: 1.00, arretramento: 0.06, passo: 0.114, bacchetta: 0.014, montante: 0.04, interasseMontanti: 1.50 },
   // tetto (dalla sezione di rilievo): quote dell'intradosso rispetto al pavimento PT
   tetto: { colmoX: 6.30, colmoH: 8.80, hOvest: 6.10, grondaOvestX: -4.80, hEst: 7.10, grondaEstX: 11.90 },
-  cucina: { banco: { z: [0, 0.60], lungo: 3.60 }, isola: { z: [1.80, 2.80], x0: 1.20, lungo: 2.40 }, h: 0.90 },
+};
+
+// Cucina Veneta Cucine "Sakura Presa" (ordine del 28/07/2026), dai disegni esecutivi del rivenditore.
+// u = lungo la parete, s = distanza dalla parete (metri). Parete nord: u dal filo interno ovest;
+// parete ovest ed est: u dalla testata nord. Basi h 912 (zoccolo 120, top Caranto Ker 12 mm), colonne h 2420.
+const CUCINA = {
+  hZoccolo: 0.12, hScocca: 0.90, hTop: 0.012, pBase: 0.60, pTop: 0.63, hColonna: 2.42, pColonna: 0.78,
+  schienale: 0.558, alzatina: 0.06,
+  // basi: [u0, u1, tipo]; tipo = cassetti (2 cestoni con gola intermedia), anta, fianco, giorno (vano a giorno)
+  nord:  { u: [0, 3.76], moduli: [[0.63, 0.76, 'fianco'], [0.76, 1.51, 'cassetti'], [1.51, 2.71, 'cassetti'], [2.71, 3.46, 'cassetti'], [3.46, 3.76, 'anta']] },
+  ovest: { u: [0.63, 3.34], moduli: [[0.63, 1.30, 'anta'], [1.30, 2.50, 'cassetti'], [2.50, 3.10, 'anta'], [3.10, 3.34, 'giorno']] },
+  // colonne laccate lungo la parete est: walk-in d'angolo, forno + micro, estraibile, fianchi
+  colonne: [[0, 1.45, 'walkin'], [1.45, 2.05, 'forno'], [2.05, 2.08, 'fianco'], [2.08, 2.38, 'estraibile'], [2.38, 2.45, 'fianco']],
+  frigo: { u: [2.45, 3.283], h: 1.793 },                       // frigo americano del cliente, libera installazione
+  isola: { x: [1.75, 2.83], z: [1.64, 3.29], ante: 4 },        // 4 ante L 397 per lato
+  piano: { u: 2.11, s: 0.315, w: 0.80, d: 0.52 },               // Bosch PVQ811H26E, induzione con cappa integrata
+  lavello: { u: [1.53, 2.27], s: [0.12, 0.52], rubinetto: 1.90 }, // Franke MRG 110-72 Sahara, sotto la finestra F1
+  presa: { x: 2.04, z: 2.18 },                                  // presa a scomparsa sul top dell'isola
 };
 
 // finestra = [posizione da nord, larghezza, altezza, davanzale]
@@ -198,6 +215,24 @@ function tileTex(size, c1, c2, joint, seed, tilesPerTex) {
     }
   });
 }
+function grainTex(base, seed) {
+  // venatura continua per le ante in rovere (senza doghe): tassello 0,8 × 1,6 m, fibra verticale
+  const [r0, g0, b0] = base;
+  return canvasTex(512, 1024, [0.8, 1.6], (g, w, h) => {
+    const rnd = rand(seed);
+    g.fillStyle = `rgb(${r0},${g0},${b0})`; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 260; i++) {
+      const x = rnd() * w;
+      g.globalAlpha = 0.05 + rnd() * 0.08;
+      g.strokeStyle = rnd() > 0.45 ? '#5a3b22' : '#f4dcc0';
+      g.lineWidth = 0.6 + rnd() * 2.2;
+      g.beginPath(); g.moveTo(x, 0);
+      g.bezierCurveTo(x + (rnd() - 0.5) * 30, h * 0.33, x + (rnd() - 0.5) * 30, h * 0.66, x, h);
+      g.stroke();
+    }
+    g.globalAlpha = 1;
+  });
+}
 function brickTex(seed) {
   // mattone ~25 × 5,5 cm, fuga 1 cm: il tassello è 1,04 × 0,52 m (4 teste × 8 corsi)
   return canvasTex(512, 256, [1.04, 0.52], (g, w, h) => {
@@ -306,6 +341,7 @@ const TEX = {
   plaster: noiseTex([1, 1], 18, 7),
   rovere: woodTex([206, 158, 104], 11),
   rovereFume: woodTex([128, 102, 80], 12),
+  anteRovere: grainTex([196, 150, 104], 17),
   cotto: tileTex(0.30, '#b4643e', '#9c5230', '#bdb4a6', 13, 4),
   gres: tileTex(0.60, '#a6a29b', '#9c9891', '#8f8b85', 14, 2),
   resina: noiseTex([2, 2], 26, 15),
@@ -333,8 +369,15 @@ const M = {
   coppi:    std({ color: 0x9f5638, roughness: 0.85 }),
   tavolato: std({ map: TEX.rovereFume, roughness: 0.8 }),
   prato:    std({ color: 0x66753f, roughness: 1 }),
-  cucina:   std({ color: 0xf0eee9, roughness: 0.4 }),
-  top:      std({ color: 0xd6d0c5, roughness: 0.35 }),
+  ante:     std({ map: TEX.anteRovere, roughness: 0.6 }),                    // rovere Ikebana
+  laccato:  std({ color: 0x8c8a62, roughness: 0.7 }),                         // laccato verde avocado opaco
+  travertino: std({ color: 0xdccab0, map: TEX.plaster, roughness: 0.55 }),    // Caranto Ker travertino opaco
+  bronzo:   std({ color: 0x5f4b37, roughness: 0.45, metalness: 0.6 }),        // gola e zoccolo bronzo opaco
+  vetroNero: std({ color: 0x111111, roughness: 0.15, metalness: 0.2 }),       // forno, micro, piano cottura
+  lavello:  std({ color: 0xc9b393, roughness: 0.6 }),                         // Franke fragranite Sahara
+  vasca:    std({ color: 0x9c8769, roughness: 0.7 }),                         // fondo della vasca, in ombra
+  cromo:    std({ color: 0xd8d8d8, roughness: 0.15, metalness: 1 }),
+  frigo:    std({ color: 0x2c2c2e, roughness: 0.35, metalness: 0.5 }),
   legno:    std({ map: TEX.rovere, color: 0xc9b39a, roughness: 0.6 }),
   tessuto:  std({ color: 0xc8baa3, roughness: 1 }),
   scuro:    std({ color: 0x222222, roughness: 0.5, metalness: 0.4 }),
@@ -515,15 +558,7 @@ function build() {
   extrude(lay(under, 0, 0.12), -tt - 0.5, L + tt + 0.5, M.tavolato, G.roof);
   extrude(lay(under, 0.12, 0.32), -tt - 0.6, L + tt + 0.6, M.coppi, G.roof);
 
-  // --- cucina di progetto (banco lungo la testata nord, isola)
-  const C = P.cucina;
-  box(xi, 0.1, C.banco.z[0], xi + C.banco.lungo, C.h - 0.04, C.banco.z[1], M.cucina, G.kitchen);
-  box(xi, C.h - 0.04, C.banco.z[0], xi + C.banco.lungo, C.h, C.banco.z[1] + 0.02, M.top, G.kitchen);
-  box(xi, 0, C.banco.z[0], xi + C.banco.lungo, 0.1, C.banco.z[1] - 0.05, M.scuro, G.kitchen);
-  const ix0 = xi + C.isola.x0;
-  box(ix0, 0.1, C.isola.z[0], ix0 + C.isola.lungo, C.h - 0.04, C.isola.z[1], M.cucina, G.kitchen);
-  box(ix0 - 0.02, C.h - 0.04, C.isola.z[0] - 0.02, ix0 + C.isola.lungo + 0.02, C.h, C.isola.z[1] + 0.02, M.top, G.kitchen);
-  box(ix0 + 0.05, 0, C.isola.z[0] + 0.05, ix0 + C.isola.lungo - 0.05, 0.1, C.isola.z[1] - 0.05, M.scuro, G.kitchen);
+  kitchen(xi, xs);
 
   // --- arredo indicativo: tavolo tra cucina e colonna, divano e tappeto nella metà sud
   const tz0 = 4.15, tz1 = 5.15, tx0 = xi + 0.70, tx1 = xi + 2.90;
@@ -554,6 +589,94 @@ function build() {
 
   scene.add(house);
   applyVisibility();
+}
+
+// cucina reale (CUCINA): basi a L su pareti nord e ovest, colonne sulla parete est, isola
+function kitchen(xi, xs) {
+  const C = CUCINA, g = G.kitchen, gap = 0.0015, tf = 0.02;
+  const yz = C.hZoccolo, yb = C.hScocca, yt = yb + C.hTop;
+  // un "lato" traduce (u lungo la parete, s dalla parete, y) in coordinate di scena
+  const lato = {
+    nord:  (u0, u1, s0, s1, y0, y1, m) => box(xi + u0, y0, s0, xi + u1, y1, s1, m, g),
+    ovest: (u0, u1, s0, s1, y0, y1, m) => box(xi + s0, y0, u0, xi + s1, y1, u1, m, g),
+    est:   (u0, u1, s0, s1, y0, y1, m) => box(xs - s1, y0, u0, xs - s0, y1, u1, m, g),
+  };
+  // frontale di un modulo alto s = sp; ante con fughe da 3 mm, cestoni con gola intermedia bronzo
+  function fronte(L, u0, u1, sp, tipo, y0, y1, mat) {
+    const a = u0 + gap, b = u1 - gap, f = (ya, yb2) => L(a, b, sp - tf, sp, ya + gap, yb2 - gap, mat);
+    if (tipo === 'cassetti') { const ym = (y0 + y1) / 2; f(y0, ym - 0.0125); f(ym + 0.0125, y1); }
+    else if (tipo === 'giorno') {                                       // vano a giorno: fianchi, ripiano, schienale
+      L(u0, u0 + tf, 0, sp, y0, y1, M.ante); L(u1 - tf, u1, 0, sp, y0, y1, M.ante);
+      L(u0, u1, 0, sp, y0, y0 + tf, M.ante); L(u0, u1, 0, sp, (y0 + y1) / 2 - tf / 2, (y0 + y1) / 2 + tf / 2, M.ante);
+      L(u0, u1, 0, tf, y0, y1, M.ante);
+    } else f(y0, y1);
+  }
+  function basi(L, run, u1Top) {
+    const [u0, u1] = run.u;
+    L(u0, u1, 0, C.pBase - 0.06, 0, yz, M.bronzo);                     // zoccolo arretrato
+    for (const [a, b, tipo] of run.moduli)                              // scocca: si vede solo nelle fughe
+      if (tipo !== 'giorno') L(a === run.moduli[0][0] ? u0 : a, b, 0, C.pBase - tf, yz, yb, M.bronzo);
+    for (const [a, b, tipo] of run.moduli) fronte(L, a, b, C.pBase, tipo, yz, yb, M.ante);
+    L(u0, u1Top ?? u1, 0, C.pTop, yb, yt, M.travertino);               // top
+  }
+  // le basi nord arrivano fino alla walk-in; l'eventuale differenza con la parete est è un tamponamento
+  const uCol = xs - xi - C.pColonna;
+  basi(lato.nord, C.nord, uCol);
+  if (uCol - C.nord.u[1] > 0.005) {
+    lato.nord(C.nord.u[1], uCol, 0, C.pBase - 0.06, 0, yz, M.bronzo);
+    fronte(lato.nord, C.nord.u[1], uCol, C.pBase, 'anta', yz, yb, M.ante);
+  }
+  basi(lato.ovest, C.ovest);
+  // schienale sulla parete nord e fino alla finestra F1 sulla ovest, alzatina sotto la finestra
+  const uF1 = Math.min(VAR_PT[state.varPT].f[0][0] - 0.03, C.ovest.u[1]);
+  lato.nord(0, uCol, 0, 0.012, yt, yt + C.schienale, M.travertino);
+  lato.ovest(0.012, uF1, 0, 0.012, yt, yt + C.schienale, M.travertino);
+  lato.ovest(uF1, C.ovest.u[1], 0, 0.012, yt, yt + C.alzatina, M.travertino);
+  // piano cottura a filo top, lavello sottotop con rubinetto
+  const pc = C.piano;
+  lato.nord(pc.u - pc.w / 2, pc.u + pc.w / 2, pc.s - pc.d / 2, pc.s + pc.d / 2, yt, yt + 0.003, M.vetroNero);
+  const lv = C.lavello;
+  lato.ovest(lv.u[0], lv.u[1], lv.s[0], lv.s[1], yt, yt + 0.002, M.lavello);
+  lato.ovest(lv.u[0] + 0.03, lv.u[1] - 0.03, lv.s[0] + 0.03, lv.s[1] - 0.03, yt + 0.002, yt + 0.003, M.vasca);
+  lato.ovest(lv.rubinetto - 0.015, lv.rubinetto + 0.015, 0.05, 0.08, yt, yt + 0.42, M.cromo);
+  lato.ovest(lv.rubinetto - 0.012, lv.rubinetto + 0.012, 0.05, 0.30, yt + 0.40, yt + 0.42, M.cromo);
+
+  // colonne laccate sulla parete est
+  const pc2 = C.pColonna, yc = C.hColonna;
+  for (const [a, b, tipo] of C.colonne) {
+    lato.est(a, b, 0, pc2 - 0.06, 0, yz, M.bronzo);
+    lato.est(a, b, 0, pc2 - tf, yz, yc, tipo === 'fianco' ? M.laccato : M.bronzo);
+    if (tipo === 'fianco') { lato.est(a, b, pc2 - tf, pc2, 0, yc, M.laccato); continue; }
+    if (tipo === 'walkin') { fronte(lato.est, a, a + 0.46, pc2, 'anta', yz, yc, M.laccato); fronte(lato.est, a + 0.46, b, pc2, 'anta', yz, yc, M.laccato); }
+    else if (tipo === 'forno') {                                         // anta, forno, micro, anta
+      fronte(lato.est, a, b, pc2, 'anta', yz, 0.68, M.laccato);
+      fronte(lato.est, a, b, pc2, 'anta', 0.68, 1.28, M.vetroNero);
+      fronte(lato.est, a, b, pc2, 'anta', 1.28, 1.665, M.vetroNero);
+      fronte(lato.est, a, b, pc2, 'anta', 1.665, yc, M.laccato);
+    } else fronte(lato.est, a, b, pc2, 'anta', yz, yc, M.laccato);
+  }
+  // frigo americano a due ante + due cassetti
+  const fr = C.frigo, fu0 = fr.u[0] + 0.005, fu1 = fr.u[1] - 0.005, fm = (fu0 + fu1) / 2;
+  lato.est(fu0, fu1, 0.04, 0.74, 0.02, fr.h, M.frigo);
+  for (const [ya, yb2] of [[0.02, 0.5], [0.52, 0.93], [0.95, fr.h]]) {
+    if (ya < 0.9) lato.est(fu0, fu1, 0.74, 0.76, ya, yb2, M.frigo);
+    else { lato.est(fu0, fm - 0.003, 0.74, 0.76, ya, yb2, M.frigo); lato.est(fm + 0.003, fu1, 0.74, 0.76, ya, yb2, M.frigo); }
+  }
+
+  // isola: ante sui due lati lunghi, fianchi in rovere sulle testate, presa a scomparsa sul top
+  const I = C.isola, [ix0, ix1] = I.x.map((v) => xi + v), [iz0, iz1] = I.z;
+  box(ix0 + 0.06, 0, iz0 + 0.06, ix1 - 0.06, yz, iz1 - 0.06, M.bronzo, g);
+  box(ix0 + 0.02 + tf, yz, iz0 + tf, ix1 - 0.02 - tf, yb, iz1 - tf, M.bronzo, g);
+  box(ix0 + 0.02, yz, iz0, ix1 - 0.02, yb, iz0 + tf, M.ante, g);
+  box(ix0 + 0.02, yz, iz1 - tf, ix1 - 0.02, yb, iz1, M.ante, g);
+  const dz = (iz1 - iz0 - 2 * tf) / I.ante;
+  for (let i = 0; i < I.ante; i++) {
+    const za = iz0 + tf + i * dz + gap, zb = za + dz - 2 * gap;
+    box(ix0 + 0.02, yz + gap, za, ix0 + 0.02 + tf, yb - gap, zb, M.ante, g);
+    box(ix1 - 0.02 - tf, yz + gap, za, ix1 - 0.02, yb - gap, zb, M.ante, g);
+  }
+  box(ix0, yb, iz0, ix1, yt, iz1, M.travertino, g);
+  box(xi + C.presa.x - 0.03, yt, C.presa.z - 0.03, xi + C.presa.x + 0.03, yt + 0.01, C.presa.z + 0.03, M.vetroNero, g);
 }
 
 /* ==========================================================================
