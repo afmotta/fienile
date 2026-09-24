@@ -132,7 +132,7 @@
     gap: 10px;
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   }
-  .grid.tre { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .grid.colori { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 
   .thumb {
     font: inherit;
@@ -195,8 +195,8 @@
   <figcaption><span id="caption"></span><a id="fullLink" href="#" target="_blank" rel="noopener">Apri a piena risoluzione</a></figcaption>
 </figure>
 
-<h2>Stesso punto di vista, tre colori</h2>
-<div class="grid tre" id="perColore"></div>
+<h2>Stesso punto di vista, tutti i colori</h2>
+<div class="grid colori" id="perColore"></div>
 
 <h2>Tutti i punti di vista</h2>
 <div class="grid" id="perVista"></div>
@@ -212,6 +212,7 @@
 <script>
   const COLORI = {
     argilla:    { nome: 'Argilla',    tinta: '#d3c5b6' },
+    creta:      { nome: 'Creta',      tinta: '#dcc1a2' },
     terracotta: { nome: 'Terracotta', tinta: '#cfa27c' },
     mattone:    { nome: 'Mattone',    tinta: '#c58f69' },
   };

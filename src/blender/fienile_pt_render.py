@@ -92,7 +92,7 @@ CAMERAS = {
 FOV_Y = 55            # apertura verticale della camera del viewer (gradi)
 
 # preset: cambia solo il colore del Cotto Milano (pavimento PT, portico, terrazzo)
-PRESETS = ("argilla", "terracotta", "mattone")
+PRESETS = ("argilla", "creta", "terracotta", "mattone")
 # giorno: sole all'ora scelta, luci spente; sera: luci interne accese (toggle "Luci interne" del viewer)
 SCENES = ("giorno", "sera")
 
