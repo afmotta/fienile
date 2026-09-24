@@ -66,7 +66,7 @@ const VAR_P1 = {
 const $ = (id) => document.getElementById(id);
 const state = {
   varPT: 'E', varP1: 'B',
-  floorPT: 'terracotta', floorP1: 'rovere', brick: 'naturale',
+  floorPT: 'terracotta', floorP1: 'rovere',
   showUpper: true, showRoof: true, showKitchen: true, showFurniture: true, showLights: false, showAO: true,
   exposure: 0.9, hour: 16, date: null,
 };
@@ -198,7 +198,7 @@ function tileTex(size, c1, c2, joint, seed, tilesPerTex) {
     }
   });
 }
-function brickTex(limewash, seed) {
+function brickTex(seed) {
   // mattone ~25 × 5,5 cm, fuga 1 cm: il tassello è 1,04 × 0,52 m (4 teste × 8 corsi)
   return canvasTex(512, 256, [1.04, 0.52], (g, w, h) => {
     const rnd = rand(seed), bw = w / 4, ch = h / 8, mortar = 5;
@@ -211,16 +211,10 @@ function brickTex(limewash, seed) {
         g.fillRect(i * bw + off + mortar / 2, row * ch + mortar / 2, bw - mortar, ch - mortar);
       }
     }
-    if (limewash) {
-      for (let k = 0; k < 90; k++) {
-        g.fillStyle = `rgba(236,231,221,${0.25 + rnd() * 0.45})`;
-        g.beginPath(); g.ellipse(rnd() * w, rnd() * h, 20 + rnd() * 60, 10 + rnd() * 30, 0, 0, Math.PI * 2); g.fill();
-      }
-    }
   });
 }
 
-function latticeTex(limewash, seed) {
+function latticeTex(seed) {
   // mattoni 25 × 5,5 cm con vuoti di 12,5 cm, corsi alterni sfalsati di mezzo passo.
   // Tassello: 0,75 m (2 mattoni + 2 vuoti) × 0,13 m (2 corsi). Il vuoto è trasparente.
   const pxm = 800, W = 0.75 * pxm, Hh = 0.13 * pxm;
@@ -235,7 +229,6 @@ function latticeTex(limewash, seed) {
         const k = 0.78 + rnd() * 0.32;
         g.fillStyle = `rgb(${150 * k | 0},${78 * k * (0.9 + rnd() * 0.2) | 0},${54 * k | 0})`;
         g.fillRect(x, y, bw, ch - m);
-        if (limewash) { g.fillStyle = `rgba(236,231,221,${0.3 + rnd() * 0.4})`; g.fillRect(x, y, bw * (0.4 + rnd() * 0.6), ch - m); }
       }
     }
   });
@@ -317,10 +310,8 @@ const TEX = {
   gres: tileTex(0.60, '#a6a29b', '#9c9891', '#8f8b85', 14, 2),
   resina: noiseTex([2, 2], 26, 15),
   cottoMilano: cottoMilanoTex(41),
-  mattoneNaturale: brickTex(false, 21),
-  mattoneScialbato: brickTex(true, 21),
-  gelosiaNaturale: latticeTex(false, 31),
-  gelosiaScialbata: latticeTex(true, 31),
+  mattone: brickTex(21),
+  gelosia: latticeTex(31),
   portico: tileTex(0.50, '#9d968b', '#8f887d', '#6d675f', 16, 2),
 };
 
@@ -331,9 +322,9 @@ const M = {
   interno:  std({ color: 0xf2efe9, map: TEX.plaster, roughness: 0.95 }),
   soffitto: std({ color: 0xf4f2ee, map: TEX.plaster, roughness: 0.95 }),
   pavimento: std({ color: 0xcfa27c, roughness: 0.85 }),                   // Cotto Milano, texture caricata a parte
-  mattone:  std({ map: TEX.mattoneNaturale, roughness: 0.9 }),
-  gelosia:  std({ map: TEX.gelosiaNaturale, roughness: 0.9, alphaTest: 0.5, side: THREE.DoubleSide }),
-  telaio:   std({ color: 0x2b2b2b, roughness: 0.45, metalness: 0.6 }),
+  mattone:  std({ map: TEX.mattone, roughness: 0.9 }),
+  gelosia:  std({ map: TEX.gelosia, roughness: 0.9, alphaTest: 0.5, side: THREE.DoubleSide }),
+  telaio:   std({ color: 0xf3f1ec, roughness: 0.5 }),                        // infissi bianchi
   vetro:    new THREE.MeshPhysicalMaterial({ color: 0xe4eef2, roughness: 0.03, metalness: 0, transparent: true, opacity: 0.16, envMapIntensity: 1.2, depthWrite: false }),
   davanzale: std({ color: 0xd8d2c6, roughness: 0.6 }),
   portico:  std({ color: 0xcfa27c, roughness: 0.92 }),   // stesso cotto del piano terra, versione strutturata R11
@@ -417,11 +408,8 @@ function westWall(y0, windows, group, ox = 0) {
     box(fx0, top - fw, a, fx1, top, b, M.telaio, group);
     box(fx0, yb, a, fx1, top, a + fw, M.telaio, group);
     box(fx0, yb, b - fw, fx1, top, b, M.telaio, group);
-    const leaves = w > 2.2 ? 3 : w > 1.1 ? 2 : 1;
-    for (let i = 1; i < leaves; i++) {
-      const zm = a + (w * i) / leaves;
-      box(fx0, yb, zm - 0.03, fx1, top, zm + 0.03, M.telaio, group);
-    }
+    // come nei prospetti: le finestre grandi sono divise in due (2 ante, o scorrevole + fisso), le strette hanno un'anta sola
+    if (w > 1.1) box(fx0, yb, a + w / 2 - 0.03, fx1, top, a + w / 2 + 0.03, M.telaio, group);
     box(fx0 + 0.03, yb, a, fx0 + 0.035, top, b, M.vetro, group, { cast: false });
   }
 }
@@ -657,10 +645,6 @@ function applyMaterials() {
   const f = FLOOR[state.floorP1];
   M.pavimentoP1.map = f.map; M.pavimentoP1.color.set(f.color); M.pavimentoP1.roughness = f.roughness;
   M.pavimentoP1.needsUpdate = true;
-  M.mattone.map = state.brick === 'scialbato' ? TEX.mattoneScialbato : TEX.mattoneNaturale;
-  M.mattone.needsUpdate = true;
-  M.gelosia.map = state.brick === 'scialbato' ? TEX.gelosiaScialbata : TEX.gelosiaNaturale;
-  M.gelosia.needsUpdate = true;
 }
 function applyVisibility() {
   if (!house) return;
@@ -690,7 +674,6 @@ document.querySelectorAll('.chips button').forEach((b) => b.addEventListener('cl
 $('floorPT').value = state.floorPT; $('floorP1').value = state.floorP1;
 on('floorPT', 'change', (e) => { state.floorPT = e.target.value; applyFloorPT(); });
 on('floorP1', 'change', (e) => { state.floorP1 = e.target.value; applyMaterials(); });
-on('brick', 'change', (e) => { state.brick = e.target.value; applyMaterials(); });
 for (const k of ['showUpper', 'showRoof', 'showKitchen', 'showFurniture', 'showLights', 'showAO'])
   on(k, 'change', (e) => { state[k] = e.target.checked; applyVisibility(); });
 on('exposure', 'input', (e) => { state.exposure = +e.target.value; renderer.toneMappingExposure = state.exposure; });
