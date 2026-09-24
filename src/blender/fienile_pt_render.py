@@ -82,6 +82,10 @@ CAMERAS = {
     "portico": dict(pos=(-3.0, 1.6, 0.9), tgt=(0.3, 1.4, 9.5)),
     "nord":    dict(pos=(4.6, 1.65, 3.45), tgt=(0.9, 1.15, 13)),   # appena a sud del frigo
     "sud":     dict(pos=(4.4, 1.6, P["L"] - 0.6), tgt=(0.9, 1.1, 2)),
+    # viste della cucina: di giorno è in fondo all'open space, lontana dalle vetrate, e va esposta di più
+    "cucina":  dict(pos=(4.4, 1.75, 4.2), tgt=(1.4, 0.9, 1.4), exp=dict(giorno=1.6)),
+    "colonne": dict(pos=(1.3, 1.65, 4.3), tgt=(4.6, 1.2, 1.2), exp=dict(giorno=1.6)),
+    "isola":   dict(pos=(2.75, 1.75, 3.8), tgt=(2.3, 1.1, 0.3), exp=dict(giorno=1.6)),
     "pianta":  dict(pos=(P["profEdificio"] / 2 - 0.5, 21, P["L"] / 2 + 0.01),
                     tgt=(P["profEdificio"] / 2 - 0.5, 0, P["L"] / 2), upper=False),
 }
@@ -824,8 +828,9 @@ def main():
         apply_preset(pn)
         for sk in scenes:
             sky_and_sun(a.data, a.ora if sk == "giorno" else a.ora_sera)
-            sc.view_settings.exposure = a.exposure if a.exposure is not None else (1.0 if sk == "giorno" else -0.2)
+            base = a.exposure if a.exposure is not None else (1.0 if sk == "giorno" else -0.2)
             for cn in camnames:
+                sc.view_settings.exposure = base + CAMERAS[cn].get("exp", {}).get(sk, 0.0)
                 set_visibility(cn, a, sk == "sera")
                 sc.camera = cams[cn]
                 sc.render.filepath = os.path.join(out, f"{cn}__PT-{a.var_pt}__{pn}__{sk}.png")

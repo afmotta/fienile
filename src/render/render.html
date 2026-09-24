@@ -205,6 +205,7 @@
   I render usano lo stesso modello del viewer 3D (script <code>src/blender/fienile_pt_render.py</code>):
   la posa delle lastre è identica in tutti i colori, così il confronto riguarda solo la tinta.
   Il divano è escluso; tavolo, sedie, tappeto e tavolino sono arredo indicativo.
+  Di giorno le viste della cucina, in fondo all'open space e lontane dalle vetrate, sono esposte di più.
 </p>
 
 </div>
@@ -216,13 +217,16 @@
   };
   const SCENE = { giorno: 'Giorno · 16:00', sera: 'Sera · 20:30, luci accese' };
   const VISTE = {
+    cucina:  'Cucina',
+    colonne: 'Cucina, colonne',
+    isola:   'Isola e piano cottura',
     sud:     'Soggiorno da sud',
     nord:    'Soggiorno da nord',
     portico: 'Dal portico',
     ovest:   'Facciata ovest',
     pianta:  'Piano terra dall\'alto',
   };
-  const state = { colore: 'terracotta', scena: 'giorno', vista: 'sud' };
+  const state = { colore: 'terracotta', scena: 'giorno', vista: 'cucina' };
 
   const file = (v, c, s) => `${v}__${c}__${s}.jpg`;
   const full = (v, c, s) => `img/${file(v, c, s)}`;

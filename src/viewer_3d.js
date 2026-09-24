@@ -809,6 +809,10 @@ const VIEWS = {
   portico: { pos: [-3.0, 1.6, 0.9], tgt: [0.3, 1.4, 9.5] },
   nord:    { pos: [4.6, 1.65, 3.45], tgt: [0.9, 1.15, 13] },   // appena a sud del frigo
   sud:     { pos: [4.4, 1.6, P.L - 0.6], tgt: [0.9, 1.1, 2] },
+  // cucina: panoramica da sud-est, colonne e frigo dal lato finestra, isola e piano cottura
+  cucina:  { pos: [4.4, 1.75, 4.2], tgt: [1.4, 0.9, 1.4] },
+  colonne: { pos: [1.3, 1.65, 4.3], tgt: [4.6, 1.2, 1.2] },
+  isola:   { pos: [2.75, 1.75, 3.8], tgt: [2.3, 1.1, 0.3] },
   pianta:  { pos: [P.profEdificio / 2 - 0.5, 21, P.L / 2 + 0.01], tgt: [P.profEdificio / 2 - 0.5, 0, P.L / 2], upper: false, far: true },
 };
 function setView(name) {
