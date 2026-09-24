@@ -642,14 +642,16 @@ def build(var_pt, var_p1):
 
     kitchen(xi, xs, var_pt)
 
-    # --- arredo indicativo: tavolo tra cucina e colonna, divano e tappeto nella metà sud
-    tz0, tz1, tx0, tx1 = 4.15, 5.15, xi + 0.70, xi + 2.90
+    # --- arredo indicativo: tavolo 200 × 80 centrato tra cucina e colonna (lungo z) e nella larghezza
+    # dell'open space (lungo x), divano e tappeto nella metà sud
+    tzc = (max(CUCINA["ovest"]["u"][1], CUCINA["isola"]["z"][1]) + P["colonna"]["z"][0]) / 2; txc = (xi + xs) / 2
+    tz0, tz1, tx0, tx1 = tzc - 0.40, tzc + 0.40, txc - 1.00, txc + 1.00
     box(tx0, 0.72, tz0, tx1, 0.76, tz1, "legno", "furniture", "tavolo")
     for x, z in ((tx0 + 0.06, tz0 + 0.06), (tx1 - 0.11, tz0 + 0.06), (tx0 + 0.06, tz1 - 0.11), (tx1 - 0.11, tz1 - 0.11)):
         box(x, 0, z, x + 0.05, 0.72, z + 0.05, "scuro", "furniture", "gamba")
     for i in range(3):
         for side in (-1, 1):
-            x = tx0 + 0.3 + i * 0.7; z = tz0 - 0.5 if side < 0 else tz1 + 0.08
+            x = tx0 + 0.13 + i * 0.65; z = tz0 - 0.5 if side < 0 else tz1 + 0.08
             box(x, 0.44, z, x + 0.44, 0.48, z + 0.42, "scuro", "furniture", "sedia")
             bzz = z if side < 0 else z + 0.38
             box(x, 0.48, bzz, x + 0.44, 0.85, bzz + 0.04, "scuro", "furniture", "schienale")

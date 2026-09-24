@@ -560,13 +560,15 @@ function build() {
 
   kitchen(xi, xs);
 
-  // --- arredo indicativo: tavolo tra cucina e colonna, divano e tappeto nella metà sud
-  const tz0 = 4.15, tz1 = 5.15, tx0 = xi + 0.70, tx1 = xi + 2.90;
+  // --- arredo indicativo: tavolo 200 × 80 centrato tra cucina e colonna (lungo z) e nella larghezza
+  // dell'open space (lungo x), divano e tappeto nella metà sud
+  const tzc = (Math.max(CUCINA.ovest.u[1], CUCINA.isola.z[1]) + P.colonna.z[0]) / 2, txc = (xi + xs) / 2;
+  const tz0 = tzc - 0.40, tz1 = tzc + 0.40, tx0 = txc - 1.00, tx1 = txc + 1.00;
   box(tx0, 0.72, tz0, tx1, 0.76, tz1, M.legno, G.furniture);
   for (const [x, z] of [[tx0 + 0.06, tz0 + 0.06], [tx1 - 0.11, tz0 + 0.06], [tx0 + 0.06, tz1 - 0.11], [tx1 - 0.11, tz1 - 0.11]])
     box(x, 0, z, x + 0.05, 0.72, z + 0.05, M.scuro, G.furniture);
   for (let i = 0; i < 3; i++) for (const side of [-1, 1]) {
-    const x = tx0 + 0.3 + i * 0.7, z = side < 0 ? tz0 - 0.5 : tz1 + 0.08;
+    const x = tx0 + 0.13 + i * 0.65, z = side < 0 ? tz0 - 0.5 : tz1 + 0.08;
     box(x, 0.44, z, x + 0.44, 0.48, z + 0.42, M.scuro, G.furniture);
     const bz = side < 0 ? z : z + 0.38;
     box(x, 0.48, bz, x + 0.44, 0.85, bz + 0.04, M.scuro, G.furniture);
