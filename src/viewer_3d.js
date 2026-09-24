@@ -66,7 +66,7 @@ const VAR_P1 = {
 const $ = (id) => document.getElementById(id);
 const state = {
   varPT: 'E', varP1: 'B',
-  floor: 'cottoMilano', brick: 'naturale',
+  floorPT: 'terracotta', floorP1: 'rovere', brick: 'naturale',
   showUpper: true, showRoof: true, showKitchen: true, showFurniture: true, showLights: false, showAO: true,
   exposure: 0.9, hour: 16, date: null,
 };
@@ -275,6 +275,40 @@ function cottoMilanoTex(seed) {
   });
 }
 
+/* ---------- Cotto Milano 120×120 ultramatt: texture del produttore, 5 facce per colore ---------- */
+// Le facce vengono posate a caso su un campo di 8 × 12 lastre (9,6 × 14,4 m), più grande del soggiorno
+// (9,6 × 13,47 m): nessuna ripetizione visibile. Il seme è lo stesso per tutti i colori, così cambiando
+// colore la posa resta identica e il confronto è immediato.
+const COTTO_MILANO = { facce: 5, nx: 8, nz: 12, lato: 1.2, seme: 57 };
+const cottoImgs = {};
+function loadImg(src) {
+  return new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ko(new Error(src)); i.src = src; });
+}
+function cottoMilanoPosa(colore) {
+  const C = COTTO_MILANO;
+  cottoImgs[colore] ??= Promise.all(Array.from({ length: C.facce },
+    (_, k) => loadImg(`./texture/cottomilano/${colore}_${String(k + 1).padStart(2, '0')}.jpg`)));
+  return cottoImgs[colore].then((imgs) => {
+    const s = Math.min(384, Math.floor(renderer.capabilities.maxTextureSize / C.nz));   // px per lastra
+    return canvasTex(C.nx * s, C.nz * s, [C.nx * C.lato, C.nz * C.lato], (g, w, h) => {
+      const rnd = rand(C.seme), faccia = [];
+      for (let j = 0; j < C.nz; j++) for (let i = 0; i < C.nx; i++) {
+        // faccia a caso, diversa da quelle già posate a sinistra e sopra; rotazione a caso di 90°
+        const vicine = [i ? faccia[j * C.nx + i - 1] : -1, j ? faccia[(j - 1) * C.nx + i] : -1];
+        let k; do k = Math.floor(rnd() * C.facce); while (vicine.includes(k));
+        faccia.push(k);
+        g.save();
+        g.translate((i + 0.5) * s, (j + 0.5) * s); g.rotate(Math.floor(rnd() * 4) * Math.PI / 2);
+        g.drawImage(imgs[k], -s / 2, -s / 2, s, s);
+        g.restore();
+      }
+      g.fillStyle = 'rgba(95,80,68,0.45)';                 // fughe da 2-3 mm
+      for (let i = 0; i <= C.nx; i++) g.fillRect(i * s - 0.5, 0, 1, h);
+      for (let j = 0; j <= C.nz; j++) g.fillRect(0, j * s - 0.5, w, 1);
+    });
+  });
+}
+
 const TEX = {
   plaster: noiseTex([1, 1], 18, 7),
   rovere: woodTex([206, 158, 104], 11),
@@ -296,13 +330,13 @@ const M = {
   facade:   std({ color: 0xefe2b4, map: TEX.plaster, roughness: 0.95 }),   // intonaco giallo molto pallido
   interno:  std({ color: 0xf2efe9, map: TEX.plaster, roughness: 0.95 }),
   soffitto: std({ color: 0xf4f2ee, map: TEX.plaster, roughness: 0.95 }),
-  pavimento: std({ map: TEX.rovere, roughness: 0.55 }),
+  pavimento: std({ color: 0xcfa27c, roughness: 0.85 }),                   // Cotto Milano, texture caricata a parte
   mattone:  std({ map: TEX.mattoneNaturale, roughness: 0.9 }),
   gelosia:  std({ map: TEX.gelosiaNaturale, roughness: 0.9, alphaTest: 0.5, side: THREE.DoubleSide }),
   telaio:   std({ color: 0x2b2b2b, roughness: 0.45, metalness: 0.6 }),
   vetro:    new THREE.MeshPhysicalMaterial({ color: 0xe4eef2, roughness: 0.03, metalness: 0, transparent: true, opacity: 0.16, envMapIntensity: 1.2, depthWrite: false }),
   davanzale: std({ color: 0xd8d2c6, roughness: 0.6 }),
-  portico:  std({ map: TEX.cottoMilano, roughness: 0.92 }),   // stesso cotto, versione strutturata R11
+  portico:  std({ color: 0xcfa27c, roughness: 0.92 }),   // stesso cotto del piano terra, versione strutturata R11
   pavimentoP1: std({ map: TEX.rovere, roughness: 0.55 }),
   ferro:    std({ color: 0x3a3936, roughness: 0.55, metalness: 0.7 }),       // ferro micaceo scuro
   coppi:    std({ color: 0x9f5638, roughness: 0.85 }),
@@ -315,6 +349,7 @@ const M = {
   scuro:    std({ color: 0x222222, roughness: 0.5, metalness: 0.4 }),
   led:      std({ color: 0x000000, emissive: 0xffc98a, emissiveIntensity: 0 }),
 };
+// pavimenti del primo piano (quelli del piano terra sono solo Cotto Milano, vedi COTTO_MILANO)
 const FLOOR = {
   cottoMilano: { map: TEX.cottoMilano, color: 0xffffff, roughness: 0.85 },
   rovere:     { map: TEX.rovere, color: 0xffffff, roughness: 0.55 },
@@ -608,10 +643,20 @@ function raiHint() {
 }
 raiHint();
 
+let floorPTTex = null, floorPTReq = 0;
+function applyFloorPT() {
+  const req = ++floorPTReq;
+  cottoMilanoPosa(state.floorPT).then((tex) => {
+    if (req !== floorPTReq) { tex.dispose(); return; }    // nel frattempo è stato scelto un altro colore
+    floorPTTex?.dispose();
+    floorPTTex = tex;
+    for (const m of [M.pavimento, M.portico]) { m.map = tex; m.color.set(0xffffff); m.needsUpdate = true; }
+  }).catch((e) => console.error('Texture Cotto Milano non caricata:', e));
+}
 function applyMaterials() {
-  const f = FLOOR[state.floor];
-  M.pavimento.map = f.map; M.pavimento.color.set(f.color); M.pavimento.roughness = f.roughness;
-  M.pavimento.needsUpdate = true;
+  const f = FLOOR[state.floorP1];
+  M.pavimentoP1.map = f.map; M.pavimentoP1.color.set(f.color); M.pavimentoP1.roughness = f.roughness;
+  M.pavimentoP1.needsUpdate = true;
   M.mattone.map = state.brick === 'scialbato' ? TEX.mattoneScialbato : TEX.mattoneNaturale;
   M.mattone.needsUpdate = true;
   M.gelosia.map = state.brick === 'scialbato' ? TEX.gelosiaScialbata : TEX.gelosiaNaturale;
@@ -642,7 +687,9 @@ on('date', 'change', (e) => { if (e.target.value) { state.date = e.target.value;
 document.querySelectorAll('.chips button').forEach((b) => b.addEventListener('click', () => {
   state.date = `${state.date.slice(0, 4)}-${b.dataset.date}`; $('date').value = state.date; updateSun();
 }));
-on('floor', 'change', (e) => { state.floor = e.target.value; applyMaterials(); });
+$('floorPT').value = state.floorPT; $('floorP1').value = state.floorP1;
+on('floorPT', 'change', (e) => { state.floorPT = e.target.value; applyFloorPT(); });
+on('floorP1', 'change', (e) => { state.floorP1 = e.target.value; applyMaterials(); });
 on('brick', 'change', (e) => { state.brick = e.target.value; applyMaterials(); });
 for (const k of ['showUpper', 'showRoof', 'showKitchen', 'showFurniture', 'showLights', 'showAO'])
   on(k, 'change', (e) => { state[k] = e.target.checked; applyVisibility(); });
@@ -733,6 +780,7 @@ addEventListener('resize', () => {
   ao.setSize(innerWidth, innerHeight);
 });
 
+applyFloorPT();
 applyMaterials();
 build();
 updateSun();
