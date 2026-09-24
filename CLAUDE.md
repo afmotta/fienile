@@ -20,7 +20,7 @@ src/
 ├── viewer_3d.html / viewer_3d.js       — Vista 3D interattiva (three.js)
 ├── texture/cottomilano/                — Cotto Milano 120×120 ultramatt: 6 colori × 5 facce (dal produttore, 512 px sRGB)
 ├── blender/
-│   └── fienile_pt_render.py            — Scena Blender + render varianti materiali PT
+│   └── fienile_pt_render.py            — Scena Blender allineata al viewer 3D + render varianti Cotto Milano
 └── archivio/
     ├── confronto.html                  — Confronto interattivo PT + P1
     ├── playground.html                 — Playground interattivo 8 finestre
