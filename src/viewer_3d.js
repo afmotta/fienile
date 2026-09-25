@@ -855,6 +855,8 @@ function updateSun() {
   $('sunRead').innerHTML = el > 0
     ? `az ${deg(az)}° ${DIRS[Math.round(az / (Math.PI / 4)) % 8]}<br>el ${deg(el)}°`
     : 'sole sotto<br>l\'orizzonte';
+  const md = state.date.slice(5);
+  document.querySelectorAll('.seasons button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.date === md));
   envDirty = true;
 }
 function refreshEnvironment() {
@@ -874,11 +876,19 @@ function fillSelect(sel, data, value) {
   sel.innerHTML = Object.entries(data).map(([k, v]) => `<option value="${k}">${v.nome}</option>`).join('');
   sel.value = value;
 }
+// gruppo di radio (campioni di colore o segmenti): `swatch` è la chiave del colore nei dati, se c'è
+function fillChoices(box, data, value, onPick, swatch) {
+  box.innerHTML = Object.entries(data).map(([k, v]) => {
+    const dot = swatch ? `<i style="--c:#${v[swatch].toString(16).padStart(6, '0')}"></i>` : '';
+    return `<label title="${v.nome}"><input type="radio" name="${box.id}" value="${k}"${k === value ? ' checked' : ''}>${dot}<span>${v.nome}</span></label>`;
+  }).join('');
+  box.addEventListener('change', (e) => onPick(e.target.value));
+}
 fillSelect($('varPT'), VAR_PT, state.varPT);
 fillSelect($('varP1'), VAR_P1, state.varP1);
 function raiHint() {
-  const v = VAR_PT[state.varPT];
-  $('raiPT').textContent = `RAI piano terra ${v.rai.toFixed(3).replace('.', ',')} (minimo 0,125).`;
+  const r = VAR_PT[state.varPT].rai;
+  $('raiPT').innerHTML = `<b class="${r >= 0.125 ? 'ok' : 'ko'}">RAI ${r.toFixed(3).replace('.', ',')}</b> piano terra · minimo 0,125`;
 }
 raiHint();
 
@@ -946,25 +956,29 @@ on('varP1', 'change', (e) => { state.varP1 = e.target.value; build(); });
 on('hour', 'input', (e) => { state.hour = +e.target.value; updateSun(); });
 $('date').value = state.date;
 on('date', 'change', (e) => { if (e.target.value) { state.date = e.target.value; updateSun(); } });
-document.querySelectorAll('.chips button').forEach((b) => b.addEventListener('click', () => {
+document.querySelectorAll('.seasons button').forEach((b) => b.addEventListener('click', () => {
   state.date = `${state.date.slice(0, 4)}-${b.dataset.date}`; $('date').value = state.date; updateSun();
 }));
-$('floorPT').value = state.floorPT; $('floorP1').value = state.floorP1;
-on('floorPT', 'change', (e) => { state.floorPT = e.target.value; applyFloorPT(); });
+// colore medio delle facce Cotto Milano, per il pallino del selettore
+const PAV_PT = { terracotta: { nome: 'Terracotta', colore: 0xcfa27c }, creta: { nome: 'Creta', colore: 0xdbc1a2 } };
+fillChoices($('floorPT'), PAV_PT, state.floorPT, (k) => { state.floorPT = k; applyFloorPT(); }, 'colore');
+$('floorP1').value = state.floorP1;
 on('floorP1', 'change', (e) => { state.floorP1 = e.target.value; applyMaterials(); });
+// con tende o persiane nascoste i loro controlli restano visibili ma spenti
+const syncBlocks = () => document.querySelectorAll('[data-for]').forEach((b) => { b.inert = !state[b.dataset.for]; });
 for (const k of ['showUpper', 'showRoof', 'showKitchen', 'showFurniture', 'showLights', 'showAO', 'showTende', 'showPersiane'])
-  on(k, 'change', (e) => { state[k] = e.target.checked; applyVisibility(); });
-fillSelect($('tendeColore'), ZIP_COLORI, state.tendeColore);
-fillSelect($('tendeTelo'), ZIP_TELI, state.tendeTelo);
+  on(k, 'change', (e) => { state[k] = e.target.checked; applyVisibility(); syncBlocks(); });
+syncBlocks();
+fillChoices($('tendeColore'), ZIP_COLORI, state.tendeColore, (k) => { state.tendeColore = k; applyTende(); }, 'telo');
+fillChoices($('tendeTelo'), ZIP_TELI, state.tendeTelo, (k) => { state.tendeTelo = k; applyTende(); });
 $('tendeApertura').value = state.tendeApertura;
-on('tendeColore', 'change', (e) => { state.tendeColore = e.target.value; applyTende(); });
-on('tendeTelo', 'change', (e) => { state.tendeTelo = e.target.value; applyTende(); });
 on('tendeApertura', 'input', (e) => { state.tendeApertura = +e.target.value; applyTende(); });
 $('persianeApertura').value = state.persianeApertura;
-fillSelect($('persianeColore'), PERSIANE_COLORI, state.persianeColore);
-on('persianeColore', 'change', (e) => { state.persianeColore = e.target.value; applyPersiane(); });
+fillChoices($('persianeColore'), PERSIANE_COLORI, state.persianeColore, (k) => { state.persianeColore = k; applyPersiane(); }, 'colore');
 on('persianeApertura', 'input', (e) => { state.persianeApertura = +e.target.value; applyPersiane(); });
-on('exposure', 'input', (e) => { state.exposure = +e.target.value; renderer.toneMappingExposure = state.exposure; });
+const exposureRead = () => { $('exposureRead').textContent = state.exposure.toFixed(2).replace('.', ','); };
+exposureRead();
+on('exposure', 'input', (e) => { state.exposure = +e.target.value; renderer.toneMappingExposure = state.exposure; exposureRead(); });
 
 /* ---------- punti di vista ---------- */
 const VIEWS = {
@@ -997,7 +1011,11 @@ function setView(name) {
   const wantUpper = v.upper !== false;
   setToggle('showUpper', wantUpper);
   setToggle('showRoof', wantUpper);
+  markView(name);
 }
+// la vista scelta resta evidenziata finché non si muove la camera a mano
+const markView = (name) => document.querySelectorAll('.views button').forEach((b) => b.classList.toggle('on', b.dataset.view === name));
+controls.addEventListener('start', () => markView(null));
 document.querySelectorAll('.views button').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
 
 /* ---------- camminata (desktop) ---------- */
@@ -1008,6 +1026,7 @@ on('walkbtn', 'click', () => {
   setToggle('showUpper', true);
   setToggle('showRoof', true);
   camera.position.set(4.2, 1.6, 1.2); camera.lookAt(1, 1.5, 8);
+  markView(null);
   walk.lock();
 });
 walk.addEventListener('lock', () => { controls.enabled = false; $('walkhint').style.display = 'block'; });
@@ -1038,19 +1057,51 @@ function saveShot() {
   a.click();
 }
 
-/* ---------- pannello su mobile ---------- */
+/* ---------- pannello a schede ---------- */
 const panel = $('panel');
-if (matchMedia('(max-width: 720px)').matches) panel.classList.add('closed');
-on('panelhead', 'click', () => {
-  if (!matchMedia('(max-width: 720px)').matches) return;
-  panel.classList.toggle('closed');
-  $('toggle').textContent = panel.classList.contains('closed') ? 'Mostra controlli' : 'Nascondi';
+const mobile = () => matchMedia('(max-width: 720px)').matches;
+function setPanelOpen(open) {
+  panel.classList.toggle('closed', !open);
+  const t = $('toggle'), lbl = open ? 'Riduci pannello' : 'Apri pannello';
+  t.setAttribute('aria-expanded', open); t.title = lbl; t.setAttribute('aria-label', lbl);
+  frameCamera();
+}
+const tabs = [...document.querySelectorAll('[role=tab]')];
+function selectTab(tab, focus) {
+  for (const t of tabs) {
+    const sel = t === tab;
+    t.setAttribute('aria-selected', sel); t.tabIndex = sel ? 0 : -1;
+    $(t.getAttribute('aria-controls')).hidden = !sel;
+  }
+  if (focus) tab.focus();
+  try { localStorage.setItem('viewer3d.tab', tab.id); } catch { /* storage non disponibile */ }
+}
+tabs.forEach((t, i) => {
+  t.addEventListener('click', () => {
+    const open = !panel.classList.contains('closed');
+    // su telefono toccare la scheda già aperta richiude il foglio
+    if (mobile() && open && t.getAttribute('aria-selected') === 'true') { setPanelOpen(false); return; }
+    selectTab(t);
+    if (!open) setPanelOpen(true);
+  });
+  t.addEventListener('keydown', (e) => {
+    const d = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    if (d) { e.preventDefault(); selectTab(tabs[(i + d + tabs.length) % tabs.length], true); }
+  });
 });
+on('toggle', 'click', () => setPanelOpen(panel.classList.contains('closed')));
+try {
+  const saved = $(localStorage.getItem('viewer3d.tab') || '');
+  if (saved && tabs.includes(saved)) selectTab(saved);
+} catch { /* storage non disponibile */ }
+if (mobile()) panel.classList.add('closed');
 
 /* ---------- resize e ciclo ---------- */
 function frameCamera() {
-  // su desktop il pannello occupa ~330 px a sinistra: spostiamo il centro ottico a destra
-  const side = innerWidth > 720 ? 332 : 0;
+  // su telefono il foglio dei controlli sta sopra la barra del sole
+  document.documentElement.style.setProperty('--sunbar-h', `${$('sunbar').offsetHeight}px`);
+  // su desktop il pannello aperto occupa la sinistra: spostiamo il centro ottico a destra
+  const side = !mobile() && !panel.classList.contains('closed') ? panel.offsetWidth + 32 : 0;
   camera.aspect = innerWidth / innerHeight;
   if (side) camera.setViewOffset(innerWidth + side, innerHeight, 0, 0, innerWidth, innerHeight);
   else camera.clearViewOffset();

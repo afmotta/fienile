@@ -17,7 +17,7 @@ src/
 │   └── piano_terra.html                — Piano Terra (F1/F4 174×150)
 ├── primo-piano/
 │   └── primo_piano.html                — Primo Piano (F2/F3=174cm, persiane testa di moro)
-├── viewer_3d.html / viewer_3d.js       — Vista 3D interattiva (three.js)
+├── viewer_3d.html / viewer_3d.js       — Vista 3D interattiva (three.js): pannello a schede Viste/Progetto/Finiture/Mostra + barra del sole in basso
 ├── render/render.html                — Galleria render Blender (img/ da aggiorna_render.sh)
 ├── texture/cottomilano/                — Cotto Milano 120×120 ultramatt: creta e terracotta × 5 facce (dal produttore, 512 px sRGB)
 ├── blender/
