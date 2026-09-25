@@ -64,6 +64,8 @@
   select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible {
     outline: 2px solid var(--accent); outline-offset: 2px;
   }
+  h3 { font-size: 0.76rem; font-weight: 500; color: var(--muted); margin: 14px 0 8px; }
+  h3:first-of-type { margin-top: 0; }
   .val { float: right; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--muted); }
   .hint { font-size: 0.74rem; color: var(--muted); line-height: 1.4; margin: -2px 0 10px; }
 
@@ -199,15 +201,26 @@
     </section>
 
     <section>
-      <h2>Tende zip primo piano</h2>
-      <label class="row">Tende esterne <input type="checkbox" id="showTende" checked></label>
-      <label class="row">Colore <select id="tendeColore"></select></label>
-      <p class="hint" id="tendeNota"></p>
-      <label class="row" style="display:block">Apertura <span class="val" id="tendeAperturaRead"></span>
-        <input type="range" id="tendeApertura" min="0" max="1" step="0.01" value="0.5" aria-label="Apertura delle tende">
+      <h2>Tende zip esterne</h2>
+      <h3>Piano terra</h3>
+      <label class="row">Tende esterne <input type="checkbox" id="tendePTShow" checked></label>
+      <label class="row">Colore <select id="tendePTColore"></select></label>
+      <p class="hint" id="tendePTNota"></p>
+      <label class="row" style="display:block">Apertura <span class="val" id="tendePTAperturaRead"></span>
+        <input type="range" id="tendePTApertura" min="0" max="1" step="0.01" value="1" aria-label="Apertura delle tende, piano terra">
       </label>
-      <label class="row" style="display:block">Opacità del telo <span class="val" id="tendeOpacitaRead"></span>
-        <input type="range" id="tendeOpacita" min="0.1" max="1" step="0.01" value="0.85" aria-label="Opacità del telo">
+      <label class="row" style="display:block">Opacità del telo <span class="val" id="tendePTOpacitaRead"></span>
+        <input type="range" id="tendePTOpacita" min="0.1" max="1" step="0.01" value="0.85" aria-label="Opacità del telo, piano terra">
+      </label>
+      <h3>Primo piano</h3>
+      <label class="row">Tende esterne <input type="checkbox" id="tendeP1Show" checked></label>
+      <label class="row">Colore <select id="tendeP1Colore"></select></label>
+      <p class="hint" id="tendeP1Nota"></p>
+      <label class="row" style="display:block">Apertura <span class="val" id="tendeP1AperturaRead"></span>
+        <input type="range" id="tendeP1Apertura" min="0" max="1" step="0.01" value="0.5" aria-label="Apertura delle tende, primo piano">
+      </label>
+      <label class="row" style="display:block">Opacità del telo <span class="val" id="tendeP1OpacitaRead"></span>
+        <input type="range" id="tendeP1Opacita" min="0.1" max="1" step="0.01" value="0.85" aria-label="Opacità del telo, primo piano">
       </label>
       <p class="hint">100% di apertura: telo avvolto nel cassonetto. Un telo screen chiaro lascia passare indicativamente il 10–20% della luce (opacità 80–90%); 100% è un telo oscurante.</p>
     </section>

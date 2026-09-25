@@ -78,7 +78,7 @@ const VAR_P1 = {
   D: { nome: 'D — camere 200', f: p1(2.00) },
 };
 
-// Tende zip esterne sulle finestre del primo piano: cassonetto a vista sopra il foro, guide laterali
+// Tende zip esterne sulle finestre di entrambi i piani: cassonetto a vista sopra il foro, guide laterali
 // sulla facciata (il telo corre nelle zip, niente svolazzi), telo screen, fondale in alluminio.
 // guida = [larghezza, profondità]; telo = distanza del telo dal filo di facciata.
 const ZIP = { cassonetto: 0.11, guida: [0.035, 0.05], fondale: 0.035, telo: 0.025 };
@@ -99,7 +99,11 @@ const state = {
   floorPT: 'terracotta', floorP1: 'rovere',
   showUpper: true, showRoof: true, showKitchen: true, showFurniture: true, showLights: false, showAO: true,
   exposure: 0.9, hour: 16, date: null,
-  showTende: true, tendeColore: 'avorio', tendeApertura: 0.5, tendeOpacita: 0.85,
+  // tende zip per piano; al piano terra partono avvolte, così le viste interne restano quelle di sempre
+  tende: {
+    PT: { show: true, colore: 'avorio', apertura: 1, opacita: 0.85 },
+    P1: { show: true, colore: 'avorio', apertura: 0.5, opacita: 0.85 },
+  },
 };
 const today = new Date();
 state.date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -388,21 +392,28 @@ const M = {
   tessuto:  std({ color: 0xc8baa3, roughness: 1 }),
   scuro:    std({ color: 0x222222, roughness: 0.5, metalness: 0.4 }),
   led:      std({ color: 0x000000, emissive: 0xffc98a, emissiveIntensity: 0 }),
-  zipProfili: std({ color: 0xe8e0cd, roughness: 0.45, metalness: 0.2 }),       // alluminio verniciato
 };
-// telo delle tende zip. L'ombra usa un retino ordinato 4×4 sui texel della shadow map: il telo blocca
-// una quota di sole pari all'opacità e il filtro PCF la sfuma in penombra (l'alphaHash di three.js
-// lavora a celle di ~20 cm e sulle finestre dava tutto o niente)
-M.telo = std({ color: 0xebe4d3, roughness: 0.95, transparent: true, depthWrite: false, side: THREE.DoubleSide });
-const teloOmbra = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking });
-teloOmbra.userData.opacita = { value: 1 };
-teloOmbra.onBeforeCompile = (s) => {
-  s.uniforms.opacita = teloOmbra.userData.opacita;
-  s.fragmentShader = 'uniform float opacita;\n' + s.fragmentShader.replace('#include <alphatest_fragment>', `#include <alphatest_fragment>
-    const float BAYER[16] = float[16](0., 8., 2., 10., 12., 4., 14., 6., 3., 11., 1., 9., 15., 7., 13., 5.);
-    ivec2 q = ivec2(mod(gl_FragCoord.xy, 4.0));
-    if (opacita < (BAYER[q.y * 4 + q.x] + 0.5) / 16.0) discard;`);
-};
+// materiali delle tende zip, uno per piano (colore e opacità si regolano separatamente).
+// L'ombra del telo usa un retino ordinato 4×4 sui texel della shadow map: il telo blocca una quota di
+// sole pari all'opacità e il filtro PCF la sfuma in penombra (l'alphaHash di three.js lavora a celle
+// di ~20 cm e sulle finestre dava tutto o niente)
+function tendaMat() {
+  const ombra = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking });
+  ombra.userData.opacita = { value: 1 };
+  ombra.onBeforeCompile = (s) => {
+    s.uniforms.opacita = ombra.userData.opacita;
+    s.fragmentShader = 'uniform float opacita;\n' + s.fragmentShader.replace('#include <alphatest_fragment>', `#include <alphatest_fragment>
+      const float BAYER[16] = float[16](0., 8., 2., 10., 12., 4., 14., 6., 3., 11., 1., 9., 15., 7., 13., 5.);
+      ivec2 q = ivec2(mod(gl_FragCoord.xy, 4.0));
+      if (opacita < (BAYER[q.y * 4 + q.x] + 0.5) / 16.0) discard;`);
+  };
+  return {
+    telo: std({ roughness: 0.95, transparent: true, depthWrite: false, side: THREE.DoubleSide }),
+    profili: std({ roughness: 0.45, metalness: 0.2 }),                      // alluminio verniciato
+    ombra,
+  };
+}
+const TM = { PT: tendaMat(), P1: tendaMat() };
 // pavimenti del primo piano (quelli del piano terra sono solo Cotto Milano, vedi COTTO_MILANO)
 const FLOOR = {
   cottoMilano: { map: TEX.cottoMilano, color: 0xffffff, roughness: 0.85 },
@@ -479,25 +490,27 @@ function westWall(y0, windows, group, ox = 0) {
   }
 }
 
-// tende zip sulla facciata del primo piano: cassonetto e guide sono fissi, telo e fondale
-// vengono spostati da applyTende() senza ricostruire la casa
-const tende = [];
-function zipScreens(y0, windows, group, ox) {
-  tende.length = 0;
+// tende zip sulla facciata di un piano: cassonetto e guide sono fissi, telo e fondale
+// vengono spostati da applyTende() senza ricostruire la casa.
+// soglia = quota su cui poggiano le guide delle porte finestre (soglia al PT, terrazzo al P1)
+const tende = { PT: [], P1: [] };
+function zipScreens(piano, y0, windows, group, ox, soglia) {
+  const T = tende[piano], m = TM[piano];
+  T.length = 0;
   const [gw, gd] = ZIP.guida, xg = ox - gd;
   for (const [p, w, h, sill] of windows) {
     const a = p, b = p + w, top = y0 + sill + h;
-    const base = sill > 0 ? y0 + sill : y0 + 0.02;            // sul davanzale, o sul pavimento del terrazzo
-    box(ox - ZIP.cassonetto, top, a - gw, ox, top + ZIP.cassonetto, b + gw, M.zipProfili, group);
-    box(xg, base, a - gw, ox, top, a, M.zipProfili, group);
-    box(xg, base, b, ox, top, b + gw, M.zipProfili, group);
-    const telo = new THREE.Mesh(new THREE.PlaneGeometry(w, 1).rotateY(-Math.PI / 2), M.telo);
+    const base = sill > 0 ? y0 + sill : soglia;               // sul davanzale, o a terra
+    box(ox - ZIP.cassonetto, top, a - gw, ox, top + ZIP.cassonetto, b + gw, m.profili, group);
+    box(xg, base, a - gw, ox, top, a, m.profili, group);
+    box(xg, base, b, ox, top, b + gw, m.profili, group);
+    const telo = new THREE.Mesh(new THREE.PlaneGeometry(w, 1).rotateY(-Math.PI / 2), m.telo);
     telo.position.set(ox - ZIP.telo, 0, (a + b) / 2);
-    telo.customDepthMaterial = teloOmbra;
+    telo.customDepthMaterial = m.ombra;
     telo.castShadow = telo.receiveShadow = true;
     group.add(telo);
-    const fondale = box(xg + 0.005, 0, a, ox - 0.005, ZIP.fondale, b, M.zipProfili, group);
-    tende.push({ telo, fondale, top, base });
+    const fondale = box(xg + 0.005, 0, a, ox - 0.005, ZIP.fondale, b, m.profili, group);
+    T.push({ telo, fondale, top, base });
   }
 }
 
@@ -533,7 +546,9 @@ function build() {
   for (const k of ['pt', 'upper', 'roof', 'kitchen', 'furniture', 'lights', 'ground']) {
     G[k] = new THREE.Group(); house.add(G[k]);
   }
-  G.tende = new THREE.Group(); G.upper.add(G.tende);   // spariscono insieme al primo piano
+  // le tende di ogni piano spariscono insieme al piano
+  G.tendePT = new THREE.Group(); G.pt.add(G.tendePT);
+  G.tendeP1 = new THREE.Group(); G.upper.add(G.tendeP1);
   const L = P.L, D = P.profEdificio, t = P.tW, H = P.hPiano, S = P.solaio;
   const xi = t, xs = t + P.profSoggiorno;          // filo interno ovest, fine open space
   const y1 = H + S;                                 // quota pavimento P1
@@ -564,6 +579,7 @@ function build() {
   // --- piano terra
   box(xi, -0.02, 0, D - P.tEst, 0, L, M.pavimento, G.pt, { cast: false });
   westWall(0, VAR_PT[state.varPT].f, G.pt);
+  zipScreens('PT', 0, VAR_PT[state.varPT].f, G.tendePT, 0, 0);
   // testate nord/sud e muro est fino al solaio
   box(0, 0, -tt, D, y1, 0, M.facade, G.pt);
   box(0, 0, L, D, y1, L + tt, M.facade, G.pt);
@@ -592,7 +608,7 @@ function build() {
   // --- primo piano (involucro) + tetto
   const ox = P.arretramentoP1;
   westWall(y1, VAR_P1[state.varP1].f, G.upper, ox);
-  zipScreens(y1, VAR_P1[state.varP1].f, G.tende, ox);
+  zipScreens('P1', y1, VAR_P1[state.varP1].f, G.tendeP1, ox, y1 + 0.02);
   box(ox, y1 + H, 0, ox + t, roofH(ox) + 0.05, L, WALL(), G.upper);
   box(ox + t, y1 - 0.02, 0, D - P.tEst, y1, L, M.pavimentoP1, G.upper, { cast: false });
   box(0, y1, 0, ox, y1 + 0.02, L, M.portico, G.upper, { cast: false });   // terrazzo davanti al P1
@@ -642,7 +658,7 @@ function build() {
   }
 
   scene.add(house);
-  applyTende();
+  for (const piano in tende) applyTende(piano);
   applyVisibility();
 }
 
@@ -825,25 +841,26 @@ function applyMaterials() {
   M.pavimentoP1.needsUpdate = true;
 }
 // apertura 1 = telo tutto avvolto (fondale sotto il cassonetto), 0 = telo giù fino al davanzale o a terra
-function applyTende() {
-  const c = ZIP_COLORI[state.tendeColore];
-  M.telo.color.set(c.telo); M.zipProfili.color.set(c.profili);
-  M.telo.opacity = teloOmbra.userData.opacita.value = state.tendeOpacita;
-  for (const t of tende) {
-    const yb = t.base + (t.top - ZIP.fondale - t.base) * state.tendeApertura;   // fondo del fondale
+function applyTende(piano) {
+  const st = state.tende[piano], c = ZIP_COLORI[st.colore], m = TM[piano];
+  m.telo.color.set(c.telo); m.profili.color.set(c.profili);
+  m.telo.opacity = m.ombra.userData.opacita.value = st.opacita;
+  for (const t of tende[piano]) {
+    const yb = t.base + (t.top - ZIP.fondale - t.base) * st.apertura;   // fondo del fondale
     const len = t.top - yb - ZIP.fondale;
     t.fondale.position.y = yb + ZIP.fondale / 2;
     t.telo.visible = len > 0.005;
     t.telo.scale.y = Math.max(len, 0.001); t.telo.position.y = t.top - len / 2;
   }
   const pct = (v) => `${Math.round(v * 100)}%`;
-  $('tendeAperturaRead').textContent = pct(state.tendeApertura);
-  $('tendeOpacitaRead').textContent = pct(state.tendeOpacita);
-  $('tendeNota').textContent = `${c.nome}: ${c.nota}`;
+  $(`tende${piano}AperturaRead`).textContent = pct(st.apertura);
+  $(`tende${piano}OpacitaRead`).textContent = pct(st.opacita);
+  $(`tende${piano}Nota`).textContent = `${c.nome}: ${c.nota}`;
 }
 function applyVisibility() {
   if (!house) return;
-  G.tende.visible = state.showTende;
+  G.tendePT.visible = state.tende.PT.show;
+  G.tendeP1.visible = state.tende.P1.show;
   G.upper.visible = state.showUpper;
   G.roof.visible = state.showRoof;
   G.kitchen.visible = state.showKitchen;
@@ -870,13 +887,17 @@ document.querySelectorAll('.chips button').forEach((b) => b.addEventListener('cl
 $('floorPT').value = state.floorPT; $('floorP1').value = state.floorP1;
 on('floorPT', 'change', (e) => { state.floorPT = e.target.value; applyFloorPT(); });
 on('floorP1', 'change', (e) => { state.floorP1 = e.target.value; applyMaterials(); });
-for (const k of ['showUpper', 'showRoof', 'showKitchen', 'showFurniture', 'showLights', 'showAO', 'showTende'])
+for (const k of ['showUpper', 'showRoof', 'showKitchen', 'showFurniture', 'showLights', 'showAO'])
   on(k, 'change', (e) => { state[k] = e.target.checked; applyVisibility(); });
-fillSelect($('tendeColore'), ZIP_COLORI, state.tendeColore);
-$('tendeApertura').value = state.tendeApertura; $('tendeOpacita').value = state.tendeOpacita;
-on('tendeColore', 'change', (e) => { state.tendeColore = e.target.value; applyTende(); });
-on('tendeApertura', 'input', (e) => { state.tendeApertura = +e.target.value; applyTende(); });
-on('tendeOpacita', 'input', (e) => { state.tendeOpacita = +e.target.value; applyTende(); });
+for (const piano in state.tende) {
+  const st = state.tende[piano], id = (k) => `tende${piano}${k}`;
+  fillSelect($(id('Colore')), ZIP_COLORI, st.colore);
+  $(id('Show')).checked = st.show; $(id('Apertura')).value = st.apertura; $(id('Opacita')).value = st.opacita;
+  on(id('Show'), 'change', (e) => { st.show = e.target.checked; applyVisibility(); });
+  on(id('Colore'), 'change', (e) => { st.colore = e.target.value; applyTende(piano); });
+  on(id('Apertura'), 'input', (e) => { st.apertura = +e.target.value; applyTende(piano); });
+  on(id('Opacita'), 'input', (e) => { st.opacita = +e.target.value; applyTende(piano); });
+}
 on('exposure', 'input', (e) => { state.exposure = +e.target.value; renderer.toneMappingExposure = state.exposure; });
 
 /* ---------- punti di vista ---------- */

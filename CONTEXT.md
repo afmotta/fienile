@@ -37,7 +37,7 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
   - Camera Nord (F2): 17,30 m²
   - Camera Sud (F3): 12,40 m²
   - Bagno Sud (F4): 4,10 m²
-- **Tende zip esterne** (solo viewer 3D, per ora): su tutte e 4 le finestre, con cassonetto a vista 11×11 cm sopra il foro, guide laterali 3,5 × 5 cm sulla facciata, telo screen e fondale in alluminio. Nel viewer si regolano apertura, opacità del telo (anche nell'ombra proiettata) e colore; proposte chiare: avorio (profili ~RAL 9001), paglia (~RAL 1013), perla (~RAL 7044), tortora chiaro (~RAL 1019).
+- **Tende zip esterne** (solo viewer 3D, per ora): su tutte e 4 le finestre del primo piano e anche su quelle del piano terra, con cassonetto a vista 11×11 cm sopra il foro, guide laterali 3,5 × 5 cm sulla facciata, telo screen e fondale in alluminio. Nel viewer si regolano per ciascun piano apertura, opacità del telo (anche nell'ombra proiettata) e colore; al piano terra partono avvolte; proposte chiare: avorio (profili ~RAL 9001), paglia (~RAL 1013), perla (~RAL 7044), tortora chiaro (~RAL 1019).
 
 ## Vincoli generali — Piano Terra
 
