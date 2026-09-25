@@ -39,6 +39,7 @@ P = dict(
     arretramentoP1=1.10,      # il primo piano è arretrato di 110 cm rispetto al piano terra
     colonna=dict(z=(6.355, 7.115), x=(1.60, 2.36)),   # 76 cm, centrata; x dal filo interno
     varco=(8.50, 10.20),                              # passaggio verso ingresso/scala
+    ribassamento=dict(h=0.28, prof=0.70),             # soffitto ribassato lungo il lato est dell'open space
     portico=dict(prof=3.60, pilastri=[(-0.60, 0.10), (6.435, 7.035), (13.37, 14.07)]),
     gelosia=dict(spessore=0.25, zoccolo=0.60, fasciaAlta=0.25, spallaFacciata=0.25),
     parapetto=dict(h=1.00, arretramento=0.06, passo=0.114, bacchetta=0.014, montante=0.04, interasseMontanti=1.50),
@@ -638,9 +639,15 @@ def build(var_pt, var_p1):
     # colonna in mattoni
     c = P["colonna"]
     box(xi + c["x"][0], 0, c["z"][0], xi + c["x"][1], H, c["z"][1], "mattone", "pt", "colonna")
-    # solaio: intradosso bianco, fascia di facciata gialla
-    box(xi, H, 0, D - P["tEst"], y1, L, "soffitto", "upper", "solaio")
+    # solaio: intradosso bianco, fascia di facciata gialla.
+    # Sotto il pavimento del P1 si ferma 2 cm più in basso, per non compenetrarlo
+    xp = P["arretramentoP1"] + t    # filo interno della parete ovest del P1
+    box(xi, H, 0, xp, y1, L, "soffitto", "upper", "solaio")
+    box(xp, H, 0, D - P["tEst"], y1 - 0.02, L, "soffitto", "upper", "solaio_sotto_p1")
     box(0, H, 0, xi, y1, L, "facade", "upper", "fascia_solaio")
+    # ribassamento sul lato est, opposto alle finestre: passa sopra il varco (h 2,20) senza interromperlo
+    rb = P["ribassamento"]; xr = xs - rb["prof"]
+    box(xr, H - rb["h"], 0.01, xs, H, L - 0.01, "soffitto", "upper", "ribassamento")
 
     # --- primo piano (involucro) + tetto
     ox = P["arretramentoP1"]
@@ -684,11 +691,11 @@ def build(var_pt, var_p1):
     box(xi + 1.6, 0, 9.4, xi + 2.4, 0.36, 10.4, "legno", "furniture", "tavolino")
 
     # --- luci interne: profili LED a sguscio + punti luce caldi
+    # sul lato est il profilo corre davanti al ribassamento, continuo anche sopra il varco
     zc = H - 0.2
-    box(xi + 0.08, zc, 0.12, xs - 0.08, zc + 0.012, 0.17, "led", "lights", "led")
-    box(xi + 0.08, zc, L - 0.17, xs - 0.08, zc + 0.012, L - 0.12, "led", "lights", "led")
-    box(xs - 0.17, zc, 0.12, xs - 0.12, zc + 0.012, va - 0.1, "led", "lights", "led")
-    box(xs - 0.17, zc, vb + 0.1, xs - 0.12, zc + 0.012, L - 0.12, "led", "lights", "led")
+    box(xi + 0.08, zc, 0.12, xr - 0.08, zc + 0.012, 0.17, "led", "lights", "led")
+    box(xi + 0.08, zc, L - 0.17, xr - 0.08, zc + 0.012, L - 0.12, "led", "lights", "led")
+    box(xr - 0.17, zc, 0.12, xr - 0.12, zc + 0.012, L - 0.12, "led", "lights", "led")
     for x, z in ((xi + 1.8, 1.9), (xi + 1.8, 4.6), (xi + 2.4, 10.0), (xi + 3.2, 7.3)):
         ld = bpy.data.lights.new("punto_luce", "POINT"); ld.energy = 40; ld.shadow_soft_size = 0.1
         ld.color = (1.0, 0.78, 0.55)
