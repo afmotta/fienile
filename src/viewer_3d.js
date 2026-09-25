@@ -83,12 +83,14 @@ const VAR_P1 = {
 // Tutte alzate non si vedono: il fondale in alluminio rientra nell'architrave.
 // telo = distanza del telo dal filo di facciata; fondale = [altezza, profondità] della barra.
 const ZIP = { telo: 0.06, fondale: [0.035, 0.03] };
-// proposte di colore chiare: telo + profili (cassonetto, guide, fondale) verniciati in tinta vicina
+// proposte di colore: telo + profili (cassonetto, guide, fondale) verniciati in tinta vicina.
+// Le chiare si confondono con facciata e infissi; la testa di moro si abbina alle persiane del primo piano
 const ZIP_COLORI = {
   avorio:  { nome: 'Avorio',         telo: 0xebe4d3, profili: 0xe8e0cd, nota: 'profili vicini al RAL 9001: la tenda si confonde con infissi bianchi e intonaco.' },
   paglia:  { nome: 'Paglia',         telo: 0xe2d4a8, profili: 0xe2d8bf, nota: 'profili vicini al RAL 1013: tono su tono con il giallo pallido della facciata.' },
   perla:   { nome: 'Perla',          telo: 0xd4cfc6, profili: 0xc9c4b5, nota: 'profili vicini al RAL 7044: grigio caldo e neutro, richiama il travertino.' },
   tortora: { nome: 'Tortora chiaro', telo: 0xc2b39f, profili: 0xab9d88, nota: 'profili vicini al RAL 1019: lega con mattoni e ferro, segna meno lo sporco e dall\'interno lascia vedere meglio fuori.' },
+  testaDiMoro: { nome: 'Testa di moro', telo: 0x4a3b33, profili: 0x45322e, nota: 'profili vicini al RAL 8017, come le persiane del primo piano: da dentro si vede fuori meglio che con i teli chiari e abbaglia meno, ma il telo scalda di più al sole e da fuori la finestra si legge come un vano scuro.' },
 };
 // teli screen per fattore di apertura (quota di tessuto vuota tra i fili): da lì passano la vista e il
 // sole diretto, quindi nel modello opacità del telo = 1 − fattore di apertura
@@ -98,18 +100,21 @@ const ZIP_TELI = {
   f15: { nome: '15%', fattore: 0.15 },
 };
 
-// Persiane alla genovese sulle finestre del primo piano, verniciate testa di moro (~RAL 8017).
+// Persiane alla genovese sulle finestre del primo piano, verniciate (colore in PERSIANE_COLORI).
 // Incernierate sullo spigolo esterno delle spallette: chiuse stanno nel vano, quasi a filo facciata;
 // aperte (180°) si appoggiano alla facciata accanto alla finestra. Porte finestre delle camere a 2 ante,
 // finestre dei bagni ad anta unica che si apre verso la testata vicina (dall'altra parte c'è la porta finestra).
 // Stecche inclinate a 45° con il bordo esterno più basso: fermano il sole alto, da dentro si vede in basso.
 const PERSIANE = {
-  colore: 0x45322e,
   sp: 0.045, montante: 0.065, traversoAlto: 0.08, traversoBasso: 0.11,  // telaio dell'anta
   stecca: [0.05, 0.008], passo: 0.036, inclinazione: Math.PI / 4,      // [larghezza, spessore], interasse
   luce: 0.004,     // gioco tra anta e vano, e tra le due ante
   scosto: 0.01,    // cerniera 1 cm fuori dal filo di facciata: aperte, le ante non toccano l'intonaco
   sottoPorta: 0.03, // le ante delle porte finestre restano sopra il pavimento del terrazzo (+2 cm)
+};
+const PERSIANE_COLORI = {
+  testaDiMoro: { nome: 'Testa di moro', colore: 0x45322e, nota: 'vicino al RAL 8017: lega con i coppi, i mattoni della gelosia e il ferro del parapetto.' },
+  verde:       { nome: 'Verde',         colore: 0x1f4a3a, nota: 'vicino al RAL 6005 (verde muschio), il verde classico delle persiane: stacca di più sul giallo pallido della facciata.' },
 };
 
 /* ==========================================================================
@@ -123,7 +128,7 @@ const state = {
   exposure: 0.9, hour: 16, date: null,
   // le tende zip partono avvolte, così le viste interne restano quelle di sempre
   showTende: true, tendeColore: 'avorio', tendeApertura: 1, tendeTelo: 'f5',
-  showPersiane: true, persianeApertura: 1,
+  showPersiane: true, persianeApertura: 1, persianeColore: 'testaDiMoro',
 };
 const today = new Date();
 state.date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -411,7 +416,7 @@ const M = {
   legno:    std({ map: TEX.rovere, color: 0xc9b39a, roughness: 0.6 }),
   tessuto:  std({ color: 0xc8baa3, roughness: 1 }),
   scuro:    std({ color: 0x222222, roughness: 0.5, metalness: 0.4 }),
-  persiana: std({ color: PERSIANE.colore, roughness: 0.5 }),                  // testa di moro, smalto satinato
+  persiana: std({ roughness: 0.5 }),                                          // smalto satinato, colore da applyPersiane()
   led:      std({ color: 0x000000, emissive: 0xffc98a, emissiveIntensity: 0 }),
 };
 // telo e profili delle tende zip. L'ombra del telo usa un retino ordinato 8×8 sui texel della shadow
@@ -911,7 +916,9 @@ function applyTende() {
 }
 // apertura 1 = ante aperte a 180° contro la facciata, 0 = chiuse nel vano
 function applyPersiane() {
-  const ap = state.persianeApertura;
+  const ap = state.persianeApertura, c = PERSIANE_COLORI[state.persianeColore];
+  M.persiana.color.set(c.colore);
+  $('persianeNota').textContent = `${c.nome}: ${c.nota}`;
   for (const { g, dir } of ante) g.rotation.y = -dir * Math.PI * ap;
   $('persianeAperturaRead').textContent = ap === 0 ? 'chiuse' : ap === 1 ? 'aperte' : `${Math.round(ap * 180)}°`;
 }
@@ -954,6 +961,8 @@ on('tendeColore', 'change', (e) => { state.tendeColore = e.target.value; applyTe
 on('tendeTelo', 'change', (e) => { state.tendeTelo = e.target.value; applyTende(); });
 on('tendeApertura', 'input', (e) => { state.tendeApertura = +e.target.value; applyTende(); });
 $('persianeApertura').value = state.persianeApertura;
+fillSelect($('persianeColore'), PERSIANE_COLORI, state.persianeColore);
+on('persianeColore', 'change', (e) => { state.persianeColore = e.target.value; applyPersiane(); });
 on('persianeApertura', 'input', (e) => { state.persianeApertura = +e.target.value; applyPersiane(); });
 on('exposure', 'input', (e) => { state.exposure = +e.target.value; renderer.toneMappingExposure = state.exposure; });
 
