@@ -19,6 +19,7 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
   - P3: da 10,08 m a 10,38 m
 - **Colonna frontale**: larga 76 cm, centrata rispetto alla parete (da 635,5 cm a 711,5 cm). Visualizzata nei prospetti con contorno tratteggiato e tratteggiatura diagonale a 45° (opacità 60%).
 - **Ribassamento del soffitto** (open space): sul lato est, opposto alle finestre, a tutta lunghezza; alto 28 cm (intradosso a 2,42 m, a filo con la sommità delle colonne della cucina) e profondo 70 cm dal muro interno est. Non compare nei prospetti della parete ovest, solo nel viewer 3D e nei render Blender.
+- **Tende zip esterne** (solo viewer 3D, per ora): sulle 4 finestre del piano terra (al primo piano non sono previste), con cassonetto a vista 11×11 cm sopra il foro, guide laterali 3,5 × 5 cm sulla facciata appoggiate sul davanzale o sulla soglia, telo screen e fondale in alluminio. Nel viewer si regolano apertura, colore e fattore di apertura del telo (5%, 10% o 15%: nel modello opacità = 1 − fattore, anche nell'ombra proiettata); partono avvolte. Colori chiari proposti: avorio (profili ~RAL 9001), paglia (~RAL 1013), perla (~RAL 7044), tortora chiaro (~RAL 1019).
 
 ## Parametri fissi della parete — Primo Piano
 
@@ -37,7 +38,6 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
   - Camera Nord (F2): 17,30 m²
   - Camera Sud (F3): 12,40 m²
   - Bagno Sud (F4): 4,10 m²
-- **Tende zip esterne** (solo viewer 3D, per ora): su tutte e 4 le finestre del primo piano e anche su quelle del piano terra, con cassonetto a vista 11×11 cm sopra il foro, guide laterali 3,5 × 5 cm sulla facciata, telo screen e fondale in alluminio. Nel viewer si regolano per ciascun piano apertura, opacità del telo (anche nell'ombra proiettata) e colore; al piano terra partono avvolte; proposte chiare: avorio (profili ~RAL 9001), paglia (~RAL 1013), perla (~RAL 7044), tortora chiaro (~RAL 1019).
 
 ## Vincoli generali — Piano Terra
 
