@@ -16,13 +16,14 @@ src/
 ├── piano-terra/
 │   └── piano_terra.html                — Piano Terra (F1/F4 174×150)
 ├── primo-piano/
-│   └── primo_piano.html                — Primo Piano (F2/F3=174cm)
+│   └── primo_piano.html                — Primo Piano (F2/F3=174cm, persiane testa di moro)
 ├── viewer_3d.html / viewer_3d.js       — Vista 3D interattiva (three.js)
 ├── render/render.html                — Galleria render Blender (img/ da aggiorna_render.sh)
 ├── texture/cottomilano/                — Cotto Milano 120×120 ultramatt: creta e terracotta × 5 facce (dal produttore, 512 px sRGB)
 ├── blender/
 │   ├── fienile_pt_render.py            — Scena Blender allineata al viewer 3D + render varianti Cotto Milano
-│   └── render_tende.sh                 — Render della sezione "Tende zip" della galleria
+│   ├── render_tende.sh                 — Render della sezione "Tende zip" della galleria
+│   └── render_persiane.sh              — Render della sezione "Persiane" della galleria
 └── archivio/
     ├── confronto.html                  — Confronto interattivo PT + P1
     ├── playground.html                 — Playground interattivo 8 finestre
@@ -75,6 +76,12 @@ Stesso sistema di coordinate del PT, ma con 2 pilastri:
 |----------|---------------|--------|--------|
 | P1 | 590–620 | 446.73 | 19.16 |
 | P2 | 727–757 | 534.20 | 19.16 |
+
+### Persiane (solo Primo Piano)
+
+Disegnate aperte contro la facciata, alte quanto la finestra, nel gruppo `id="persiane-group"` (toggle "Persiane", attivo di default):
+- Anta: `<rect class="persiana">` (`fill: #45322e`, testa di moro), poi rect interno con `fill="url(#steccheHatch)"` (stecche a passo 2.88 px = 3,6 cm), rientrato di 4.15 px ai lati (montanti 6,5 cm), 6.4 px in alto e 8.8 px in basso (traversi 8 e 11 cm)
+- F2/F3: 2 ante larghe metà finestra, ai due lati; F1/F4: anta unica da 60 cm verso il bordo parete (F1 da 5 a 65 cm, F4 da 1282 a 1342 cm)
 
 ## Classi CSS condivise (inline in ogni file)
 
@@ -140,6 +147,7 @@ Ogni variante ha toggle per pilastri, colonna e cucina. I gruppi SVG hanno id:
 - `id="pillars-group"` — contiene tutti i pilastri
 - `id="column-group"` — contiene la colonna frontale
 - `id="kitchen-group"` — contiene banco e isola cucina (solo PT)
+- `id="persiane-group"` — contiene le persiane aperte (solo P1)
 
 ## Cucina (solo Piano Terra)
 
@@ -192,6 +200,7 @@ Elementi cucina visualizzati con contorno tratteggiato `#6b5e52` e pattern diago
 | Etichette finestre | `#5a8199` |
 | Nomi stanze | `#8a7e72` |
 | Colonna frontale | `#b0453a` |
+| Persiane (testa di moro) | `#45322e` |
 | Zone margine | `#f0ccc8` (opacity 0.3) |
 
 ## Font

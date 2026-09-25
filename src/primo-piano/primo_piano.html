@@ -106,6 +106,7 @@
     dominant-baseline: middle;
   }
   .align-line { stroke: #b0453a; stroke-width: 0.5; stroke-dasharray: 6,3; opacity: 0.5; }
+  .persiana { fill: #45322e; }
 
   .legend {
     display: flex;
@@ -170,7 +171,7 @@
 <body>
 
 <h1>Prospetto Parete — Primo Piano</h1>
-<div class="subtitle">13.470 mm × 2.700 mm — F2/F3 porte finestre 174×250 (2 ante), F1/F4 finestre 60×150</div>
+<div class="subtitle">13.470 mm × 2.700 mm — F2/F3 porte finestre 174×250 (2 ante), F1/F4 finestre 60×150, persiane testa di moro</div>
 
 <div class="toggle-controls">
   <label class="toggle-item">
@@ -180,6 +181,10 @@
   <label class="toggle-item">
     <span class="toggle-switch"><input type="checkbox" id="toggle-column"><span class="toggle-slider"></span></span>
     Colonna
+  </label>
+  <label class="toggle-item">
+    <span class="toggle-switch"><input type="checkbox" id="toggle-persiane" checked><span class="toggle-slider"></span></span>
+    Persiane
   </label>
 </div>
 
@@ -199,6 +204,14 @@
   F4: 60×150, davanzale 100cm, a 65cm da dx (=1222cm) → x=850.25, w=38.31, y=56..176
 
   Pilastri: P1 x=446.72, P2 x=534.20, w=19.16
+
+  Persiane testa di moro (~RAL 8017), disegnate aperte contro la facciata, alte quanto la finestra.
+  Telaio dell'anta: montanti 6,5 cm (4.15 px), traverso alto 8 cm (6.4 px), basso 11 cm (8.8 px);
+  stecche a passo 3,6 cm (2.88 px).
+  F1: anta unica 60, aperta verso nord → 5..65 cm, x=73.19, w=38.31
+  F2: 2 ante da 87 → 163..250 cm x=174.08, 424..511 cm x=340.72, w=55.55
+  F3: 2 ante da 87 → 836..923 cm x=603.79, 1097..1184 cm x=770.43, w=55.55
+  F4: anta unica 60, aperta verso sud → 1282..1342 cm, x=888.56, w=38.31
 -->
 <svg viewBox="0 0 980 370" xmlns="http://www.w3.org/2000/svg" width="980">
 
@@ -292,6 +305,31 @@
   <!-- Labels -->
   <text x="869.41" y="27" class="label-text">F4 — 60 × 150</text>
   <text x="869.41" y="37" class="label-room">Bagno Sud</text>
+
+  <!-- ============ PERSIANE (aperte, testa di moro) ============ -->
+  <defs>
+    <pattern id="steccheHatch" patternUnits="userSpaceOnUse" width="6" height="2.88">
+      <line x1="0" y1="1.44" x2="6" y2="1.44" stroke="#8a6f5f" stroke-width="0.6"/>
+    </pattern>
+  </defs>
+  <g id="persiane-group">
+  <!-- F1: anta unica, aperta verso nord -->
+  <rect x="73.19" y="56" width="38.31" height="120" class="persiana"/>
+  <rect x="77.34" y="62.4" width="30.01" height="104.8" fill="url(#steccheHatch)"/>
+  <!-- F2: 2 ante da 87 -->
+  <rect x="174.08" y="56" width="55.55" height="200" class="persiana"/>
+  <rect x="178.23" y="62.4" width="47.25" height="184.8" fill="url(#steccheHatch)"/>
+  <rect x="340.72" y="56" width="55.55" height="200" class="persiana"/>
+  <rect x="344.87" y="62.4" width="47.25" height="184.8" fill="url(#steccheHatch)"/>
+  <!-- F3: 2 ante da 87 -->
+  <rect x="603.79" y="56" width="55.55" height="200" class="persiana"/>
+  <rect x="607.94" y="62.4" width="47.25" height="184.8" fill="url(#steccheHatch)"/>
+  <rect x="770.43" y="56" width="55.55" height="200" class="persiana"/>
+  <rect x="774.58" y="62.4" width="47.25" height="184.8" fill="url(#steccheHatch)"/>
+  <!-- F4: anta unica, aperta verso sud -->
+  <rect x="888.56" y="56" width="38.31" height="120" class="persiana"/>
+  <rect x="892.71" y="62.4" width="30.01" height="104.8" fill="url(#steccheHatch)"/>
+  </g>
 
   <!-- ============ COLONNA FRONTALE (76 cm, centrata) ============ -->
   <!-- Da 635.5 a 711.5 cm → x=475.77, w=48.52 -->
@@ -475,6 +513,10 @@
     <svg width="20" height="12"><rect x="1" y="1" width="18" height="10" fill="#c8dce8" stroke="#5a8199" stroke-width="0.8"/><line x1="10" y1="1" x2="10" y2="11" stroke="#5a8199" stroke-width="0.8"/></svg>
     F2/F3 — 2 ante
   </div>
+  <div class="legend-item">
+    <svg width="20" height="12"><rect x="0.5" y="0.5" width="19" height="11" fill="#45322e"/><line x1="3" y1="4" x2="17" y2="4" stroke="#8a6f5f" stroke-width="0.8"/><line x1="3" y1="6.5" x2="17" y2="6.5" stroke="#8a6f5f" stroke-width="0.8"/><line x1="3" y1="9" x2="17" y2="9" stroke="#8a6f5f" stroke-width="0.8"/></svg>
+    Persiane aperte, testa di moro (~RAL 8017)
+  </div>
 </div>
 
 <div class="table-container">
@@ -489,6 +531,7 @@
         <th>Da terra</th>
         <th>Da (x)</th>
         <th>A (x)</th>
+        <th>Persiane</th>
       </tr>
     </thead>
     <tbody>
@@ -501,6 +544,7 @@
         <td>100 cm</td>
         <td>0,650 m</td>
         <td>1,250 m</td>
+        <td>1 anta, verso nord</td>
       </tr>
       <tr>
         <td>F2</td>
@@ -511,6 +555,7 @@
         <td>0 cm</td>
         <td>2,500 m</td>
         <td>4,240 m</td>
+        <td>2 ante da 87</td>
       </tr>
       <tr>
         <td>F3</td>
@@ -521,6 +566,7 @@
         <td>0 cm</td>
         <td>9,230 m</td>
         <td>10,970 m</td>
+        <td>2 ante da 87</td>
       </tr>
       <tr>
         <td>F4</td>
@@ -531,6 +577,7 @@
         <td>100 cm</td>
         <td>12,220 m</td>
         <td>12,820 m</td>
+        <td>1 anta, verso sud</td>
       </tr>
     </tbody>
   </table>
@@ -587,8 +634,11 @@ document.getElementById('toggle-pillars').addEventListener('change', function() 
 document.getElementById('toggle-column').addEventListener('change', function() {
   document.getElementById('column-group').style.display = this.checked ? '' : 'none';
 });
-// stato iniziale: pilastri e colonna off di default
-['pillars','column'].forEach(function(k){
+document.getElementById('toggle-persiane').addEventListener('change', function() {
+  document.getElementById('persiane-group').style.display = this.checked ? '' : 'none';
+});
+// stato iniziale: pilastri e colonna off di default, persiane on
+['pillars','column','persiane'].forEach(function(k){
   document.getElementById(k+'-group').style.display = document.getElementById('toggle-'+k).checked ? '' : 'none';
 });
 </script>

@@ -38,6 +38,7 @@ Progetto di distribuzione finestre sulla parete ovest di una casa in costruzione
   - Camera Nord (F2): 17,30 m²
   - Camera Sud (F3): 12,40 m²
   - Bagno Sud (F4): 4,10 m²
+- **Persiane** alla genovese su tutte le finestre del primo piano, verniciate **testa di moro** (~RAL 8017), a stecche inclinate a 45° (bordo esterno più basso). Incernierate sullo spigolo esterno delle spallette: chiuse stanno nel vano, aperte (180°) si appoggiano alla facciata accanto alla finestra. Porte finestre F2/F3 a 2 ante (87 cm ciascuna con F2/F3 da 174); finestre dei bagni F1/F4 ad anta unica da 60 cm, che si apre verso la testata vicina (dall'altra parte c'è la porta finestra). Nel prospetto sono disegnate aperte (toggle "Persiane"); nel viewer 3D si regola l'apertura (punto di vista "Terrazzo, persiane"); in Blender `--persiane` (apertura %, default 100 = aperte) e `--no-persiane`, camera `persiane` (esposta di più: il terrazzo è sempre all'ombra della falda); i render della galleria si rifanno con `src/blender/render_persiane.sh`. Le ante stanno fuori dal vano vetrato e non cambiano il RAI.
 
 ## Vincoli generali — Piano Terra
 

@@ -98,6 +98,20 @@ const ZIP_TELI = {
   f15: { nome: '15%', fattore: 0.15 },
 };
 
+// Persiane alla genovese sulle finestre del primo piano, verniciate testa di moro (~RAL 8017).
+// Incernierate sullo spigolo esterno delle spallette: chiuse stanno nel vano, quasi a filo facciata;
+// aperte (180°) si appoggiano alla facciata accanto alla finestra. Porte finestre delle camere a 2 ante,
+// finestre dei bagni ad anta unica che si apre verso la testata vicina (dall'altra parte c'è la porta finestra).
+// Stecche inclinate a 45° con il bordo esterno più basso: fermano il sole alto, da dentro si vede in basso.
+const PERSIANE = {
+  colore: 0x45322e,
+  sp: 0.045, montante: 0.065, traversoAlto: 0.08, traversoBasso: 0.11,  // telaio dell'anta
+  stecca: [0.05, 0.008], passo: 0.036, inclinazione: Math.PI / 4,      // [larghezza, spessore], interasse
+  luce: 0.004,     // gioco tra anta e vano, e tra le due ante
+  scosto: 0.01,    // cerniera 1 cm fuori dal filo di facciata: aperte, le ante non toccano l'intonaco
+  sottoPorta: 0.03, // le ante delle porte finestre restano sopra il pavimento del terrazzo (+2 cm)
+};
+
 /* ==========================================================================
    STATO E DOM
    ========================================================================== */
@@ -109,6 +123,7 @@ const state = {
   exposure: 0.9, hour: 16, date: null,
   // le tende zip partono avvolte, così le viste interne restano quelle di sempre
   showTende: true, tendeColore: 'avorio', tendeApertura: 1, tendeTelo: 'f5',
+  showPersiane: true, persianeApertura: 1,
 };
 const today = new Date();
 state.date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -396,6 +411,7 @@ const M = {
   legno:    std({ map: TEX.rovere, color: 0xc9b39a, roughness: 0.6 }),
   tessuto:  std({ color: 0xc8baa3, roughness: 1 }),
   scuro:    std({ color: 0x222222, roughness: 0.5, metalness: 0.4 }),
+  persiana: std({ color: PERSIANE.colore, roughness: 0.5 }),                  // testa di moro, smalto satinato
   led:      std({ color: 0x000000, emissive: 0xffc98a, emissiveIntensity: 0 }),
 };
 // telo e profili delle tende zip. L'ombra del telo usa un retino ordinato 8×8 sui texel della shadow
@@ -510,6 +526,46 @@ function zipScreens(windows, group) {
   }
 }
 
+// persiane del primo piano: ogni anta è un gruppo con l'origine sulla cerniera, che applyPersiane()
+// ruota senza ricostruire la casa. dir = +1 se l'anta chiusa va verso sud dalla cerniera, -1 verso nord
+const ante = [];
+function shutters(y0, windows, group, ox) {
+  ante.length = 0;
+  const S = PERSIANE;
+  for (const [p, w, h, sill] of windows) {
+    const a = p, b = p + w, due = w > 1.1;
+    const yb = y0 + sill + (sill === 0 ? S.sottoPorta : S.luce), yt = y0 + sill + h - S.luce;
+    const cerniere = due ? [[a, 1], [b, -1]] : a + w / 2 < P.L / 2 ? [[a, 1]] : [[b, -1]];
+    const lw = (due ? w / 2 : w) - S.luce;
+    for (const [zc, dir] of cerniere) {
+      const g = new THREE.Group();
+      g.position.set(ox - S.scosto, 0, zc);
+      group.add(g);
+      shutterLeaf(g, Math.min(0, dir * lw), Math.max(0, dir * lw), yb, yt);
+      ante.push({ g, dir });
+    }
+  }
+}
+// un'anta in coordinate della cerniera: x = spessore verso l'interno del vano, z = larghezza
+function shutterLeaf(g, z0, z1, yb, yt) {
+  const S = PERSIANE, t = S.sp, m = S.montante;
+  box(0, yb, z0, t, yt, z0 + m, M.persiana, g);                          // montanti
+  box(0, yb, z1 - m, t, yt, z1, M.persiana, g);
+  box(0, yb, z0 + m, t, yb + S.traversoBasso, z1 - m, M.persiana, g);    // traversi
+  box(0, yt - S.traversoAlto, z0 + m, t, yt, z1 - m, M.persiana, g);
+  // stecche equidistanti tra i traversi, senza entrarci: e = mezzo ingombro verticale della stecca inclinata
+  const [sw, ss] = S.stecca, e = (sw * Math.sin(S.inclinazione) + ss * Math.cos(S.inclinazione)) / 2;
+  const s0 = yb + S.traversoBasso + e, s1 = yt - S.traversoAlto - e, n = Math.floor((s1 - s0) / S.passo) + 1;
+  const stecche = new THREE.InstancedMesh(new THREE.BoxGeometry(sw, ss, z1 - z0 - 2 * m), M.persiana, n);
+  const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), S.inclinazione);  // bordo interno in alto
+  const m4 = new THREE.Matrix4(), pos = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1);
+  for (let i = 0; i < n; i++) {
+    stecche.setMatrixAt(i, m4.compose(pos.set(t / 2, s0 + (s1 - s0) * i / (n - 1), (z0 + z1) / 2), q, one));
+  }
+  stecche.castShadow = stecche.receiveShadow = true;
+  g.add(stecche);
+}
+
 // parapetto in ferro: corrente superiore e inferiore piatti, montanti, bacchette verticali (instanced)
 function railing(yb, z0, z1, group) {
   const R = P.parapetto, x0 = R.arretramento, x1 = x0 + 0.05, ytop = yb + R.h;
@@ -543,6 +599,7 @@ function build() {
     G[k] = new THREE.Group(); house.add(G[k]);
   }
   G.tende = new THREE.Group(); G.pt.add(G.tende);
+  G.persiane = new THREE.Group(); G.upper.add(G.persiane);
   const L = P.L, D = P.profEdificio, t = P.tW, H = P.hPiano, S = P.solaio;
   const xi = t, xs = t + P.profSoggiorno;          // filo interno ovest, fine open space
   const y1 = H + S;                                 // quota pavimento P1
@@ -602,6 +659,7 @@ function build() {
   // --- primo piano (involucro) + tetto
   const ox = P.arretramentoP1;
   westWall(y1, VAR_P1[state.varP1].f, G.upper, ox);
+  shutters(y1, VAR_P1[state.varP1].f, G.persiane, ox);
   box(ox, y1 + H, 0, ox + t, roofH(ox) + 0.05, L, WALL(), G.upper);
   box(ox + t, y1 - 0.02, 0, D - P.tEst, y1, L, M.pavimentoP1, G.upper, { cast: false });
   box(0, y1, 0, ox, y1 + 0.02, L, M.portico, G.upper, { cast: false });   // terrazzo davanti al P1
@@ -652,6 +710,7 @@ function build() {
 
   scene.add(house);
   applyTende();
+  applyPersiane();
   applyVisibility();
 }
 
@@ -850,9 +909,16 @@ function applyTende() {
   $('tendeAperturaRead').textContent = `${Math.round(state.tendeApertura * 100)}%`;
   $('tendeNota').textContent = `${c.nome}: ${c.nota}`;
 }
+// apertura 1 = ante aperte a 180° contro la facciata, 0 = chiuse nel vano
+function applyPersiane() {
+  const ap = state.persianeApertura;
+  for (const { g, dir } of ante) g.rotation.y = -dir * Math.PI * ap;
+  $('persianeAperturaRead').textContent = ap === 0 ? 'chiuse' : ap === 1 ? 'aperte' : `${Math.round(ap * 180)}°`;
+}
 function applyVisibility() {
   if (!house) return;
   G.tende.visible = state.showTende;
+  G.persiane.visible = state.showPersiane;
   G.upper.visible = state.showUpper;
   G.roof.visible = state.showRoof;
   G.kitchen.visible = state.showKitchen;
@@ -879,7 +945,7 @@ document.querySelectorAll('.chips button').forEach((b) => b.addEventListener('cl
 $('floorPT').value = state.floorPT; $('floorP1').value = state.floorP1;
 on('floorPT', 'change', (e) => { state.floorPT = e.target.value; applyFloorPT(); });
 on('floorP1', 'change', (e) => { state.floorP1 = e.target.value; applyMaterials(); });
-for (const k of ['showUpper', 'showRoof', 'showKitchen', 'showFurniture', 'showLights', 'showAO', 'showTende'])
+for (const k of ['showUpper', 'showRoof', 'showKitchen', 'showFurniture', 'showLights', 'showAO', 'showTende', 'showPersiane'])
   on(k, 'change', (e) => { state[k] = e.target.checked; applyVisibility(); });
 fillSelect($('tendeColore'), ZIP_COLORI, state.tendeColore);
 fillSelect($('tendeTelo'), ZIP_TELI, state.tendeTelo);
@@ -887,6 +953,8 @@ $('tendeApertura').value = state.tendeApertura;
 on('tendeColore', 'change', (e) => { state.tendeColore = e.target.value; applyTende(); });
 on('tendeTelo', 'change', (e) => { state.tendeTelo = e.target.value; applyTende(); });
 on('tendeApertura', 'input', (e) => { state.tendeApertura = +e.target.value; applyTende(); });
+$('persianeApertura').value = state.persianeApertura;
+on('persianeApertura', 'input', (e) => { state.persianeApertura = +e.target.value; applyPersiane(); });
 on('exposure', 'input', (e) => { state.exposure = +e.target.value; renderer.toneMappingExposure = state.exposure; });
 
 /* ---------- punti di vista ---------- */
@@ -902,6 +970,8 @@ const VIEWS = {
   // tende zip: soggiorno verso le vetrate, dettaglio dell'incasso dal portico (se sono alzate, le abbassa a metà)
   controluce: { pos: [4.6, 1.5, 12.6], tgt: [0.4, 1.15, 8.2] },
   incasso:    { pos: [-1.5, 1.45, 7.6], tgt: [0.1, 1.55, 5.6], tende: 0.5 },
+  // persiane del primo piano: dal terrazzo, lungo la facciata verso nord (F2 e, in fondo, F1)
+  persiane:   { pos: [0.12, 4.5, 6.2], tgt: [1.1, 4.0, 1.8] },
   pianta:  { pos: [P.profEdificio / 2 - 0.5, 21, P.L / 2 + 0.01], tgt: [P.profEdificio / 2 - 0.5, 0, P.L / 2], upper: false, far: true },
 };
 function setView(name) {

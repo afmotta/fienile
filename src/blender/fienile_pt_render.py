@@ -21,6 +21,8 @@ Uso:
   blender -b -P fienile_pt_render.py -- --no-sofa           (arredo senza il divano)
   blender -b -P fienile_pt_render.py -- --tende 0 --telo 10 --colore-tende perla   (tende zip del PT tutte giù)
   blender -b -P fienile_pt_render.py -- --tende 0,50,100,30  (apertura % di ogni tenda, F1..F4)
+  blender -b -P fienile_pt_render.py -- --camera persiane --persiane 0   (persiane del primo piano chiuse)
+  blender -b -P fienile_pt_render.py -- --no-persiane
 """
 import bpy, bmesh, math, sys, os, argparse, colorsys, datetime
 from mathutils import Vector, Euler
@@ -91,6 +93,14 @@ ZIP_COLORI = {
 }
 ZIP_TELI = (5, 10, 15)   # fattore di apertura del telo, %
 
+# Persiane alla genovese del primo piano (PERSIANE nel viewer), testa di moro (~RAL 8017): incernierate sullo
+# spigolo esterno delle spallette, chiuse stanno nel vano, aperte (180°) si appoggiano alla facciata.
+# Porte finestre a 2 ante, finestre dei bagni ad anta unica verso la testata vicina. Stecche a 45° con il
+# bordo esterno più basso. luce = gioco nel vano; scosto = cerniera fuori dal filo di facciata;
+# sottoPorta = le ante delle porte finestre restano sopra il pavimento del terrazzo.
+PERSIANE = dict(colore="#45322e", sp=0.045, montante=0.065, traversoAlto=0.08, traversoBasso=0.11,
+                stecca=(0.05, 0.008), passo=0.036, inclinazione=math.pi / 4, luce=0.004, scosto=0.01, sottoPorta=0.03)
+
 # punti di vista (VIEWS del viewer, coordinate del viewer); upper=False nasconde primo piano e tetto
 CAMERAS = {
     "ovest":   dict(pos=(-19, 4.5, P["L"] / 2 - 4), tgt=(0, 3.2, P["L"] / 2)),
@@ -105,6 +115,9 @@ CAMERAS = {
     # extra = fuori dal render completo di default, si chiedono con --camera
     "controluce": dict(pos=(4.6, 1.5, 12.6), tgt=(0.4, 1.15, 8.2), extra=True),
     "incasso":    dict(pos=(-1.5, 1.45, 7.6), tgt=(0.1, 1.55, 5.6), extra=True),
+    # persiane del primo piano: dal terrazzo, lungo la facciata verso nord. Il terrazzo è sempre all'ombra
+    # della falda (sporge 4,8 m), quindi di giorno va esposto di più
+    "persiane":   dict(pos=(0.12, 4.5, 6.2), tgt=(1.1, 4.0, 1.8), exp=dict(giorno=1.4), extra=True),
     "pianta":  dict(pos=(P["profEdificio"] / 2 - 0.5, 21, P["L"] / 2 + 0.01),
                     tgt=(P["profEdificio"] / 2 - 0.5, 0, P["L"] / 2), upper=False),
 }
@@ -496,6 +509,7 @@ LIB = {
     "legno":       lambda: m_wood("legno", "#c9a57a", "#9c7650", grain_dir="Y", rough=0.6),
     "tessuto":     lambda: m_simple("tessuto", "#c8baa3", 1.0, sheen=0.5),
     "scuro":       lambda: m_simple("scuro", "#222222", 0.5, metal=0.4),
+    "persiana":    lambda: m_simple("persiana_testa_di_moro", PERSIANE["colore"], 0.5),   # smalto satinato
     "led":         lambda: m_emit("led", 3000, 18),
 }
 def material(key): return LIB[key]()
@@ -555,6 +569,53 @@ def zip_screens(windows, tende):
         verts = [V(x, y0, a), V(x, y0, b), V(x, top, b), V(x, top, a)]
         mesh_obj("telo_zip", verts, [[0, 1, 2, 3]], [[(0, 0), (w, 0), (w, top - y0), (0, top - y0)]],
                  ["telo_zip"], "pt")
+
+def shutters(y0, windows, ox, apertura):
+    """Persiane del primo piano (shutters + applyPersiane del viewer): ogni anta si costruisce già ruotata
+    attorno alla cerniera (1 = aperta a 180° contro la facciata, 0 = chiusa nel vano).
+    d = +1 se l'anta chiusa va verso sud dalla cerniera, -1 verso nord."""
+    S = PERSIANE
+    for p, w, h, sill in windows:
+        a, b, due = p, p + w, w > 1.1
+        yb, yt = y0 + sill + (S["sottoPorta"] if sill == 0 else S["luce"]), y0 + sill + h - S["luce"]
+        cerniere = [(a, 1), (b, -1)] if due else [(a, 1)] if a + w / 2 < P["L"] / 2 else [(b, -1)]
+        lw = (w / 2 if due else w) - S["luce"]
+        for zc, d in cerniere:
+            shutter_leaf(ox - S["scosto"], zc, -d * math.pi * apertura, min(0, d * lw), max(0, d * lw), yb, yt)
+
+def shutter_leaf(hx, hz, th, z0, z1, yb, yt):
+    """Un'anta come mesh unica. I pezzi sono (centro, semiassi, inclinazione attorno a z) in coordinate della
+    cerniera (x = spessore verso il vano, z = larghezza) e ruotano di th attorno all'asse verticale, come
+    rotation.y del gruppo nel viewer. Le stecche non entrano nei traversi (in Cycles darebbero pixel neri)."""
+    S = PERSIANE; t, m = S["sp"], S["montante"]
+    part = lambda x0, y0, za, x1, y1, zb, phi=0.0: (((x0 + x1) / 2, (y0 + y1) / 2, (za + zb) / 2),
+                                                   ((x1 - x0) / 2, (y1 - y0) / 2, (zb - za) / 2), phi)
+    parts = [part(0, yb, z0, t, yt, z0 + m), part(0, yb, z1 - m, t, yt, z1),                   # montanti
+             part(0, yb, z0 + m, t, yb + S["traversoBasso"], z1 - m),                           # traversi
+             part(0, yt - S["traversoAlto"], z0 + m, t, yt, z1 - m)]
+    (sw, ss), phi = S["stecca"], S["inclinazione"]
+    e = (sw * math.sin(phi) + ss * math.cos(phi)) / 2          # mezzo ingombro verticale della stecca inclinata
+    s0, s1 = yb + S["traversoBasso"] + e, yt - S["traversoAlto"] - e
+    n = int((s1 - s0) // S["passo"]) + 1
+    for i in range(n):
+        yc = s0 + (s1 - s0) * i / (n - 1)
+        parts.append(part(t / 2 - sw / 2, yc - ss / 2, z0 + m, t / 2 + sw / 2, yc + ss / 2, z1 - m, phi))
+    c, s = math.cos(th), math.sin(th)
+    verts, faces = [], []
+    quads = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+    for (cx, cy, cz), (ex, ey, ez), ph in parts:
+        cp, sp = math.cos(ph), math.sin(ph); k0 = len(verts)
+        for i in (-1, 1):
+            for j in (-1, 1):
+                for k in (-1, 1):
+                    lx, ly = i * ex, j * ey
+                    x, y, z = cx + lx * cp - ly * sp, cy + lx * sp + ly * cp, cz + k * ez   # bordo interno in alto
+                    verts.append(V(hx + x * c + z * s, y, hz - x * s + z * c))
+        faces += [[k0 + q for q in f] for f in quads]
+    ob = mesh_obj("persiana", verts, faces, [[(0, 0), (1, 0), (1, 1), (0, 1)]] * len(faces),
+                  ["persiana"] * len(faces), "upper")
+    bm = bmesh.new(); bm.from_mesh(ob.data)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(ob.data); bm.free()
 
 def railing(yb, z0, z1, group):
     """Parapetto in ferro: corrimano e corrente inferiore piatti, montanti, bacchette verticali."""
@@ -656,7 +717,7 @@ def kitchen(xi, xs, var_pt):
     pr = C["presa"]
     box(xi + pr["x"] - 0.03, yt, pr["z"] - 0.03, xi + pr["x"] + 0.03, yt + 0.01, pr["z"] + 0.03, "vetroNero", g, "presa")
 
-def build(var_pt, var_p1, tende):
+def build(var_pt, var_p1, tende, persiane):
     L, D, t, H, S = P["L"], P["profEdificio"], P["tW"], P["hPiano"], P["solaio"]
     xi, xs = t, t + P["profSoggiorno"]          # filo interno ovest, fine open space
     y1 = H + S                                   # quota pavimento P1
@@ -714,6 +775,7 @@ def build(var_pt, var_p1, tende):
     # --- primo piano (involucro) + tetto
     ox = P["arretramentoP1"]
     west_wall(y1, VAR_P1[var_p1], "upper", ox)
+    if persiane is not None: shutters(y1, VAR_P1[var_p1], ox, persiane)
     box(ox, y1 + H, 0, ox + t, roofH(ox) + 0.05, L, WALL, "upper", "parete_ovest_alta")
     box(ox + t, y1 - 0.02, 0, D - P["tEst"], y1, L, "pavimentoP1", "upper", "pavimento_p1")
     box(0, y1, 0, ox, y1 + 0.02, L, "portico", "upper", "terrazzo")
@@ -904,6 +966,9 @@ def main():
                     help="apertura delle tende zip del PT in %%: un valore per tutte, o 4 separati da virgola (F1..F4)")
     ap.add_argument("--telo", type=int, default=5, choices=ZIP_TELI, help="fattore di apertura del telo, %%")
     ap.add_argument("--colore-tende", default="avorio", choices=list(ZIP_COLORI))
+    ap.add_argument("--persiane", type=float, default=None,
+                    help="apertura delle persiane del primo piano in %%: 100 = aperte contro la facciata (default), 0 = chiuse")
+    ap.add_argument("--no-persiane", action="store_true", help="toglie le persiane del primo piano")
     a = ap.parse_args(argv)
     ape = [min(max(float(v), 0), 100) / 100 for v in (a.tende or "100").split(",")]
     if len(ape) not in (1, 4): ap.error("--tende vuole 1 o 4 valori")
@@ -911,7 +976,10 @@ def main():
     # nei nomi dei file le tende compaiono solo se richieste con --tende: i render di sempre non cambiano nome
     sfx = "" if a.tende is None else \
         "__tende-" + "-".join(f"{v * 100:g}" for v in tende["apertura"]) + f"-telo{a.telo}-{a.colore_tende}"
-    reset(); build(a.var_pt, a.var_p1, tende); cams = cameras(); render_setup(a.preview, a.gpu)
+    # persiane aperte di default; nel nome del file solo se l'apertura è chiesta con --persiane
+    persiane = None if a.no_persiane else min(max(a.persiane if a.persiane is not None else 100, 0), 100) / 100
+    if a.persiane is not None and not a.no_persiane: sfx += f"__persiane-{a.persiane:g}"
+    reset(); build(a.var_pt, a.var_p1, tende, persiane); cams = cameras(); render_setup(a.preview, a.gpu)
     presets = a.preset or list(PRESETS); scenes = a.scene or list(SCENES); camnames = a.camera or [k for k, c in CAMERAS.items() if not c.get("extra")]
     sc = bpy.context.scene
     if a.build_only:
