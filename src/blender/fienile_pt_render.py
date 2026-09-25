@@ -19,6 +19,8 @@ Uso:
   blender    -P fienile_pt_render.py -- --build-only       (apre la scena per navigarla, niente render)
   blender -b -P fienile_pt_render.py -- --no-roof --no-p1   (come i toggle "Tetto" e "Primo piano" del viewer)
   blender -b -P fienile_pt_render.py -- --no-sofa           (arredo senza il divano)
+  blender -b -P fienile_pt_render.py -- --tende 0 --telo 10 --colore-tende perla   (tende zip del PT tutte giù)
+  blender -b -P fienile_pt_render.py -- --tende 0,50,100,30  (apertura % di ogni tenda, F1..F4)
 """
 import bpy, bmesh, math, sys, os, argparse, colorsys, datetime
 from mathutils import Vector, Euler
@@ -77,6 +79,18 @@ VAR_PT = {
 def _p1(w): return [(0.65, 0.6, 1.5, 1), (2.50, w, 2.5, 0), (P["L"] - 2.50 - w, w, 2.5, 0), (P["L"] - 0.65 - 0.6, 0.6, 1.5, 1)]
 VAR_P1 = {"B": _p1(1.74), "A": _p1(1.60), "C": _p1(1.80), "D": _p1(2.00)}
 
+# Tende zip del piano terra (ZIP / ZIP_COLORI / ZIP_TELI nel viewer): incassate nel muro, cassonetto
+# nell'architrave e guide nelle spallette; il telo scende nella mazzetta a 6 cm dal filo di facciata e,
+# tutto alzato, sparisce con il fondale dentro l'architrave. fondale = (altezza, profondità) della barra.
+ZIP = dict(telo=0.06, fondale=(0.035, 0.03), passo=0.0012)   # passo = interasse dei fili del tessuto
+ZIP_COLORI = {
+    "avorio":  dict(telo="#ebe4d3", profili="#e8e0cd"),   # profili ~RAL 9001
+    "paglia":  dict(telo="#e2d4a8", profili="#e2d8bf"),   # ~RAL 1013
+    "perla":   dict(telo="#d4cfc6", profili="#c9c4b5"),   # ~RAL 7044
+    "tortora": dict(telo="#c2b39f", profili="#ab9d88"),   # ~RAL 1019
+}
+ZIP_TELI = (5, 10, 15)   # fattore di apertura del telo, %
+
 # punti di vista (VIEWS del viewer, coordinate del viewer); upper=False nasconde primo piano e tetto
 CAMERAS = {
     "ovest":   dict(pos=(-19, 4.5, P["L"] / 2 - 4), tgt=(0, 3.2, P["L"] / 2)),
@@ -87,6 +101,10 @@ CAMERAS = {
     "cucina":  dict(pos=(4.4, 1.75, 4.2), tgt=(1.4, 0.9, 1.4), exp=dict(giorno=1.6)),
     "colonne": dict(pos=(1.3, 1.65, 4.3), tgt=(4.6, 1.2, 1.2), exp=dict(giorno=1.6)),
     "isola":   dict(pos=(2.75, 1.75, 3.8), tgt=(2.3, 1.1, 0.3), exp=dict(giorno=1.6)),
+    # viste per le tende zip: soggiorno verso le vetrate (controluce), dettaglio dell'incasso dal portico.
+    # extra = fuori dal render completo di default, si chiedono con --camera
+    "controluce": dict(pos=(4.6, 1.5, 12.6), tgt=(0.4, 1.15, 8.2), extra=True),
+    "incasso":    dict(pos=(-1.5, 1.45, 7.6), tgt=(0.1, 1.55, 5.6), extra=True),
     "pianta":  dict(pos=(P["profEdificio"] / 2 - 0.5, 21, P["L"] / 2 + 0.01),
                     tgt=(P["profEdificio"] / 2 - 0.5, 0, P["L"] / 2), upper=False),
 }
@@ -414,6 +432,31 @@ def m_photo(name, rel, meters, rough=0.5):
     nt.links.new(tx.outputs["Color"], p.inputs["Base Color"]); p.inputs["Roughness"].default_value = rough
     return m
 
+def m_screen(colore, fattore):
+    """Telo screen delle tende zip. Invece di un'opacità media (come nel viewer) il tessuto ha fori veri:
+    fili ogni 1,2 mm e fori quadrati di lato passo·√fattore, così la quota vuota è il fattore di apertura.
+    Da lì passano la vista e il sole diretto (ombra puntinata, sfumata dalla distanza); i fili sono in
+    parte traslucidi, e controluce il telo si illumina come quelli veri."""
+    m, r = new_mat(f"telo_zip_{colore}_{round(fattore * 100)}")
+    if not r: return m
+    nt, p = r
+    col = rgb(ZIP_COLORI[colore]["telo"])
+    p.inputs["Base Color"].default_value = col; p.inputs["Roughness"].default_value = 0.9
+    p.inputs["Sheen Weight"].default_value = 0.3
+    sep = node(nt, "ShaderNodeSeparateXYZ"); nt.links.new(uv_coords(nt), sep.inputs["Vector"])
+    passo = ZIP["passo"]; foro = passo * math.sqrt(fattore)
+    fu = math_node(nt, "LESS_THAN", math_node(nt, "FLOORED_MODULO", sep.outputs["X"], passo), foro)
+    fv = math_node(nt, "LESS_THAN", math_node(nt, "FLOORED_MODULO", sep.outputs["Y"], passo), foro)
+    tl = node(nt, "ShaderNodeBsdfTranslucent"); tl.inputs["Color"].default_value = col
+    fili = node(nt, "ShaderNodeMixShader"); fili.inputs["Fac"].default_value = 0.15
+    nt.links.new(p.outputs["BSDF"], fili.inputs[1]); nt.links.new(tl.outputs["BSDF"], fili.inputs[2])
+    tr = node(nt, "ShaderNodeBsdfTransparent"); ms = node(nt, "ShaderNodeMixShader")
+    nt.links.new(math_node(nt, "MULTIPLY", fu, fv), ms.inputs["Fac"])
+    nt.links.new(fili.outputs["Shader"], ms.inputs[1]); nt.links.new(tr.outputs["BSDF"], ms.inputs[2])
+    out = [n for n in nt.nodes if n.type == "OUTPUT_MATERIAL"][0]
+    nt.links.new(ms.outputs["Shader"], out.inputs["Surface"])
+    return m
+
 def m_emit(name, kelvin=3000, strength=18):
     m = bpy.data.materials.get(name)
     if m: return m
@@ -494,6 +537,24 @@ def west_wall(y0, windows, group, ox=0.0):
         luci = [(a + fw, zm - mw), (zm + mw, b - fw)] if w > 1.1 else [(a + fw, b - fw)]
         if w > 1.1: box(fx0, yb + fw, zm - mw, fx1, top - fw, zm + mw, "telaio", group, "montante")
         for za, zb in luci: box(fx0 + 0.03, yb + fw, za, fx0 + 0.035, top - fw, zb, "vetro", group, "vetro")
+
+def zip_screens(windows, tende):
+    """Tende zip incassate del piano terra (zipScreens + applyTende del viewer): si costruiscono solo telo
+    e fondale, alla quota data dall'apertura di ogni finestra (1 = tutta alzata, quindi invisibile)."""
+    colore, fattore = tende["colore"], tende["telo"] / 100
+    LIB["telo_zip"] = lambda: m_screen(colore, fattore)
+    LIB["profili_zip"] = lambda: m_simple(f"profili_zip_{colore}", ZIP_COLORI[colore]["profili"], 0.4, coat=0.3)
+    x, (fh, fd) = ZIP["telo"], ZIP["fondale"]
+    for (p, w, h, sill), ap in zip(windows, tende["apertura"]):
+        a, b, top = p, p + w, sill + h
+        yb = sill + (top - sill) * ap                          # fondo del fondale
+        if yb >= top - 0.001: continue                          # tutta alzata: dentro l'architrave
+        box(x - fd / 2, yb, a + 0.002, x + fd / 2, yb + fh, b - 0.002, "profili_zip", "pt", "fondale_zip")
+        y0 = yb + fh
+        if top - y0 < 0.005: continue
+        verts = [V(x, y0, a), V(x, y0, b), V(x, top, b), V(x, top, a)]
+        mesh_obj("telo_zip", verts, [[0, 1, 2, 3]], [[(0, 0), (w, 0), (w, top - y0), (0, top - y0)]],
+                 ["telo_zip"], "pt")
 
 def railing(yb, z0, z1, group):
     """Parapetto in ferro: corrimano e corrente inferiore piatti, montanti, bacchette verticali."""
@@ -595,7 +656,7 @@ def kitchen(xi, xs, var_pt):
     pr = C["presa"]
     box(xi + pr["x"] - 0.03, yt, pr["z"] - 0.03, xi + pr["x"] + 0.03, yt + 0.01, pr["z"] + 0.03, "vetroNero", g, "presa")
 
-def build(var_pt, var_p1):
+def build(var_pt, var_p1, tende):
     L, D, t, H, S = P["L"], P["profEdificio"], P["tW"], P["hPiano"], P["solaio"]
     xi, xs = t, t + P["profSoggiorno"]          # filo interno ovest, fine open space
     y1 = H + S                                   # quota pavimento P1
@@ -624,6 +685,7 @@ def build(var_pt, var_p1):
     # --- piano terra
     box(xi, -0.02, 0, D - P["tEst"], 0, L, "pavimento", "pt", "pavimento")
     west_wall(0, VAR_PT[var_pt], "pt")
+    zip_screens(VAR_PT[var_pt], tende)
     # testate nord/sud e muro est fino al solaio
     box(0, 0, -tt, D, y1, 0, "facade", "pt", "testata_nord")
     box(0, 0, L, D, y1, L + tt, "facade", "pt", "testata_sud")
@@ -838,9 +900,19 @@ def main():
     ap.add_argument("--no-kitchen", action="store_true", help="nasconde la cucina (Sakura)")
     ap.add_argument("--no-furniture", action="store_true", help="nasconde l'arredo indicativo")
     ap.add_argument("--no-sofa", action="store_true", help="nasconde solo il divano")
+    ap.add_argument("--tende", default=None,
+                    help="apertura delle tende zip del PT in %%: un valore per tutte, o 4 separati da virgola (F1..F4)")
+    ap.add_argument("--telo", type=int, default=5, choices=ZIP_TELI, help="fattore di apertura del telo, %%")
+    ap.add_argument("--colore-tende", default="avorio", choices=list(ZIP_COLORI))
     a = ap.parse_args(argv)
-    reset(); build(a.var_pt, a.var_p1); cams = cameras(); render_setup(a.preview, a.gpu)
-    presets = a.preset or list(PRESETS); scenes = a.scene or list(SCENES); camnames = a.camera or list(CAMERAS)
+    ape = [min(max(float(v), 0), 100) / 100 for v in (a.tende or "100").split(",")]
+    if len(ape) not in (1, 4): ap.error("--tende vuole 1 o 4 valori")
+    tende = dict(apertura=ape * 4 if len(ape) == 1 else ape, telo=a.telo, colore=a.colore_tende)
+    # nei nomi dei file le tende compaiono solo se richieste con --tende: i render di sempre non cambiano nome
+    sfx = "" if a.tende is None else \
+        "__tende-" + "-".join(f"{v * 100:g}" for v in tende["apertura"]) + f"-telo{a.telo}-{a.colore_tende}"
+    reset(); build(a.var_pt, a.var_p1, tende); cams = cameras(); render_setup(a.preview, a.gpu)
+    presets = a.preset or list(PRESETS); scenes = a.scene or list(SCENES); camnames = a.camera or [k for k, c in CAMERAS.items() if not c.get("extra")]
     sc = bpy.context.scene
     if a.build_only:
         apply_preset(presets[0]); sky_and_sun(a.data, a.ora if scenes[0] == "giorno" else a.ora_sera)
@@ -855,7 +927,7 @@ def main():
                 sc.view_settings.exposure = base + CAMERAS[cn].get("exp", {}).get(sk, 0.0)
                 set_visibility(cn, a, sk == "sera")
                 sc.camera = cams[cn]
-                sc.render.filepath = os.path.join(out, f"{cn}__PT-{a.var_pt}__{pn}__{sk}.png")
+                sc.render.filepath = os.path.join(out, f"{cn}__PT-{a.var_pt}__{pn}__{sk}{sfx}.png")
                 for tentativo in range(3):
                     print("RENDER", sc.render.filepath, flush=True)
                     bpy.ops.render.render(write_still=True)

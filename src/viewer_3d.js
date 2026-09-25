@@ -899,6 +899,9 @@ const VIEWS = {
   cucina:  { pos: [4.4, 1.75, 4.2], tgt: [1.4, 0.9, 1.4] },
   colonne: { pos: [1.3, 1.65, 4.3], tgt: [4.6, 1.2, 1.2] },
   isola:   { pos: [2.75, 1.75, 3.8], tgt: [2.3, 1.1, 0.3] },
+  // tende zip: soggiorno verso le vetrate, dettaglio dell'incasso dal portico (se sono alzate, le abbassa a metà)
+  controluce: { pos: [4.6, 1.5, 12.6], tgt: [0.4, 1.15, 8.2] },
+  incasso:    { pos: [-1.5, 1.45, 7.6], tgt: [0.1, 1.55, 5.6], tende: 0.5 },
   pianta:  { pos: [P.profEdificio / 2 - 0.5, 21, P.L / 2 + 0.01], tgt: [P.profEdificio / 2 - 0.5, 0, P.L / 2], upper: false, far: true },
 };
 function setView(name) {
@@ -909,6 +912,9 @@ function setView(name) {
   // in verticale (telefono) le viste d'insieme si allontanano per contenere tutto l'edificio
   if (v.far && innerWidth < innerHeight) camera.position.sub(controls.target).multiplyScalar(1.9).add(controls.target);
   controls.update();
+  if (v.tende !== undefined && state.tendeApertura === 1) {
+    state.tendeApertura = v.tende; $('tendeApertura').value = v.tende; applyTende();
+  }
   const wantUpper = v.upper !== false;
   setToggle('showUpper', wantUpper);
   setToggle('showRoof', wantUpper);

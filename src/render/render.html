@@ -201,11 +201,33 @@
 <h2>Tutti i punti di vista</h2>
 <div class="grid" id="perVista"></div>
 
+<h2>Tende zip del piano terra</h2>
+<div class="subtitle" style="margin-bottom: 16px">
+  21 giugno, sole basso da ovest che entra sotto il portico · tende incassate nel muro, telo screen avorio<br>
+  Pavimento come scelto sopra
+</div>
+<div class="controls">
+  <div>
+    <div class="group-label" id="lbl-tavola">Tavola</div>
+    <div class="seg" id="tavola" role="group" aria-labelledby="lbl-tavola"></div>
+  </div>
+</div>
+<figure>
+  <a id="tfull" href="#" target="_blank" rel="noopener"><img class="main-img" id="tmain" alt=""></a>
+  <figcaption><span id="tcaption"></span><a id="tfullLink" href="#" target="_blank" rel="noopener">Apri a piena risoluzione</a></figcaption>
+</figure>
+<div class="grid colori" id="perTavola" style="margin-top: 10px"></div>
+
 <p class="note">
   I render usano lo stesso modello del viewer 3D (script <code>src/blender/fienile_pt_render.py</code>):
   la posa delle lastre è identica in tutti i colori, così il confronto riguarda solo la tinta.
   Il divano è escluso; tavolo, sedie, tappeto e tavolino sono arredo indicativo.
   Di giorno le viste della cucina, in fondo all'open space e lontane dalle vetrate, sono esposte di più.
+</p>
+<p class="note" style="margin-top: 12px">
+  Tende zip: il telo ha una trama vera, con fori pari al fattore di apertura (5, 10 o 15%), da cui passano
+  la vista e il sole diretto. Le quattro tavole in controluce hanno la stessa esposizione, così il confronto
+  della luce che entra è fedele. Tutte alzate, le tende non si vedono: cassonetto e guide sono dentro il muro.
 </p>
 
 </div>
@@ -225,19 +247,30 @@
     ovest:   'Facciata ovest',
     pianta:  'Piano terra dall\'alto',
   };
-  const state = { colore: 'terracotta', scena: 'giorno', vista: 'cucina' };
+  // tende zip: ogni tavola è un render di render_tende.sh (vista, scena e suffisso del file)
+  const TENDE = {
+    alzate:  { nome: 'Controluce, tende alzate', vista: 'controluce', scena: 'giorno', tende: '100-100-100-100-telo5', ora: '19:00' },
+    telo5:   { nome: 'Controluce, telo 5%',      vista: 'controluce', scena: 'giorno', tende: '0-0-0-0-telo5',         ora: '19:00' },
+    telo10:  { nome: 'Controluce, telo 10%',     vista: 'controluce', scena: 'giorno', tende: '0-0-0-0-telo10',        ora: '19:00' },
+    telo15:  { nome: 'Controluce, telo 15%',     vista: 'controluce', scena: 'giorno', tende: '0-0-0-0-telo15',        ora: '19:00' },
+    incasso: { nome: 'Dettaglio dell\'incasso',  vista: 'incasso',    scena: 'giorno', tende: '50-50-50-50-telo5',     ora: '18:30, tende a metà' },
+    sera:    { nome: 'Ora blu, luci accese',     vista: 'portico',    scena: 'sera',   tende: '0-0-0-0-telo5',         ora: '21:10, tende giù' },
+  };
+  const state = { colore: 'terracotta', scena: 'giorno', vista: 'cucina', tavola: 'telo5' };
 
   const file = (v, c, s) => `${v}__${c}__${s}.jpg`;
   const full = (v, c, s) => `img/${file(v, c, s)}`;
   const mini = (v, c, s) => `img/mini/${file(v, c, s)}`;
+  const tfile = (t, c) => `${TENDE[t].vista}__${c}__${TENDE[t].scena}__tende-${TENDE[t].tende}-avorio.jpg`;
   const $ = (id) => document.getElementById(id);
 
-  // lo stato vive nell'hash (#terracotta/giorno/sud), così un link porta alla stessa immagine
+  // lo stato vive nell'hash (#terracotta/giorno/sud/telo5), così un link porta alla stessa immagine
   function readHash() {
-    const [c, s, v] = location.hash.slice(1).split('/');
+    const [c, s, v, t] = location.hash.slice(1).split('/');
     if (COLORI[c]) state.colore = c;
     if (SCENE[s]) state.scena = s;
     if (VISTE[v]) state.vista = v;
+    if (TENDE[t]) state.tavola = t;
   }
 
   function seg(el, data, key, label) {
@@ -276,11 +309,20 @@
       thumb(mini(v, k, s), COLORI[k].nome, k === c, () => set({ colore: k }))));
     $('perVista').replaceChildren(...Object.keys(VISTE).map((k) =>
       thumb(mini(k, c, s), VISTE[k], k === v, () => set({ vista: k }))));
+
+    const t = state.tavola, tt = TENDE[t];
+    seg($('tavola'), TENDE, 'tavola', (x) => x.nome);
+    const ttext = `${tt.nome} — ${tt.ora} — Cotto Milano ${COLORI[c].nome}`;
+    $('tmain').src = `img/${tfile(t, c)}`; $('tmain').alt = ttext;
+    $('tfull').href = $('tfullLink').href = `img/${tfile(t, c)}`;
+    $('tcaption').textContent = ttext;
+    $('perTavola').replaceChildren(...Object.keys(TENDE).map((k) =>
+      thumb(`img/mini/${tfile(k, c)}`, TENDE[k].nome, k === t, () => set({ tavola: k }))));
   }
 
   function set(patch) {
     Object.assign(state, patch);
-    history.replaceState(null, '', `#${state.colore}/${state.scena}/${state.vista}`);
+    history.replaceState(null, '', `#${state.colore}/${state.scena}/${state.vista}/${state.tavola}`);
     render();
   }
 

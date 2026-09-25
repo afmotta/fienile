@@ -21,7 +21,8 @@ src/
 ├── render/render.html                — Galleria render Blender (img/ da aggiorna_render.sh)
 ├── texture/cottomilano/                — Cotto Milano 120×120 ultramatt: creta e terracotta × 5 facce (dal produttore, 512 px sRGB)
 ├── blender/
-│   └── fienile_pt_render.py            — Scena Blender allineata al viewer 3D + render varianti Cotto Milano
+│   ├── fienile_pt_render.py            — Scena Blender allineata al viewer 3D + render varianti Cotto Milano
+│   └── render_tende.sh                 — Render della sezione "Tende zip" della galleria
 └── archivio/
     ├── confronto.html                  — Confronto interattivo PT + P1
     ├── playground.html                 — Playground interattivo 8 finestre
