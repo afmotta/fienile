@@ -78,10 +78,11 @@ const VAR_P1 = {
   D: { nome: 'D — camere 200', f: p1(2.00) },
 };
 
-// Tende zip esterne sulle finestre del piano terra: cassonetto a vista sopra il foro, guide laterali
-// sulla facciata (il telo corre nelle zip, niente svolazzi), telo screen, fondale in alluminio.
-// guida = [larghezza, profondità]; telo = distanza del telo dal filo di facciata.
-const ZIP = { cassonetto: 0.11, guida: [0.035, 0.05], fondale: 0.035, telo: 0.025 };
+// Tende zip esterne sulle finestre del piano terra, completamente incassate nel muro: cassonetto
+// nell'architrave e guide nelle spallette, invisibili; il telo scende nella mazzetta, verso l'esterno.
+// Tutte alzate non si vedono: il fondale in alluminio rientra nell'architrave.
+// telo = distanza del telo dal filo di facciata; fondale = [altezza, profondità] della barra.
+const ZIP = { telo: 0.06, fondale: [0.035, 0.03] };
 // proposte di colore chiare: telo + profili (cassonetto, guide, fondale) verniciati in tinta vicina
 const ZIP_COLORI = {
   avorio:  { nome: 'Avorio',         telo: 0xebe4d3, profili: 0xe8e0cd, nota: 'profili vicini al RAL 9001: la tenda si confonde con infissi bianchi e intonaco.' },
@@ -491,23 +492,20 @@ function westWall(y0, windows, group, ox = 0) {
   }
 }
 
-// tende zip sulla facciata del piano terra: cassonetto e guide sono fissi, telo e fondale
-// vengono spostati da applyTende() senza ricostruire la casa
+// tende zip incassate del piano terra: si disegnano solo telo e fondale, che applyTende() sposta
+// senza ricostruire la casa (cassonetto e guide stanno dentro il muro)
 const tende = [];
 function zipScreens(windows, group) {
   tende.length = 0;
-  const [gw, gd] = ZIP.guida, xg = -gd;
+  const [, fd] = ZIP.fondale, x = ZIP.telo;
   for (const [p, w, h, sill] of windows) {
-    const a = p, b = p + w, top = sill + h, base = sill;     // guide sul davanzale, o sulla soglia
-    box(-ZIP.cassonetto, top, a - gw, 0, top + ZIP.cassonetto, b + gw, M.zipProfili, group);
-    box(xg, base, a - gw, 0, top, a, M.zipProfili, group);
-    box(xg, base, b, 0, top, b + gw, M.zipProfili, group);
+    const a = p, b = p + w, top = sill + h, base = sill;     // il telo scende fino al davanzale o alla soglia
     const telo = new THREE.Mesh(new THREE.PlaneGeometry(w, 1).rotateY(-Math.PI / 2), M.telo);
-    telo.position.set(-ZIP.telo, 0, (a + b) / 2);
+    telo.position.set(x, 0, (a + b) / 2);
     telo.customDepthMaterial = teloOmbra;
     telo.castShadow = telo.receiveShadow = true;
     group.add(telo);
-    const fondale = box(xg + 0.005, 0, a, -0.005, ZIP.fondale, b, M.zipProfili, group);
+    const fondale = box(x - fd / 2, 0, a + 0.002, x + fd / 2, ZIP.fondale[0], b - 0.002, M.zipProfili, group);
     tende.push({ telo, fondale, top, base });
   }
 }
@@ -835,15 +833,17 @@ function applyMaterials() {
   M.pavimentoP1.map = f.map; M.pavimentoP1.color.set(f.color); M.pavimentoP1.roughness = f.roughness;
   M.pavimentoP1.needsUpdate = true;
 }
-// apertura 1 = telo tutto avvolto (fondale sotto il cassonetto), 0 = telo giù fino al davanzale o a terra
+// apertura 1 = telo tutto avvolto (fondale rientrato nell'architrave), 0 = telo giù fino al davanzale o a terra
 function applyTende() {
   const c = ZIP_COLORI[state.tendeColore];
   M.telo.color.set(c.telo); M.zipProfili.color.set(c.profili);
   M.telo.opacity = teloOmbra.userData.opacita.value = 1 - ZIP_TELI[state.tendeTelo].fattore;
+  const fh = ZIP.fondale[0];
   for (const t of tende) {
-    const yb = t.base + (t.top - ZIP.fondale - t.base) * state.tendeApertura;   // fondo del fondale
-    const len = t.top - yb - ZIP.fondale;
-    t.fondale.position.y = yb + ZIP.fondale / 2;
+    const yb = t.base + (t.top - t.base) * state.tendeApertura;   // fondo del fondale
+    const len = t.top - yb - fh;
+    t.fondale.position.y = yb + fh / 2;
+    t.fondale.visible = yb < t.top - 0.001;                       // tutto alzato: dentro l'architrave
     t.telo.visible = len > 0.005;
     t.telo.scale.y = Math.max(len, 0.001); t.telo.position.y = t.top - len / 2;
   }
