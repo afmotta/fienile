@@ -19,6 +19,7 @@ Uso:
   blender    -P fienile_pt_render.py -- --build-only       (apre la scena per navigarla, niente render)
   blender -b -P fienile_pt_render.py -- --no-roof --no-p1   (come i toggle "Tetto" e "Primo piano" del viewer)
   blender -b -P fienile_pt_render.py -- --no-sofa           (arredo senza il divano NOCKEBY; il pouf resta)
+  blender -b -P fienile_pt_render.py -- --divano est        (divano contro la parete est invece che verso sud)
   blender -b -P fienile_pt_render.py -- --tende 0 --telo 10 --colore-tende perla   (tende zip del PT tutte giù)
   blender -b -P fienile_pt_render.py -- --tende 0,50,100,30  (apertura % di ogni tenda, F1..F4)
   blender -b -P fienile_pt_render.py -- --camera persiane --persiane 0   (persiane del primo piano chiuse)
@@ -719,7 +720,7 @@ def kitchen(xi, xs, var_pt):
     pr = C["presa"]
     box(xi + pr["x"] - 0.03, yt, pr["z"] - 0.03, xi + pr["x"] + 0.03, yt + 0.01, pr["z"] + 0.03, "vetroNero", g, "presa")
 
-def build(var_pt, var_p1, tende, persiane):
+def build(var_pt, var_p1, tende, persiane, divano="sud"):
     L, D, t, H, S = P["L"], P["profEdificio"], P["tW"], P["hPiano"], P["solaio"]
     xi, xs = t, t + P["profSoggiorno"]          # filo interno ovest, fine open space
     y1 = H + S                                   # quota pavimento P1
@@ -810,8 +811,7 @@ def build(var_pt, var_p1, tende, persiane):
             box(x, 0.44, z, x + 0.44, 0.48, z + 0.42, "scuro", "furniture", "sedia")
             bzz = z if side < 0 else z + 0.38
             box(x, 0.48, bzz, x + 0.44, 0.85, bzz + 0.04, "scuro", "furniture", "schienale")
-    box(xi + 0.82, 0, 10.87, xi + 3.82, 0.012, 13.17, "tessuto", "furniture", "tappeto")
-    nockeby(xi)
+    nockeby(xi, divano)
 
     # --- luci interne: profili LED a sguscio + punti luce caldi
     # sul lato est il profilo corre davanti al ribassamento, continuo anche sopra il varco
@@ -824,20 +824,32 @@ def build(var_pt, var_p1, tende, persiane):
         ld.color = (1.0, 0.78, 0.55)
         o = bpy.data.objects.new("punto_luce", ld); o.location = V(x, 2.1, z); GROUPS["lights"].objects.link(o)
 
-def nockeby(xi):
-    """Divano NOCKEBY con la seduta verso la testata sud, schienale 30 cm a sud del varco, e pouf con plaid
-    davanti: stesse posizioni e rotazione di NOCKEBY_POS nel viewer. Il pouf sta nell'arredo, il divano
-    nella collection "sofa" (--no-sofa)."""
+def nockeby(xi, divano):
+    """Divano NOCKEBY, pouf con plaid e tappeto nella disposizione scelta (DIVANO_POS, le stesse del viewer).
+    Il pouf e il tappeto stanno nell'arredo, il divano nella collection "sofa" (--no-sofa)."""
+    D = DIVANO_POS[divano]; r0, z0, r1, z1 = D["tappeto"]
+    box(xi + r0, 0, z0, xi + r1, 0.012, z1, "tessuto", "furniture", "tappeto")
     with bpy.data.libraries.load(NOCKEBY, link=False) as (src, dst):
         dst.objects = ["divano", "pouf"]
-    for ob, (x, z), group in zip(dst.objects, (NOCKEBY_POS["divano"], NOCKEBY_POS["pouf"]), ("sofa", "furniture")):
-        ob.location = V(xi + x, 0, z); ob.rotation_euler.z = math.pi / 2   # schienale da est a nord
+    for ob, group in zip(dst.objects, ("sofa", "furniture")):
+        x, z = D[ob.name]
+        ob.location = V(xi + x, 0, z); ob.rotation_euler.z = D["rot"]   # viewer rotation.y = Blender Z
         GROUPS[group].objects.link(ob)
 
-# centro dell'ingombro: x dal filo interno ovest, z. Divano 253 × 101 centrato nell'open space (105 cm per lato),
-# schienale 30 cm a sud del varco; pouf (106 × 76) 40 cm davanti alla seduta
-_zd = P["varco"][1] + 0.30 + 1.01 / 2
-NOCKEBY_POS = dict(divano=(P["profSoggiorno"] / 2, _zd), pouf=(P["profSoggiorno"] / 2, _zd + 1.01 / 2 + 0.40 + 0.76 / 2))
+def _divano_pos():
+    """Nel modello lo schienale è a est e la seduta guarda a ovest. Centri dell'ingombro a terra: x dal filo
+    interno ovest, z; tappeto = (x0, z0, x1, z1). Passaggi liberi in entrambe: varco verso l'ingresso e fascia
+    verso la porta finestra F3."""
+    W, d, l, pd, gap = P["profSoggiorno"], 1.01, 2.53, 0.76, 0.40   # divano 253 × 101, pouf 106 × 76
+    zs = P["varco"][1] + 0.30 + d / 2                     # verso sud: schienale 30 cm dopo il varco, centrato
+    xe, ze = W - 0.05 - d / 2, (P["varco"][1] + P["L"]) / 2   # parete est: 5 cm dal muro, tra varco e testata
+    return dict(
+        sud=dict(rot=math.pi / 2, divano=(W / 2, zs), pouf=(W / 2, zs + d / 2 + gap + pd / 2),
+                 tappeto=(0.82, 10.87, 3.82, 13.17)),
+        est=dict(rot=0.0, divano=(xe, ze), pouf=(xe - d / 2 - gap - pd / 2, ze),
+                 tappeto=(1.95, ze - 1.4, 4.25, ze + 1.4)),
+    )
+DIVANO_POS = _divano_pos()
 
 # ----------------------------------------------------------------------------
 # SOLE (stesso algoritmo NOAA semplificato del viewer) E CIELO
@@ -976,6 +988,8 @@ def main():
     ap.add_argument("--no-kitchen", action="store_true", help="nasconde la cucina (Sakura)")
     ap.add_argument("--no-furniture", action="store_true", help="nasconde l'arredo indicativo")
     ap.add_argument("--no-sofa", action="store_true", help="nasconde solo il divano")
+    ap.add_argument("--divano", default="sud", choices=list(DIVANO_POS),
+                    help="disposizione del divano: sud = seduta verso la testata sud (default), est = contro la parete est")
     ap.add_argument("--tende", default=None,
                     help="apertura delle tende zip del PT in %%: un valore per tutte, o 4 separati da virgola (F1..F4)")
     ap.add_argument("--telo", type=int, default=5, choices=ZIP_TELI, help="fattore di apertura del telo, %%")
@@ -993,7 +1007,8 @@ def main():
     # persiane aperte di default; nel nome del file solo se l'apertura è chiesta con --persiane
     persiane = None if a.no_persiane else min(max(a.persiane if a.persiane is not None else 100, 0), 100) / 100
     if a.persiane is not None and not a.no_persiane: sfx += f"__persiane-{a.persiane:g}"
-    reset(); build(a.var_pt, a.var_p1, tende, persiane); cams = cameras(); render_setup(a.preview, a.gpu)
+    if a.divano != "sud": sfx += f"__divano-{a.divano}"      # come le tende: nel nome solo se non è quella di default
+    reset(); build(a.var_pt, a.var_p1, tende, persiane, a.divano); cams = cameras(); render_setup(a.preview, a.gpu)
     presets = a.preset or list(PRESETS); scenes = a.scene or list(SCENES); camnames = a.camera or [k for k, c in CAMERAS.items() if not c.get("extra")]
     sc = bpy.context.scene
     if a.build_only:

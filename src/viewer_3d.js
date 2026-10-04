@@ -130,6 +130,7 @@ const state = {
   // le tende zip partono avvolte, così le viste interne restano quelle di sempre
   showTende: true, tendeColore: 'avorio', tendeApertura: 1, tendeTelo: 'f5',
   showPersiane: true, persianeApertura: 1, persianeColore: 'testaDiMoro',
+  divano: 'sud',   // disposizione del divano (DIVANO_POS)
 };
 const today = new Date();
 state.date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -698,7 +699,6 @@ function build() {
     const bz = side < 0 ? z : z + 0.38;
     box(x, 0.48, bz, x + 0.44, 0.85, bz + 0.04, M.scuro, G.furniture);
   }
-  box(xi + 0.82, 0, 10.87, xi + 3.82, 0.012, 13.17, M.tessuto, G.furniture, { cast: false });
   G.sofa = new THREE.Group(); G.sofa.position.x = xi; G.furniture.add(G.sofa);
   sofa();
 
@@ -719,15 +719,26 @@ function build() {
 }
 
 // Divano IKEA NOCKEBY 3 posti verde foresta + pouf con plaid (modelli/nockeby.glb, da blender/importa_divano.py).
-// Nel glb lo schienale è a est: ruotati di 90° la seduta guarda la testata sud e il pouf le sta davanti.
-// Posizioni = centro dell'ingombro a terra, x dal filo interno ovest: le stesse di NOCKEBY_POS nel render.
-// Passaggi liberi: lo schienale sta 30 cm a sud del varco verso l'ingresso (P.varco), che resta libero
-// anche verso la porta finestra F3; il divano (253 × 101) è centrato nell'open space, con 105 cm per lato.
+// Nel glb lo schienale è a est e la seduta guarda a ovest; il pouf ha il lato lungo parallelo al divano.
+// Due disposizioni (DIVANO_POS, le stesse di NOCKEBY nel render): divano e pouf ruotati di `rot` attorno
+// alla verticale, posizioni = centro dell'ingombro a terra, x dal filo interno ovest; il tappeto li segue.
+// Passaggi liberi in entrambe: il varco verso l'ingresso (P.varco) e la fascia che lo collega alla porta
+// finestra F3; misure sugli ingombri reali del glb, plaid compreso.
 // Finché il glb non è arrivato (o se manca) restano il divano e il tavolino indicativi.
-const NOCKEBY_ROT = Math.PI / 2;
-const NOCKEBY_POS = (() => {
-  const x = P.profSoggiorno / 2, zd = P.varco[1] + 0.30 + 1.01 / 2;
-  return { divano: [x, zd], pouf: [x, zd + 1.01 / 2 + 0.40 + 0.76 / 2] };   // pouf 40 cm davanti alla seduta
+const DIVANO_POS = (() => {
+  const W = P.profSoggiorno, d = 1.01, l = 2.53, pd = 0.76, gap = 0.40;   // divano 253 × 101, pouf 106 × 76
+  // verso sud: seduta verso la testata sud, schienale 30 cm a sud del varco, centrato nella larghezza
+  const zs = P.varco[1] + 0.30 + d / 2;
+  // parete est: schienale a 5 cm dal muro est, centrato tra il varco e la testata sud
+  const xe = W - 0.05 - d / 2, ze = (P.varco[1] + P.L) / 2;
+  return {
+    sud: { nome: 'Verso sud', rot: Math.PI / 2,
+           nota: 'Seduta verso la testata sud: 30 cm liberi dopo il varco, 105 cm per lato.',
+           divano: [W / 2, zs], pouf: [W / 2, zs + d / 2 + gap + pd / 2], tappeto: [0.82, 10.87, 3.82, 13.17] },
+    est: { nome: 'Parete est', rot: 0,
+           nota: `Contro la parete est, seduta verso le vetrate: ${Math.round(((P.L - P.varco[1]) - l) / 2 * 100)} cm liberi verso il varco e verso la testata sud.`,
+           divano: [xe, ze], pouf: [xe - d / 2 - gap - pd / 2, ze], tappeto: [1.95, ze - 1.4, 4.25, ze + 1.4] },
+  };
 })();
 let nockeby = null;
 new GLTFLoader().load('./modelli/nockeby.glb', (gltf) => {
@@ -738,23 +749,31 @@ new GLTFLoader().load('./modelli/nockeby.glb', (gltf) => {
     // il velluto del tessuto arriva bianco a piena intensità: in three.js schiarisce troppo il verde
     if (o.material.sheen) o.material.sheenColor.multiplyScalar(0.2);
   });
-  nockeby = Object.fromEntries(Object.keys(NOCKEBY_POS).map((k) => [k, gltf.scene.getObjectByName(k)]));
+  nockeby = { divano: gltf.scene.getObjectByName('divano'), pouf: gltf.scene.getObjectByName('pouf') };
   if (G.sofa) sofa();
 }, undefined, (e) => console.warn('modelli/nockeby.glb non caricato: resta il divano indicativo', e));
 
 function sofa() {
   G.sofa.traverse((o) => { if (o.isMesh && !o.userData.shared) o.geometry.dispose(); });
   G.sofa.clear();
-  if (!nockeby) {
-    const [x, zd] = NOCKEBY_POS.divano, zp = NOCKEBY_POS.pouf[1];
-    box(x - 1.265, 0.1, zd - 0.505, x + 1.265, 0.42, zd + 0.505, M.tessuto, G.sofa);
-    box(x - 1.265, 0.42, zd - 0.505, x + 1.265, 0.82, zd - 0.275, M.tessuto, G.sofa);
-    box(x - 0.5, 0, zp - 0.4, x + 0.5, 0.36, zp + 0.4, M.legno, G.sofa);
-    return;
+  const D = DIVANO_POS[state.divano], [r0, z0, r1, z1] = D.tappeto;
+  box(r0, 0, z0, r1, 0.012, z1, M.tessuto, G.sofa, { cast: false });
+  for (const k of ['divano', 'pouf']) {
+    let o;
+    if (nockeby) o = nockeby[k].clone();
+    else {   // indicativi, nell'orientamento del glb: schienale a +x, lato lungo su z
+      o = new THREE.Group();
+      if (k === 'divano') {
+        box(-0.505, 0.1, -1.265, 0.505, 0.42, 1.265, M.tessuto, o);
+        box(0.275, 0.42, -1.265, 0.505, 0.82, 1.265, M.tessuto, o);
+      } else box(-0.38, 0, -0.53, 0.38, 0.36, 0.53, M.legno, o);
+    }
+    o.position.set(D[k][0], 0, D[k][1]); o.rotation.y = D.rot; G.sofa.add(o);
   }
-  for (const [k, [x, z]] of Object.entries(NOCKEBY_POS)) {
-    const o = nockeby[k].clone(); o.position.set(x, 0, z); o.rotation.y = NOCKEBY_ROT; G.sofa.add(o);
-  }
+}
+function applyDivano() {
+  if (G.sofa) sofa();
+  $('divanoNota').textContent = DIVANO_POS[state.divano].nota;
 }
 
 // cucina reale (CUCINA): basi a L su pareti nord e ovest, colonne sulla parete est, isola
@@ -923,6 +942,8 @@ function fillChoices(box, data, value, onPick, swatch) {
   box.addEventListener('change', (e) => onPick(e.target.value));
 }
 fillSelect($('varPT'), VAR_PT, state.varPT);
+fillChoices($('divano'), DIVANO_POS, state.divano, (k) => { state.divano = k; applyDivano(); });
+applyDivano();
 fillSelect($('varP1'), VAR_P1, state.varP1);
 function raiHint() {
   const r = VAR_PT[state.varPT].rai;
