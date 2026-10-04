@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { Sky } from 'three/addons/objects/Sky.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
@@ -596,7 +597,7 @@ function railing(yb, z0, z1, group) {
 
 function build() {
   if (house) {
-    house.traverse((o) => { if (o.isMesh) o.geometry.dispose(); });
+    house.traverse((o) => { if (o.isMesh && !o.userData.shared) o.geometry.dispose(); });
     scene.remove(house);
   }
   house = new THREE.Group();
@@ -697,11 +698,9 @@ function build() {
     const bz = side < 0 ? z : z + 0.38;
     box(x, 0.48, bz, x + 0.44, 0.85, bz + 0.04, M.scuro, G.furniture);
   }
-  box(xi + 0.9, 0, 8.3, xi + 3.7, 0.012, 11.6, M.tessuto, G.furniture, { cast: false });
-  const sx = xi + 3.3;
-  box(sx, 0.1, 8.5, sx + 0.95, 0.42, 11.4, M.tessuto, G.furniture);
-  box(sx + 0.72, 0.42, 8.5, sx + 0.95, 0.82, 11.4, M.tessuto, G.furniture);
-  box(xi + 1.6, 0, 9.4, xi + 2.4, 0.36, 10.4, M.legno, G.furniture);
+  box(xi + 0.82, 0, 10.87, xi + 3.82, 0.012, 13.17, M.tessuto, G.furniture, { cast: false });
+  G.sofa = new THREE.Group(); G.sofa.position.x = xi; G.furniture.add(G.sofa);
+  sofa();
 
   // --- luci interne: profili LED a sguscio + punti luce caldi (nessuna ombra, per restare fluidi)
   // sul lato est il profilo corre davanti al ribassamento, continuo anche sopra il varco
@@ -717,6 +716,45 @@ function build() {
   applyTende();
   applyPersiane();
   applyVisibility();
+}
+
+// Divano IKEA NOCKEBY 3 posti verde foresta + pouf con plaid (modelli/nockeby.glb, da blender/importa_divano.py).
+// Nel glb lo schienale è a est: ruotati di 90° la seduta guarda la testata sud e il pouf le sta davanti.
+// Posizioni = centro dell'ingombro a terra, x dal filo interno ovest: le stesse di NOCKEBY_POS nel render.
+// Passaggi liberi: lo schienale sta 30 cm a sud del varco verso l'ingresso (P.varco), che resta libero
+// anche verso la porta finestra F3; il divano (253 × 101) è centrato nell'open space, con 105 cm per lato.
+// Finché il glb non è arrivato (o se manca) restano il divano e il tavolino indicativi.
+const NOCKEBY_ROT = Math.PI / 2;
+const NOCKEBY_POS = (() => {
+  const x = P.profSoggiorno / 2, zd = P.varco[1] + 0.30 + 1.01 / 2;
+  return { divano: [x, zd], pouf: [x, zd + 1.01 / 2 + 0.40 + 0.76 / 2] };   // pouf 40 cm davanti alla seduta
+})();
+let nockeby = null;
+new GLTFLoader().load('./modelli/nockeby.glb', (gltf) => {
+  gltf.scene.traverse((o) => {
+    if (!o.isMesh) return;
+    o.castShadow = o.receiveShadow = true; o.userData.shared = true;   // geometria riusata a ogni build()
+    if (o.material.map) o.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    // il velluto del tessuto arriva bianco a piena intensità: in three.js schiarisce troppo il verde
+    if (o.material.sheen) o.material.sheenColor.multiplyScalar(0.2);
+  });
+  nockeby = Object.fromEntries(Object.keys(NOCKEBY_POS).map((k) => [k, gltf.scene.getObjectByName(k)]));
+  if (G.sofa) sofa();
+}, undefined, (e) => console.warn('modelli/nockeby.glb non caricato: resta il divano indicativo', e));
+
+function sofa() {
+  G.sofa.traverse((o) => { if (o.isMesh && !o.userData.shared) o.geometry.dispose(); });
+  G.sofa.clear();
+  if (!nockeby) {
+    const [x, zd] = NOCKEBY_POS.divano, zp = NOCKEBY_POS.pouf[1];
+    box(x - 1.265, 0.1, zd - 0.505, x + 1.265, 0.42, zd + 0.505, M.tessuto, G.sofa);
+    box(x - 1.265, 0.42, zd - 0.505, x + 1.265, 0.82, zd - 0.275, M.tessuto, G.sofa);
+    box(x - 0.5, 0, zp - 0.4, x + 0.5, 0.36, zp + 0.4, M.legno, G.sofa);
+    return;
+  }
+  for (const [k, [x, z]] of Object.entries(NOCKEBY_POS)) {
+    const o = nockeby[k].clone(); o.position.set(x, 0, z); o.rotation.y = NOCKEBY_ROT; G.sofa.add(o);
+  }
 }
 
 // cucina reale (CUCINA): basi a L su pareti nord e ovest, colonne sulla parete est, isola

@@ -18,7 +18,7 @@ Uso:
   blender -b -P fienile_pt_render.py -- --preview          (bassa risoluzione, pochi campioni)
   blender    -P fienile_pt_render.py -- --build-only       (apre la scena per navigarla, niente render)
   blender -b -P fienile_pt_render.py -- --no-roof --no-p1   (come i toggle "Tetto" e "Primo piano" del viewer)
-  blender -b -P fienile_pt_render.py -- --no-sofa           (arredo senza il divano)
+  blender -b -P fienile_pt_render.py -- --no-sofa           (arredo senza il divano NOCKEBY; il pouf resta)
   blender -b -P fienile_pt_render.py -- --tende 0 --telo 10 --colore-tende perla   (tende zip del PT tutte giù)
   blender -b -P fienile_pt_render.py -- --tende 0,50,100,30  (apertura % di ogni tenda, F1..F4)
   blender -b -P fienile_pt_render.py -- --camera persiane --persiane 0   (persiane del primo piano chiuse)
@@ -130,6 +130,8 @@ SCENES = ("giorno", "sera")
 
 # Cotto Milano 120×120 ultramatt: stessi parametri di COTTO_MILANO nel viewer.
 TEX_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "texture")
+# divano IKEA NOCKEBY 3 posti + pouf, preparato da importa_divano.py (stesso modello del glb del viewer)
+NOCKEBY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "modelli", "nockeby.blend")
 TEX_DIR = os.path.join(TEX_ROOT, "cottomilano")
 COTTO = dict(facce=5, nx=8, nz=12, lato=1.2, seme=57, px=512)
 
@@ -808,11 +810,8 @@ def build(var_pt, var_p1, tende, persiane):
             box(x, 0.44, z, x + 0.44, 0.48, z + 0.42, "scuro", "furniture", "sedia")
             bzz = z if side < 0 else z + 0.38
             box(x, 0.48, bzz, x + 0.44, 0.85, bzz + 0.04, "scuro", "furniture", "schienale")
-    box(xi + 0.9, 0, 8.3, xi + 3.7, 0.012, 11.6, "tessuto", "furniture", "tappeto")
-    sx = xi + 3.3
-    box(sx, 0.1, 8.5, sx + 0.95, 0.42, 11.4, "tessuto", "sofa", "divano")
-    box(sx + 0.72, 0.42, 8.5, sx + 0.95, 0.82, 11.4, "tessuto", "sofa", "divano_schienale")
-    box(xi + 1.6, 0, 9.4, xi + 2.4, 0.36, 10.4, "legno", "furniture", "tavolino")
+    box(xi + 0.82, 0, 10.87, xi + 3.82, 0.012, 13.17, "tessuto", "furniture", "tappeto")
+    nockeby(xi)
 
     # --- luci interne: profili LED a sguscio + punti luce caldi
     # sul lato est il profilo corre davanti al ribassamento, continuo anche sopra il varco
@@ -824,6 +823,21 @@ def build(var_pt, var_p1, tende, persiane):
         ld = bpy.data.lights.new("punto_luce", "POINT"); ld.energy = 40; ld.shadow_soft_size = 0.1
         ld.color = (1.0, 0.78, 0.55)
         o = bpy.data.objects.new("punto_luce", ld); o.location = V(x, 2.1, z); GROUPS["lights"].objects.link(o)
+
+def nockeby(xi):
+    """Divano NOCKEBY con la seduta verso la testata sud, schienale 30 cm a sud del varco, e pouf con plaid
+    davanti: stesse posizioni e rotazione di NOCKEBY_POS nel viewer. Il pouf sta nell'arredo, il divano
+    nella collection "sofa" (--no-sofa)."""
+    with bpy.data.libraries.load(NOCKEBY, link=False) as (src, dst):
+        dst.objects = ["divano", "pouf"]
+    for ob, (x, z), group in zip(dst.objects, (NOCKEBY_POS["divano"], NOCKEBY_POS["pouf"]), ("sofa", "furniture")):
+        ob.location = V(xi + x, 0, z); ob.rotation_euler.z = math.pi / 2   # schienale da est a nord
+        GROUPS[group].objects.link(ob)
+
+# centro dell'ingombro: x dal filo interno ovest, z. Divano 253 × 101 centrato nell'open space (105 cm per lato),
+# schienale 30 cm a sud del varco; pouf (106 × 76) 40 cm davanti alla seduta
+_zd = P["varco"][1] + 0.30 + 1.01 / 2
+NOCKEBY_POS = dict(divano=(P["profSoggiorno"] / 2, _zd), pouf=(P["profSoggiorno"] / 2, _zd + 1.01 / 2 + 0.40 + 0.76 / 2))
 
 # ----------------------------------------------------------------------------
 # SOLE (stesso algoritmo NOAA semplificato del viewer) E CIELO

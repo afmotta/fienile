@@ -20,8 +20,13 @@ src/
 ├── viewer_3d.html / viewer_3d.js       — Vista 3D interattiva (three.js): pannello a schede Viste/Progetto/Finiture/Mostra + barra del sole in basso
 ├── render/render.html                — Galleria render Blender (img/ da aggiorna_render.sh)
 ├── texture/cottomilano/                — Cotto Milano 120×120 ultramatt: creta e terracotta × 5 facce (dal produttore, 512 px sRGB)
+├── texture/divano/                     — Tessuti del divano NOCKEBY (verde foresta, lino, grigio) generati da importa_divano.py
+├── modelli/
+│   ├── nockeby.blend                   — Divano IKEA NOCKEBY 3 posti + pouf, piena risoluzione (render)
+│   └── nockeby.glb                     — Stesso modello alleggerito (viewer 3D)
 ├── blender/
 │   ├── fienile_pt_render.py            — Scena Blender allineata al viewer 3D + render varianti Cotto Milano
+│   ├── importa_divano.py               — Converte il .max del NOCKEBY in modelli/ (serve l'estensione "Import Autodesk MAX")
 │   ├── render_tende.sh                 — Render della sezione "Tende zip" della galleria
 │   └── render_persiane.sh              — Render della sezione "Persiane" della galleria
 └── archivio/
