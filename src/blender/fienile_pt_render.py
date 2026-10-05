@@ -841,11 +841,11 @@ def _divano_pos():
     interno ovest, z; tappeto = (x0, z0, x1, z1). Passaggi liberi in entrambe: varco verso l'ingresso e fascia
     verso la porta finestra F3."""
     W, d, l, pd, gap = P["profSoggiorno"], 1.01, 2.53, 0.76, 0.40   # divano 253 × 101, pouf 106 × 76
-    zs = P["varco"][1] + 0.30 + d / 2                     # verso sud: schienale 30 cm dopo il varco, centrato
+    zs = P["varco"][1] + d / 2                            # verso sud: schienale a filo del varco, centrato
     xe, ze = W - 0.05 - d / 2, (P["varco"][1] + P["L"]) / 2   # parete est: 5 cm dal muro, tra varco e testata
     return dict(
         sud=dict(rot=math.pi / 2, divano=(W / 2, zs), pouf=(W / 2, zs + d / 2 + gap + pd / 2),
-                 tappeto=(0.82, 10.87, 3.82, 13.17)),
+                 tappeto=(0.82, zs - 0.135, 3.82, zs + 2.165)),
         est=dict(rot=0.0, divano=(xe, ze), pouf=(xe - d / 2 - gap - pd / 2, ze),
                  tappeto=(1.95, ze - 1.4, 4.25, ze + 1.4)),
     )

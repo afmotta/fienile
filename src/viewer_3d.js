@@ -727,14 +727,15 @@ function build() {
 // Finché il glb non è arrivato (o se manca) restano il divano e il tavolino indicativi.
 const DIVANO_POS = (() => {
   const W = P.profSoggiorno, d = 1.01, l = 2.53, pd = 0.76, gap = 0.40;   // divano 253 × 101, pouf 106 × 76
-  // verso sud: seduta verso la testata sud, schienale 30 cm a sud del varco, centrato nella larghezza
-  const zs = P.varco[1] + 0.30 + d / 2;
+  // verso sud: seduta verso la testata sud, schienale a filo del lato sud del varco (il più a nord possibile
+  // senza invadere il varco e la fascia verso F3), centrato nella larghezza
+  const zs = P.varco[1] + d / 2;
   // parete est: schienale a 5 cm dal muro est, centrato tra il varco e la testata sud
   const xe = W - 0.05 - d / 2, ze = (P.varco[1] + P.L) / 2;
   return {
     sud: { nome: 'Verso sud', rot: Math.PI / 2,
-           nota: 'Seduta verso la testata sud: 30 cm liberi dopo il varco, 105 cm per lato.',
-           divano: [W / 2, zs], pouf: [W / 2, zs + d / 2 + gap + pd / 2], tappeto: [0.82, 10.87, 3.82, 13.17] },
+           nota: 'Seduta verso la testata sud: schienale a filo del varco, 105 cm per lato, 82 cm tra pouf e testata.',
+           divano: [W / 2, zs], pouf: [W / 2, zs + d / 2 + gap + pd / 2], tappeto: [0.82, zs - 0.135, 3.82, zs + 2.165] },
     est: { nome: 'Parete est', rot: 0,
            nota: `Contro la parete est, seduta verso le vetrate: ${Math.round(((P.L - P.varco[1]) - l) / 2 * 100)} cm liberi verso il varco e verso la testata sud.`,
            divano: [xe, ze], pouf: [xe - d / 2 - gap - pd / 2, ze], tappeto: [1.95, ze - 1.4, 4.25, ze + 1.4] },

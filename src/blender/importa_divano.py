@@ -10,6 +10,8 @@ Il .max (3ds Max 2015 + V-Ray, da 3dsmj.com) contiene un angolare con chaise, un
 e un plaid. Lo legge l'estensione "Import Autodesk MAX" (io_scene_max, extensions.blender.org), che però
 importa solo la mesh di base: il TurboSmooth di 3ds Max è rifatto qui con una suddivisione, i materiali
 V-Ray sono rifatti con le texture del pacchetto. Cuscini e plaid (simulazione Cloth) arrivano già deformati.
+Le gambe a slitta del modello sono sostituite da quelle aftermarket di casa (GAMBE): cilindri in legno scuro
+negli angoli del fondo, e la scocca sollevata della loro altezza.
 
 Assi e origine come gli altri oggetti del viewer: metri, schienale verso est (+x), seduta rivolta a ovest,
 origine al centro dell'ingombro a terra. Il glb (y in alto) ha quindi x = est e z = sud come il viewer.
@@ -31,14 +33,15 @@ DIVANO = {
     "Box061": "verde",                               # scocca con schienale
     "Box059": "verde", "Box060": "verde",            # cuscini della seduta
     "526746": "verde",                               # cuscini dello schienale
-    "Box065": "metallo", "Box066": "metallo",        # gambe a slitta
     "5788789656": "bianco", "Object007": "bianco", "Object008": "grigio",   # cuscini decorativi
 }
 POUF = {
     "Box039": "verde", "Box040": "verde",            # cuscino e base
-    "Box041": "metallo", "Box042": "metallo",        # gambe a slitta
     "5859468": "lino",                               # plaid
 }
+# gambe aftermarket di divano e pouf: cilindri in legno scuro alti 20 cm, negli angoli del fondo della scocca,
+# con il fianco a 5 cm dai due bordi vicini (diametro presunto: 5 cm)
+GAMBE = dict(h=0.20, d=0.05, margine=0.05, lati=32, colore="#3a2a1f")
 SMUSSA = {k for k in (*DIVANO, *POUF) if k.startswith("Box")}   # mesh grezze che in Max avevano TurboSmooth
 
 # Tessuti: (sorgente, colore sRGB o None = colori della foto, contrasto della trama, lato del tassello in metri).
@@ -94,10 +97,11 @@ def make_materials(tex):
             b.inputs["Distance"].default_value = 0.001
             nt.links.new(tb.outputs["Color"], b.inputs["Height"]); nt.links.new(b.outputs["Normal"], p.inputs["Normal"])
         m["tile"] = tile; mats[key] = m
-    m = bpy.data.materials.new("divano_metallo"); m.use_nodes = True
-    p = m.node_tree.nodes["Principled BSDF"]
-    p.inputs["Base Color"].default_value = (0.55, 0.55, 0.54, 1); p.inputs["Metallic"].default_value = 1.0
-    p.inputs["Roughness"].default_value = 0.3; m["tile"] = 1.0; mats["metallo"] = m
+    m = bpy.data.materials.new("divano_legno_scuro"); m.use_nodes = True
+    p = m.node_tree.nodes["Principled BSDF"]; h = GAMBE["colore"]
+    c = [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    p.inputs["Base Color"].default_value = [((x + 0.055) / 1.055) ** 2.4 if x > 0.04045 else x / 12.92 for x in c] + [1]
+    p.inputs["Roughness"].default_value = 0.45; m["tile"] = 1.0; mats["legno"] = m
     return mats
 
 def short(name): return name.split("  ")[-1].strip()
@@ -113,8 +117,24 @@ def box_uv(ob):
         for l in f.loops: l[uv].uv = (l.vert.co[a] / t, l.vert.co[b] / t)
     bm.to_mesh(me); bm.free()
 
-def assemble(name, parts, objs, mats, footprint):
-    """Unisce le parti in un solo oggetto: metri, schienale a est, origine al centro dell'ingombro a terra."""
+def gambe(x0, x1, y0, y1, mat):
+    """Le 4 gambe negli angoli del rettangolo (x0..x1, y0..y1); salgono 3 cm dentro il fondo arrotondato."""
+    r, h, m = GAMBE["d"] / 2, GAMBE["h"], GAMBE["margine"]
+    bm = bmesh.new()
+    for x in (x0 + m + r, x1 - m - r):
+        for y in (y0 + m + r, y1 - m - r):
+            g = bmesh.ops.create_cone(bm, cap_ends=True, segments=GAMBE["lati"], radius1=r, radius2=r, depth=h + 0.03)
+            bmesh.ops.translate(bm, verts=g["verts"], vec=(x, y, (h + 0.03) / 2))
+    me = bpy.data.meshes.new("gambe"); bm.to_mesh(me); bm.free()
+    me.materials.append(mat)
+    for f in me.polygons: f.use_smooth = abs(f.normal.z) < 0.5      # fianchi lisci, basi piatte
+    ob = bpy.data.objects.new("gambe", me); bpy.context.scene.collection.objects.link(ob)
+    vg = ob.vertex_groups.new(name="gambe"); vg.add(range(len(me.vertices)), 1.0, "REPLACE")
+    return ob
+
+def assemble(name, parts, objs, mats, footprint, base):
+    """Unisce le parti in un solo oggetto: metri, schienale a est, origine al centro dell'ingombro a terra.
+    `base` è la parte su cui poggiano le gambe: il suo fondo va a GAMBE["h"] da terra."""
     obs = []
     for key, role in parts.items():
         ob = objs[key]
@@ -131,13 +151,19 @@ def assemble(name, parts, objs, mats, footprint):
     # in Max la seduta guarda verso -Y: ruotata di -90° su Z guarda verso -X (ovest)
     M = Matrix.Rotation(-np.pi / 2, 4, "Z") @ Matrix.Scale(0.001, 4) @ Matrix.Translation((-cx, -cy, -z0))
     for ob in obs: ob.data.transform(M)
+    fondo = [v.co for v in objs[base].data.vertices if v.co.z < 0.02]
+    x0, x1 = min(p.x for p in fondo), max(p.x for p in fondo); y0, y1 = min(p.y for p in fondo), max(p.y for p in fondo)
+    for ob in obs: ob.data.transform(Matrix.Translation((0, 0, GAMBE["h"])))
+    obs.append(gambe(x0, x1, y0, y1, mats["legno"]))
     bpy.ops.object.select_all(action="DESELECT")
     for ob in obs: ob.select_set(True)
     bpy.context.view_layer.objects.active = obs[0]; bpy.ops.object.join()
     ob = bpy.context.view_layer.objects.active; ob.name = ob.data.name = name
     bm = bmesh.new(); bm.from_mesh(ob.data)
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5); bm.to_mesh(ob.data); bm.free()
-    ob.data.shade_smooth(); box_uv(ob)
+    for f in ob.data.polygons:   # tessuti lisci; le gambe hanno già le basi piatte
+        if ob.data.materials[f.material_index] is not mats["legno"]: f.use_smooth = True
+    box_uv(ob)
     d = ob.dimensions; print(f"MODELLO {name}: {d.x * 100:.0f} × {d.y * 100:.0f} × {d.z * 100:.0f} cm, {len(ob.data.polygons)} facce")
     return ob
 
@@ -163,8 +189,8 @@ def main():
     for im in list(bpy.data.images): bpy.data.images.remove(im)
 
     mats = make_materials(make_textures(src))
-    divano = assemble("divano", DIVANO, objs, mats, ["Box058", "Box061", "Box062"])
-    pouf = assemble("pouf", POUF, objs, mats, ["Box039", "Box040"])
+    divano = assemble("divano", DIVANO, objs, mats, ["Box058", "Box061", "Box062"], "Box061")
+    pouf = assemble("pouf", POUF, objs, mats, ["Box039", "Box040"], "Box040")
     pouf.location.y = -1.5   # solo per vederli affiancati aprendo il .blend; chi li usa imposta la posizione
 
     os.makedirs(OUT_MODELLI, exist_ok=True)
@@ -176,6 +202,7 @@ def main():
     pouf.location.y = 0
     for ob in (divano, pouf):
         md = ob.modifiers.new("riduci", "DECIMATE"); md.ratio = RIDUZIONE_GLB
+        md.vertex_group = "gambe"; md.invert_vertex_group = True   # le gambe restano cilindri
     bpy.ops.export_scene.gltf(filepath=os.path.join(OUT_MODELLI, "nockeby.glb"), export_format="GLB",
                               export_apply=True, export_image_format="JPEG", export_jpeg_quality=80,
                               export_yup=True)
