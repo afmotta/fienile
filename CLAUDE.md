@@ -45,6 +45,15 @@ src/
         └── primo_piano_d.html
 ```
 
+## Domotica
+
+```
+domotica/
+└── nodo-can-503/                       — PCB del nodo CAN per scatola 503 (KiCad generato da script Python)
+```
+
+Progetto separato dai prospetti: ha il suo `CLAUDE.md` in `domotica/nodo-can-503/`, da leggere prima di lavorarci. Le convenzioni SVG qui sotto non si applicano.
+
 ## Convenzioni SVG — Piano Terra
 
 Tutti i prospetti PT usano lo stesso sistema di coordinate:

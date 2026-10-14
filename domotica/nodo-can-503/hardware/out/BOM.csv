@@ -1,0 +1,26 @@
+Comment,Designator,Footprint,Quantita,Descrizione / MPN,LCSC,Libreria JLCPCB
+22uF 50V,C1,CP_Elec_6.3x5.4,1,"Panasonic EEE-FK1H220P, elettrolitico SMD 22 uF 50 V, D6.3x5.8 mm, 105 C",C128458,Extended
+10uF 50V,C2,C_1206_3216Metric,1,MLCC 10 uF 50 V X5R 1206 (Samsung CL31A106KBHNNNE),C13585,Basic
+10uF,C3,C_0805_2012Metric,1,MLCC 10 uF 25 V 0805,C15850,Basic
+100nF,"C4,C5,C6,C16",C_0603_1608Metric,4,MLCC 100 nF 50 V 0603,C14663,Basic
+100nF,"C7,C8,C9,C10,C11,C12",C_0402_1005Metric,6,MLCC 100 nF 0402,C1525,Basic
+1uF,"C13,C14",C_0603_1608Metric,2,MLCC 1 uF 50 V X5R 0603 (Samsung CL10A105KB8NNNC),C15849,Basic
+10uF,C15,C_0603_1608Metric,1,"MLCC 10 uF 10 V X5R 0603 (Samsung CL10A106KP8NNNC), vicino al modulo",C19702,Basic
+1uF,C17,C_0402_1005Metric,1,MLCC 1 uF 25 V X5R 0402 (Samsung CL05A105KA5NQNC) - RC su EN,C52923,Basic
+SS34,D1,D_SMA,1,SS34 (40 V 3 A) - protezione inversione polarita',C8678,Basic
+SMBJ26CA,D2,D_SMB,1,"SMBJ26CA TVS bidirezionale 26 V, SMB (hongjiacheng)",C19077581,Preferred
+B5819W,D3,D_SOD-123,1,B5819W - OR alimentazione LDO (da 5 V bus),C8598,Basic
+NUP2105L,D4,SOT-23,1,onsemi NUP2105LT1G - ESD bus CAN 24 V,C14486,Extended
+B5819W,D5,D_SOD-123,1,B5819W - OR alimentazione LDO (da USB di programmazione),C8598,Basic
+PTC 0.5A 30V,F1,Fuse_1812_4532Metric,1,"PTC 1812 RUILON SMD1812P050TF/30 (0,5 A hold, 30 V)",C12559,Extended
+BUS 24V CAN,J1,"TerminalBlock_Phoenix_PT-1,5-4-3.5-H_1x04_P3.50mm_Horizontal",1,"Morsetto a vite 4 poli passo 3,5 mm, DORABO DB125-3.5-4P-GN-S (THT)",C2757925,Extended - THT (saldatura a onda/manuale JLCPCB)
+PULSANTI 1-6,J2,"PhoenixContact_MCV_1,5_7-G-3.5_1x07_P3.50mm_Vertical",1,"Presa per morsetto estraibile verticale 7 poli passo 3,5 mm, Kefa KF2EDGV-3.5-7P (THT); spina KF2EDGK-3.5-7P C440852 da ordinare a parte",C441326,Extended - THT (saldatura a onda/manuale JLCPCB)
+QWIIC,J3,JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal,1,"JST SM04B-SRSS-TB(LF)(SN) (Qwiic, SH 1 mm, orizzontale)",C160404,Extended
+PROG USB,J4,PinHeader_1x06_P2.54mm_Vertical,1,"Pettine 1x6 2,54 mm (non montato): 5V, D-, D+, GND, BOOT, GND - ponticello 5-6 = download",,non montato (DNP)
+10k,"R1,R2,R3,R4,R5,R6,R13",R_0402_1005Metric,7,10 kOhm 1% 0402,C25744,Basic
+1k,"R7,R8,R9,R10,R11,R12",R_0402_1005Metric,6,1 kOhm 1% 0402,C11702,Basic
+10k,R14,R_0402_1005Metric,1,10 kOhm 1% 0402 (GPIO8 alto al boot),C25744,Basic
+K7805-500R3,U1,Converter_DCDC_TRACO_TSR-1_THT,1,"MORNSUN K7805-500R3 (6,5-36 V -> 5 V 0,5 A, SIP-3, pin 78xx)",C86735,Extended - THT (saldatura a onda/manuale JLCPCB)
+TJA1051T/3,U2,SOIC-8_3.9x4.9mm_P1.27mm,1,NXP TJA1051T/3/1J,C38695,Extended
+ESP32-C6-WROOM-1-N8,U3,ESP32-C6-WROOM-1,1,Espressif ESP32-C6-WROOM-1-N8,C5366877,Extended
+AP2112K-3.3,U4,SOT-23-5,1,Diodes AP2112K-3.3TRG1 (LDO 600 mA),C51118,Extended
